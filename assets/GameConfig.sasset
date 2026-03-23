@@ -12,5 +12,28 @@
     "__uuid__": "29fff014-3d5a-4bed-a1da-413d2929ca08",
     "__expectedType__": "cc.Prefab"
   },
-  "storeUrl": "https://play.google.com/store/apps/details?id=ig.com.wool.loop.qdc"
+  "storeUrl": "https://play.google.com/store/apps/details?id=ig.com.wool.loop.qdc",
+  "colors": [
+    {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 0,
+      "b": 0,
+      "a": 255
+    },
+    {
+      "__type__": "cc.Color",
+      "r": 0,
+      "g": 0,
+      "b": 255,
+      "a": 255
+    },
+    {
+      "__type__": "cc.Color",
+      "r": 0,
+      "g": 255,
+      "b": 0,
+      "a": 255
+    }
+  ]
 }

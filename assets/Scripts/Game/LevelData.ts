@@ -1,7 +1,11 @@
 import { _decorator, Component, Node } from 'cc';
 const { ccclass, property } = _decorator;
 
-// export type Color = "orange" | "blue" | "green" | "red";
+// export enum ColorType {
+//     Red,
+//     Blue,
+
+// }
 
 
 // export interface SpoolData {
