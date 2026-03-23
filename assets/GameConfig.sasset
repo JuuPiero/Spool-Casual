@@ -1,0 +1,16 @@
+{
+  "__type__": "032387TqvFO/aiJxh6GMenp",
+  "_name": "GameConfig",
+  "_objFlags": 0,
+  "__editorExtras__": {},
+  "_native": "",
+  "spoolPrefab": {
+    "__uuid__": "692f75fe-cc89-4908-81d5-a0e96470aa13",
+    "__expectedType__": "cc.Prefab"
+  },
+  "slotPrefab": {
+    "__uuid__": "29fff014-3d5a-4bed-a1da-413d2929ca08",
+    "__expectedType__": "cc.Prefab"
+  },
+  "storeUrl": "https://play.google.com/store/apps/details?id=ig.com.wool.loop.qdc"
+}

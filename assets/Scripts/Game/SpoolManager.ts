@@ -14,10 +14,13 @@ export class SpoolManager extends Component {
     @property(CCFloat)
     public spacing: number
 
+    @property({ type: Spool })
     public spools: Spool[] = []
 
     @property(Prefab)
     public spoolPrefab: Prefab
+
+
 
     protected start(): void {
         this.spawnGrid();
