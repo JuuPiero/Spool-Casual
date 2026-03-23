@@ -30,16 +30,14 @@ export class SlotManager extends Component {
     private spawnSlots() {
         this.slots = [];
 
-        // tổng chiều dài hàng ngang
-        const totalWidth = (this.slotCount - 1) * this.spacing;
+        const totalWidth = (this.slotCount - 1) * this.spacing
 
         const gameConfig = ServiceLocator.get(GameConfig)
 
-        // điểm bắt đầu để căn giữa
         const startX = -totalWidth / 2;
 
         for (let i = 0; i < this.slotCount; i++) {
-            const node = instantiate(gameConfig.slotPrefab);
+            const node = instantiate(gameConfig.slotPrefab)
             node.setParent(this.node);
             node.name = `slot_${i}`
 

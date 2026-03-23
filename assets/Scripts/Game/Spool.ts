@@ -4,14 +4,18 @@ import { Clickable } from '../Clickable';
 import { getRandomColor } from '../ultils';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
+import { SpoolManager } from './SpoolManager';
 const { ccclass, property } = _decorator;
+
+
+
 
 @ccclass('Spool')
 export class Spool extends Clickable {
 
     // public data: SpoolData;
 
-
+    public static maxCapacity: number = 20;
 
     public currentCapacity: number;
 
@@ -29,7 +33,7 @@ export class Spool extends Clickable {
     private isInSlot: boolean = false;
 
     protected start(): void {
-        this.color = getRandomColor()
+        // this.color = getRandomColor()
 
         this.renderers.forEach(renderer => {
             const mat = renderer.getMaterialInstance(0);
@@ -42,6 +46,8 @@ export class Spool extends Clickable {
         if (this.isFlying || this.isInSlot) return;
 
         const slotManager = ServiceLocator.get(SlotManager)
+        const spoolManager = ServiceLocator.get(SpoolManager)
+
 
         const slot = slotManager.getAvailableSlot()
 
@@ -63,13 +69,15 @@ export class Spool extends Clickable {
         tween(this.node)
             .to(0.3, {
                 position: localTarget,
+                eulerAngles: new Vec3(0, 0, 90)
             }, {
                 easing: "quadOut"
             })
             .call(() => {
                 this.isFlying = false;
+                const index = spoolManager.spools.indexOf(this)
+                spoolManager.spools.splice(index, 1)
 
-                // gán vào slot (logic game)
             })
             .start();
 

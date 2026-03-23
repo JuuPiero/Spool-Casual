@@ -35,10 +35,7 @@ export class ClickSystem extends Component {
         const node = result.collider.node;
 
         const item = node.getComponent(Clickable);
-
-        if (item) {
-            item.onClick();
-        }
+        item?.onClick();
        
     }
 }

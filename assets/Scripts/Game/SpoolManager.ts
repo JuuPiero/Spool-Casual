@@ -2,6 +2,8 @@ import { _decorator, CCFloat, CCInteger, Component, instantiate, Node, Prefab, V
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
+import { WoolManager } from './WoolManager';
+import { getRandomColor } from '../ultils';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -22,17 +24,20 @@ export class SpoolManager extends Component {
     // @property(Prefab)
     // public spoolPrefab: Prefab
 
-
+    protected onLoad(): void {
+        ServiceLocator.register(SpoolManager, this)
+    }
 
     protected start(): void {
         this.spawnGrid();
+
+        // ServiceLocator.get(WoolManager).generateWools()
     }
 
     private spawnGrid() {
         this.spools = [];
 
         const gameConfig = ServiceLocator.get(GameConfig)
-        
 
         // Tính offset để grid nằm giữa
         const totalWidth = (this.columns - 1) * this.spacing;
@@ -45,15 +50,19 @@ export class SpoolManager extends Component {
             for (let col = 0; col < this.columns; col++) {
 
                 const node = instantiate(gameConfig.spoolPrefab);
+                const spool = node.getComponent(Spool)
+                spool.color = getRandomColor()
                 node.setParent(this.node);
 
                 const x = startX + col * this.spacing;
                 const y = startY - row * this.spacing;
 
-                node.setPosition(new Vec3(x, 0, y));
+                node.setPosition(new Vec3(x, 0, y))
 
-                const spool = node.getComponent(Spool);
-                if (spool) {
+               
+
+                if(spool) 
+                {
                     this.spools.push(spool);
                 }
             }
