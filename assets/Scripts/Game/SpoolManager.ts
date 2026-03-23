@@ -1,5 +1,7 @@
 import { _decorator, CCFloat, CCInteger, Component, instantiate, Node, Prefab, Vec3 } from 'cc';
 import { Spool } from './Spool';
+import { ServiceLocator } from '../ServiceLocator';
+import { GameConfig } from './GameConfigSA';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -17,8 +19,8 @@ export class SpoolManager extends Component {
     @property({ type: Spool })
     public spools: Spool[] = []
 
-    @property(Prefab)
-    public spoolPrefab: Prefab
+    // @property(Prefab)
+    // public spoolPrefab: Prefab
 
 
 
@@ -28,6 +30,9 @@ export class SpoolManager extends Component {
 
     private spawnGrid() {
         this.spools = [];
+
+        const gameConfig = ServiceLocator.get(GameConfig)
+        
 
         // Tính offset để grid nằm giữa
         const totalWidth = (this.columns - 1) * this.spacing;
@@ -39,7 +44,7 @@ export class SpoolManager extends Component {
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.columns; col++) {
 
-                const node = instantiate(this.spoolPrefab);
+                const node = instantiate(gameConfig.spoolPrefab);
                 node.setParent(this.node);
 
                 const x = startX + col * this.spacing;

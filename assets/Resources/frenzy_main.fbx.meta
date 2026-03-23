@@ -475,7 +475,19 @@
     },
     "meshOptimize": {
       "enable": true,
-      "vertexCache": true
-    }
+      "vertexCache": true,
+      "vertexFetch": true
+    },
+    "meshSimplify": {
+      "enable": true,
+      "targetRatio": 0.5,
+      "errorRate": 0.5
+    },
+    "meshCompress": {
+      "enable": true,
+      "compress": true
+    },
+    "allowMeshDataAccess": false,
+    "tangents": 1
   }
 }

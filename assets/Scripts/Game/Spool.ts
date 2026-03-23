@@ -11,6 +11,10 @@ export class Spool extends Clickable {
 
     // public data: SpoolData;
 
+
+
+    public currentCapacity: number;
+
     @property(CCBoolean)
     public isFlying: boolean = false;
 
@@ -22,6 +26,7 @@ export class Spool extends Clickable {
     @property({ type: MeshRenderer })
     public renderers: MeshRenderer[] = []
 
+    private isInSlot: boolean = false;
 
     protected start(): void {
         this.color = getRandomColor()
@@ -34,7 +39,7 @@ export class Spool extends Clickable {
 
     public onClick() {
         console.log("Clicked")
-        if (this.isFlying) return;
+        if (this.isFlying || this.isInSlot) return;
 
         const slotManager = ServiceLocator.get(SlotManager)
 
@@ -46,6 +51,7 @@ export class Spool extends Clickable {
         }
         this.isFlying = true;
         slot.setSpool(this);
+        this.isInSlot = true
 
         // lấy world position của slot
         const targetPos = slot.node.worldPosition.clone();

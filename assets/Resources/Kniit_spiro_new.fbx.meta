@@ -129,6 +129,19 @@
       "scenes": [
         "e19dc076-4bbd-4916-b6c0-8240ff5f5d9e@f65f2"
       ]
+    },
+    "meshSimplify": {
+      "enable": true
+    },
+    "allowMeshDataAccess": false,
+    "tangents": 1,
+    "meshOptimize": {
+      "enable": true,
+      "vertexCache": true,
+      "vertexFetch": true
+    },
+    "meshCompress": {
+      "enable": true
     }
   }
 }
