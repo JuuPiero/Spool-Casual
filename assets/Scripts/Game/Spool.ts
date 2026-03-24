@@ -5,6 +5,7 @@ import { getRandomColor } from '../ultils';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
 import { SpoolManager } from './SpoolManager';
+import { SpoolData } from './LevelData';
 const { ccclass, property } = _decorator;
 
 
@@ -13,7 +14,7 @@ const { ccclass, property } = _decorator;
 @ccclass('Spool')
 export class Spool extends Clickable {
 
-    // public data: SpoolData;
+    public data: SpoolData;
 
     public static maxCapacity: number = 20;
 
@@ -25,6 +26,10 @@ export class Spool extends Clickable {
 
     @property(Color)
     public color: Color
+
+
+    public row: number = 0;
+    public col: number = 0;
 
 
     @property({ type: MeshRenderer })
@@ -42,12 +47,17 @@ export class Spool extends Clickable {
     }
 
     public onClick() {
-        console.log("Clicked")
         if (this.isFlying || this.isInSlot) return;
+
+        if (this.isBlocked()) {
+            console.log("bị che");
+            return;
+        }
+
+        console.log("Clicked")
 
         const slotManager = ServiceLocator.get(SlotManager)
         const spoolManager = ServiceLocator.get(SpoolManager)
-
 
         const slot = slotManager.getAvailableSlot()
 
@@ -55,17 +65,18 @@ export class Spool extends Clickable {
             console.log('hết')
             return;
         }
+
         this.isFlying = true;
         slot.setSpool(this);
         this.isInSlot = true
 
-        // lấy world position của slot
         const targetPos = slot.node.worldPosition.clone();
         targetPos.y = this.node.y
-        // convert về local space của parent spool
+
         const parent = this.node.parent!;
         const localTarget = new Vec3();
         parent.inverseTransformPoint(localTarget, targetPos);
+
         tween(this.node)
             .to(0.3, {
                 position: localTarget,
@@ -75,12 +86,27 @@ export class Spool extends Clickable {
             })
             .call(() => {
                 this.isFlying = false;
+
                 const index = spoolManager.spools.indexOf(this)
                 spoolManager.spools.splice(index, 1)
-
             })
             .start();
+    }
 
+
+    private isBlocked(): boolean {
+        const spoolManager = ServiceLocator.get(SpoolManager)
+
+        for (const s of spoolManager.spools) {
+            if (s === this) continue;
+
+            // cùng cột và nằm trên mình
+            if (s.col === this.col && s.row > this.row) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

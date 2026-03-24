@@ -2,6 +2,7 @@ import { _decorator, CCFloat, CCInteger, Component, instantiate, Node, Prefab, V
 import { ServiceLocator } from '../ServiceLocator';
 import { Slot } from './Slot';
 import { GameConfig } from './GameConfigSA';
+import { GameManager } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotManager')
@@ -30,9 +31,12 @@ export class SlotManager extends Component {
     private spawnSlots() {
         this.slots = [];
 
-        const totalWidth = (this.slotCount - 1) * this.spacing
 
         const gameConfig = ServiceLocator.get(GameConfig)
+        const levelData = ServiceLocator.get(GameManager).currentLevelData
+        
+        this.slotCount = levelData.maxSlots
+        const totalWidth = (this.slotCount - 1) * this.spacing
 
         const startX = -totalWidth / 2;
 
@@ -58,8 +62,6 @@ export class SlotManager extends Component {
         return null
         
     }
-    
-
    
 }
 

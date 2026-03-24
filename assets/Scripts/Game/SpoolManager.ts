@@ -4,6 +4,7 @@ import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
 import { WoolManager } from './WoolManager';
 import { getRandomColor } from '../ultils';
+import { GameManager } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -11,9 +12,6 @@ export class SpoolManager extends Component {
 
     @property(CCInteger)
     public rows: number
-    @property(CCInteger)
-    public columns: number
-
 
     @property(CCFloat)
     public spacing: number
@@ -21,8 +19,7 @@ export class SpoolManager extends Component {
     @property({ type: Spool })
     public spools: Spool[] = []
 
-    // @property(Prefab)
-    // public spoolPrefab: Prefab
+
 
     protected onLoad(): void {
         ServiceLocator.register(SpoolManager, this)
@@ -38,33 +35,52 @@ export class SpoolManager extends Component {
         this.spools = [];
 
         const gameConfig = ServiceLocator.get(GameConfig)
+        const levelData = ServiceLocator.get(GameManager).currentLevelData
 
-        // Tính offset để grid nằm giữa
-        const totalWidth = (this.columns - 1) * this.spacing;
-        const totalHeight = (this.rows - 1) * this.spacing;
+        const spoolDatas = levelData.spools
+        const total = spoolDatas.length;
 
+        const columns = levelData.columns;
+        const rows = Math.ceil(total / columns);
+
+        // 👉 kích thước grid
+        const totalWidth = (columns - 1) * this.spacing;
+        const totalDepth = (rows - 1) * this.spacing; // Z
+
+        // 👉 căn giữa
         const startX = -totalWidth / 2;
-        const startY = totalHeight / 2;
+        const startZ = totalDepth / 2; // bắt đầu từ dưới (z lớn)
 
-        for (let row = 0; row < this.rows; row++) {
-            for (let col = 0; col < this.columns; col++) {
+        for (let i = 0; i < total; i++) {
 
-                const node = instantiate(gameConfig.spoolPrefab);
-                const spool = node.getComponent(Spool)
-                spool.color = getRandomColor()
-                node.setParent(this.node);
+            const row = Math.floor(i / columns); // 0,1,2...
+            const col = i % columns;
 
-                const x = startX + col * this.spacing;
-                const y = startY - row * this.spacing;
+            const node = instantiate(gameConfig.spoolPrefab);
+            const spool = node.getComponent(Spool)
 
-                node.setPosition(new Vec3(x, 0, y))
+            if (spool) {
+                spool.row = row;
+                spool.col = col;
 
-               
+                const data = spoolDatas[i];
+                spool.data = data;
+                spool.color = gameConfig.colors[data.colorIndex];
+            }
 
-                if(spool) 
-                {
-                    this.spools.push(spool);
-                }
+            node.name = `Spool_(${row}, ${col})`
+            node.setParent(this.node);
+
+            // 👉 X: trái -> phải
+            const x = startX + col * this.spacing;
+
+            // 👉 Z: trên -> dưới (QUAN TRỌNG)
+            const z = startZ - row * this.spacing;
+
+            node.setPosition(new Vec3(x, 0, z))
+
+            if (spool) {
+                this.spools.push(spool);
             }
         }
     }
