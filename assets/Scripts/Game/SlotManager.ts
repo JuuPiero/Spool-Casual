@@ -8,9 +8,6 @@ const { ccclass, property } = _decorator;
 @ccclass('SlotManager')
 export class SlotManager extends Component {
     
-    // @property(Prefab)
-    // public slotPrefab: Prefab
-
     @property(CCInteger)
     public slotCount: number
 

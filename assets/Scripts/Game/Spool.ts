@@ -46,6 +46,10 @@ export class Spool extends Clickable {
             const mat = renderer.getMaterialInstance(0);
             mat.setProperty("baseColor", this.color);
         })
+
+        if (this.isBlocked()) {
+            console.log("tắt spool");
+        }
     }
 
     public onClick() {
@@ -71,6 +75,11 @@ export class Spool extends Clickable {
         this.isFlying = true;
         slot.setSpool(this);
         this.isInSlot = true
+
+        const spool = spoolManager.getSpool(this.row - 1, this.col)
+        if(spool) {
+            console.log("active spool bottom");
+        }
 
         const targetPos = slot.node.worldPosition.clone();
         targetPos.y = this.node.y

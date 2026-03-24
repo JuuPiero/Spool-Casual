@@ -1,10 +1,10 @@
-import { _decorator, Component, ITriggerEvent, Node, SphereCollider } from 'cc';
+import { _decorator, Component, ITriggerEvent, Node, BoxCollider  } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('TestTrigger')
 export class TestTrigger extends Component {
     protected onLoad(): void {
-        let collider = this.getComponent(SphereCollider);
+        let collider = this.getComponent(BoxCollider);
         if (collider) {
             collider.on('onTriggerEnter', this.onTriggerEnter, this);
         }

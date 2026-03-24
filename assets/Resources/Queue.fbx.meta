@@ -153,6 +153,10 @@
       "enable": true,
       "targetRatio": 0.4,
       "errorRate": 0.4
+    },
+    "meshCompress": {
+      "enable": true,
+      "compress": true
     }
   }
 }

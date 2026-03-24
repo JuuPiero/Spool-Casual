@@ -9,13 +9,16 @@ export class Wool extends Component {
 
     public quantity: number = 20
 
-
     private samples: Vec3[] = [];
 
-    private currentIndex = 0;
+    public currentIndex = 0;
     private speed = 5;
 
+    @property(Color)
     public color: Color
+
+
+    public woolItems: Node[] = []
 
     protected onLoad(): void {
         let collider = this.getComponent(BoxCollider);
@@ -26,26 +29,31 @@ export class Wool extends Component {
     }
 
     private onTriggerEnter(event: ITriggerEvent) {
-        console.log(event.otherCollider.node.name + " entered trigger");
-
         const slots = ServiceLocator.get(SlotManager).slots
-
         for (const slot of slots) {
-            if(slot !== null && slot.spool.color.equals(this.color)) {
-                console.log('cuộn')
-                return
+            if(slot.spool) {
+              
+                if(slot.spool.color.equals(this.color)) {
+                    // sửa thành tween với animation kéo len xuống cuộn len
+                    this.node.setParent(null)
+                    this.node.active = false
+                    slot.spool.node.setParent(null)
+                    slot.spool.node.active = false
+                    slot.spool = null
+                    console.log('matched')
+                    return
+                }
             }
         }
-
     }
 
     protected start(): void {
         this.samples = ServiceLocator.get(WoolManager).spline.getSamples(50)
     }
 
-    protected setColor(color: Color) {
+    public setColor(color: Color) {
         const items = this.node.getComponentsInChildren(MeshRenderer)
-
+        this.color = color
         for (const element of items) {
             element.material.setProperty("baseColor", color)
         }

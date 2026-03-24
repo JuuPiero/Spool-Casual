@@ -19,6 +19,7 @@ export class SpoolManager extends Component {
     @property({ type: Spool })
     public spools: Spool[] = []
 
+    public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
 
 
     protected onLoad(): void {
@@ -27,8 +28,11 @@ export class SpoolManager extends Component {
 
     protected start(): void {
         this.spawnGrid();
+    }
 
-        // ServiceLocator.get(WoolManager).generateWools()
+    
+    public getSpool(row: number, col: number): Spool | undefined {
+        return this.spoolsMap.get(`${row}_${col}`)
     }
 
     private spawnGrid() {
@@ -81,8 +85,10 @@ export class SpoolManager extends Component {
 
             if (spool) {
                 this.spools.push(spool);
+                this.spoolsMap.set(`${row}_${col}`, spool)
             }
         }
+
     }
 
 

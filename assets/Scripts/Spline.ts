@@ -10,14 +10,18 @@ export class Spline extends Component {
     @property({ type: Node })
     public points: Node[] = [];
 
+    @property({ type: Node })
+    public pointContainer: Node
+
+
     @property
     public isLoop: boolean = false;
 
     protected start(): void {
         const samples = this.getSamples(40);
         Gizmos.instance.DrawPath(samples);
+        // this.points = this.pointContainer?.children
         // Gizmos.instance.DrawPath(this.points.map(i => i.position));
-
     }
 
     // =========================

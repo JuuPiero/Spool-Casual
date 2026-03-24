@@ -38,6 +38,9 @@ export class WoolManager extends Component {
             const node = instantiate(ServiceLocator.get(GameConfig).woolPrefab)
             node.setParent(this.node)
             const wool = node.getComponent(Wool)
+            wool.setColor(spools[i].color)
+            wool.currentIndex = i
+            node.setPosition(this.spline.points[i].position.clone())
             this.wools.push(wool)
         }
     }
