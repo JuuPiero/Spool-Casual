@@ -1,7 +1,5 @@
 import { _decorator, CCBoolean, Color, Component, MeshRenderer, Node, tween, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
-// import { SpoolData } from './LevelData';
-import { getRandomColor } from '../ultils';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
 import { SpoolManager } from './SpoolManager';
@@ -13,6 +11,10 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Spool')
 export class Spool extends Clickable {
+
+
+    @property(Node)
+    public woolView!: Node
 
     public data: SpoolData;
 
@@ -38,8 +40,8 @@ export class Spool extends Clickable {
     private isInSlot: boolean = false;
 
     protected start(): void {
-        // this.color = getRandomColor()
-
+        this.woolView.active = false
+        
         this.renderers.forEach(renderer => {
             const mat = renderer.getMaterialInstance(0);
             mat.setProperty("baseColor", this.color);

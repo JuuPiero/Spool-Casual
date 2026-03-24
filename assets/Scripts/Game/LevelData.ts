@@ -21,9 +21,17 @@ export class LevelData extends bh.ScriptableAsset {
 
     @property(CCInteger)
     public maxSlots: number = 2
-    
+
     @property({type: SpoolData})
     public spools: SpoolData[] = []
+
+    @property(CCInteger)
+    public maxWoolsInMain: number = 8
+
+    
+
+    // @property(CCInteger)
+    // public : number = 8
 
 
 } 

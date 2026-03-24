@@ -22,7 +22,7 @@ export class Gizmos extends Component {
 
         const localPoints = points.map(p => {
             const out = new Vec3();
-            this.node.inverseTransformPoint(out, p); // 👈 world → local
+            this.node.inverseTransformPoint(out, p);
             return out;
         });
 
