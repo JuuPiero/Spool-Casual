@@ -1,6 +1,7 @@
 import { _decorator, BoxCollider, Color, Component, ITriggerEvent, MeshRenderer, Node, Quat, Vec3 } from 'cc';
 import { ServiceLocator } from '../ServiceLocator';
 import { WoolManager } from './WoolManager';
+import { SlotManager } from './SlotManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Wool')
@@ -14,10 +15,11 @@ export class Wool extends Component {
     private currentIndex = 0;
     private speed = 5;
 
+    public color: Color
+
     protected onLoad(): void {
         let collider = this.getComponent(BoxCollider);
         if (collider) {
-            
             collider.on('onTriggerEnter', this.onTriggerEnter, this);
 
         }
@@ -25,6 +27,16 @@ export class Wool extends Component {
 
     private onTriggerEnter(event: ITriggerEvent) {
         console.log(event.otherCollider.node.name + " entered trigger");
+
+        const slots = ServiceLocator.get(SlotManager).slots
+
+        for (const slot of slots) {
+            if(slot !== null && slot.spool.color.equals(this.color)) {
+                console.log('cuộn')
+                return
+            }
+        }
+
     }
 
     protected start(): void {
