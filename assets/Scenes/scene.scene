@@ -534,7 +534,6 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "rows": 5,
     "spacing": 4,
     "spools": [],
     "_id": "2fliUO4vBMX6yofdpt+gWM"
@@ -3116,7 +3115,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 360,
+    "_orthoHeight": 422.89502762430936,
     "_near": 1,
     "_far": 2000,
     "_color": {
