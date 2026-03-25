@@ -71,7 +71,6 @@ export class Spool extends Clickable {
             return;
         }
 
-        console.log("Clicked")
 
         const slotManager = ServiceLocator.get(SlotManager)
         const spoolManager = ServiceLocator.get(SpoolManager)
@@ -83,16 +82,21 @@ export class Spool extends Clickable {
             return;
         }
 
+        const spool = spoolManager.getSpool(this.row - 1, this.col)
+        console.log(`Clicked ${this.row}, ${this.col}`)
+
+        if(spool) {
+            console.log(`active spool bottom ${this.row - 1}, ${this.col}`);
+            spool.open()
+        }
+
         this.isFlying = true;
         slot.setSpool(this);
         this.isInSlot = true
 
-        const spool = spoolManager.getSpool(this.row - 1, this.col)
-        if(spool) {
-            console.log("active spool bottom");
-            spool.open()
-            
-        }
+        const index = spoolManager.spools.indexOf(this)
+        spoolManager.spools.splice(index, 1)
+       
 
         const targetPos = slot.node.worldPosition.clone();
         targetPos.y = this.node.y
@@ -110,9 +114,7 @@ export class Spool extends Clickable {
             })
             .call(() => {
                 this.isFlying = false;
-
-                const index = spoolManager.spools.indexOf(this)
-                spoolManager.spools.splice(index, 1)
+                
             })
             .start();
     }

@@ -46,11 +46,15 @@ export class WoolManager extends Component {
             const wool = node.getComponent(Wool)!;
             wool.setColor(spools[i].color);
 
-            // 👇 quan trọng: set data thay vì index
             wool.init(samples, i * spacing, this.speed);
 
             this.wools.push(wool);
         }
+    }
+
+    public remove(wool: Wool) {
+        const index = this.wools.indexOf(wool)
+        this.wools.splice(index, 1)
     }
 
 }

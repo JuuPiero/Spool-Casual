@@ -15,6 +15,10 @@ export class Wool extends Component {
     @property(Color)
     public color: Color;
 
+    @property({type: Node})
+    public woolItems: Node[] = []
+
+    
     public init(samples: Vec3[], offset: number, speed: number) {
         this.samples = samples;
         this.speed = speed;

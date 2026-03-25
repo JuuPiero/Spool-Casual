@@ -1,5 +1,4 @@
 import { _decorator, Component, Node, Vec3 } from 'cc';
-import { DebugDraw3D } from './DebugDraw3D';
 import { Gizmos } from './Gizmos';
 
 const { ccclass, property } = _decorator;
@@ -20,8 +19,6 @@ export class Spline extends Component {
     protected start(): void {
         const samples = this.getSamples(40);
         Gizmos.instance.DrawPath(samples);
-        // this.points = this.pointContainer?.children
-        // Gizmos.instance.DrawPath(this.points.map(i => i.position));
     }
 
     // =========================
