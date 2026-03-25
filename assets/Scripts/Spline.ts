@@ -17,6 +17,8 @@ export class Spline extends Component {
     public isLoop: boolean = false;
 
     protected start(): void {
+        // this.points = this.pointContainer.children
+
         const samples = this.getSamples(40);
         Gizmos.instance.DrawPath(samples);
     }
@@ -108,9 +110,7 @@ export class Spline extends Component {
         );
     }
 
-    // =========================
-    // SAMPLE N POINTS
-    // =========================
+
     public getSamples(numSamples: number): Vec3[] {
         const result: Vec3[] = [];
 
@@ -120,5 +120,38 @@ export class Spline extends Component {
         }
 
         return result;
+    }
+
+    public lengths: number[] = [];
+    public totalLength: number = 0;
+
+    public buildLengthTable(samples: Vec3[]) {
+        this.lengths = [0];
+        this.totalLength = 0;
+
+        for (let i = 1; i < samples.length; i++) {
+            const dist = Vec3.distance(samples[i - 1], samples[i]);
+            this.totalLength += dist;
+            this.lengths.push(this.totalLength);
+        }
+    }
+
+    public getPointAtDistance(samples: Vec3[], d: number): Vec3 {
+        d = d % this.totalLength;
+
+        for (let i = 1; i < this.lengths.length; i++) {
+            if (this.lengths[i] >= d) {
+                const prevLen = this.lengths[i - 1];
+                const segmentLen = this.lengths[i] - prevLen;
+
+                const t = (d - prevLen) / segmentLen;
+
+                const pos = new Vec3();
+                Vec3.lerp(pos, samples[i - 1], samples[i], t);
+                return pos;
+            }
+        }
+
+        return samples[samples.length - 1];
     }
 }

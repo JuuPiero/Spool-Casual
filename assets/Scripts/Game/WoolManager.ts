@@ -15,6 +15,9 @@ export class WoolManager extends Component {
     @property(CCFloat)
     public speed: number = 200;
 
+    @property(CCFloat)
+    public spacing: number = 5;
+
     public wools: Wool[] = [];
 
     public spline: Spline
@@ -34,9 +37,8 @@ export class WoolManager extends Component {
     protected start(): void {
         const spools = ServiceLocator.get(SpoolManager).spools;
 
-        const samples = this.spline.getSamples(200);
-
-        const spacing = 5; // số sample cách nhau
+        const samples = this.spline.getSamples(300);
+        this.spline.buildLengthTable(samples);
 
         for (let i = 0; i < spools.length; i++) {
 
@@ -46,7 +48,7 @@ export class WoolManager extends Component {
             const wool = node.getComponent(Wool)!;
             wool.setColor(spools[i].color);
 
-            wool.init(samples, i * spacing, this.speed);
+            wool.init(samples, i * this.spacing, this.speed, this.spline);
 
             this.wools.push(wool);
         }

@@ -7,7 +7,7 @@
     "_native": "",
     "rows": 3,
     "columns": 4,
-    "maxSlots": 4,
+    "maxSlots": 5,
     "spools": [
       {
         "__id__": 1
@@ -82,7 +82,7 @@
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": 3
   },
   {
     "__type__": "SpoolData",
@@ -94,6 +94,6 @@
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": 3
   }
 ]

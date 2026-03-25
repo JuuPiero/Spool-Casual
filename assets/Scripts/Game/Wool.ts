@@ -1,7 +1,8 @@
-import { _decorator, BoxCollider, Color, Component, ITriggerEvent, MeshRenderer, Node, Quat, Vec3 } from 'cc';
+import { _decorator, BoxCollider, Color, Component, MeshRenderer, Node, Quat, Vec3 } from 'cc';
+import { Spline } from '../Spline';
 import { ServiceLocator } from '../ServiceLocator';
 import { WoolManager } from './WoolManager';
-import { SlotManager } from './SlotManager';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('Wool')
@@ -15,50 +16,45 @@ export class Wool extends Component {
     @property(Color)
     public color: Color;
 
-    @property({type: Node})
+    @property({ type: Node })
     public woolItems: Node[] = []
 
-    
-    public init(samples: Vec3[], offset: number, speed: number) {
+
+    private distance: number = 0;
+    private totalLength: number = 0;
+
+
+    public init(samples: Vec3[], offset: number, speed: number, spline: Spline) {
         this.samples = samples;
         this.speed = speed;
 
-        // 👇 set vị trí ban đầu đúng luôn
-        this.t = offset;
-        this.applyPosition();
-    }
+        this.totalLength = spline.totalLength;
 
+        this.distance = offset;
+
+        this.applyPosition(spline);
+    }
     update(dt: number) {
         if (this.samples.length < 2) return;
 
-        // 👇 move đều
-        this.t += this.speed * dt;
+        this.distance += this.speed * dt;
 
-        // loop
-        if (this.t >= this.samples.length) {
-            this.t -= this.samples.length;
+        if (this.distance >= this.totalLength) {
+            this.distance -= this.totalLength;
         }
 
-        this.applyPosition();
+        this.applyPosition(ServiceLocator.get(WoolManager).spline);
     }
 
-    private applyPosition() {
-        const index = Math.floor(this.t) % this.samples.length;
-        const nextIndex = (index + 1) % this.samples.length;
-
-        const a = this.samples[index];
-        const b = this.samples[nextIndex];
-
-        const lerpT = this.t - index;
-
-        const pos = new Vec3();
-        Vec3.lerp(pos, a, b, lerpT);
-
+    private applyPosition(spline: Spline) {
+        const pos = spline.getPointAtDistance(this.samples, this.distance);
         this.node.setWorldPosition(pos);
 
-        // rotate theo hướng
+        // hướng
+        const nextPos = spline.getPointAtDistance(this.samples, this.distance + 0.1);
+
         const dir = new Vec3();
-        Vec3.subtract(dir, b, a);
+        Vec3.subtract(dir, nextPos, pos);
         dir.normalize();
 
         const rot = new Quat();
@@ -66,13 +62,12 @@ export class Wool extends Component {
 
         this.node.setWorldRotation(rot);
     }
-
     public setColor(color: Color) {
         const items = this.node.getComponentsInChildren(MeshRenderer);
         this.color = color;
 
         for (const element of items) {
-            element.material.setProperty("baseColor", color);
+            element.material.setProperty("albedo", color);
         }
     }
 }

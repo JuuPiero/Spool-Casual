@@ -42,16 +42,12 @@ export class MatchZone extends Component {
                     return;
                 }
                 // if (slot.spool.color.equals(wool.color)) {
-                //     // sửa thành tween với animation kéo len xuống cuộn len
-
                 //     /* wool có khoảng 7 mesh con là các sợi len: wool.woolItems
                 //         spool có khoảng 5 mesh con là các sợi quấn xung quanh : slot.spool.woolsView
                 //         dùng Line vẽ 1 đường cong với 2 điểm (dùng bezier để suy ra các điểm khác rồi vẽ đường cong)
                 //         điểm dầu là từ 1 item của  wool.woolItems, điểm 2 là 1 item của slot.spool.woolsView
                 //         các item của slot.spool.woolsView cũng sẽ active từng cái (mặc định các item này inactive) và scale dần từ 0 -> 1
                 //     */
-                //     // vẽ đường chỉ test
-
 
                 //     const from = wool.node.worldPosition;
                 //     const to = slot.spool.node.worldPosition;
@@ -113,9 +109,6 @@ export class MatchZone extends Component {
 
     private playCollectAnimation(wool: Wool, spool: Spool) {
        
-
-        // const fullPoints = this.GetBezierPoints(from, mid, to, 30);
-
         let t = { value: 0 };
 
         // reset spool view
