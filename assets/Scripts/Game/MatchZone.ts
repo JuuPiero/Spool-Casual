@@ -27,6 +27,7 @@ export class MatchZone extends Component {
 
 
     protected onLoad(): void {
+        ServiceLocator.register(MatchZone, this)
         this.collider = this.getComponent(BoxCollider);
         if (this.collider) {
             this.collider.on('onTriggerEnter', this.onTriggerEnter, this);

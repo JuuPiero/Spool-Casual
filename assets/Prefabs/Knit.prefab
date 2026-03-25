@@ -192,7 +192,7 @@
     "node": {
       "__id__": 1
     },
-    "_enabled": false,
+    "_enabled": true,
     "__prefab": {
       "__id__": 8
     },
@@ -221,7 +221,6 @@
     },
     "speed": 20,
     "autoStart": true,
-    "startDistance": 0,
     "_id": ""
   },
   {

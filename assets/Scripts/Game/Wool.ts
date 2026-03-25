@@ -1,7 +1,8 @@
-import { _decorator, BoxCollider, Color, Component, MeshRenderer, Node, Quat, Vec3 } from 'cc';
+import { _decorator, BoxCollider, Color, Component, log, MeshRenderer, Node, Quat, Vec3 } from 'cc';
 import { Spline } from '../Spline';
 import { ServiceLocator } from '../ServiceLocator';
 import { WoolManager } from './WoolManager';
+import { MatchZone } from './MatchZone';
 
 const { ccclass, property } = _decorator;
 
@@ -25,6 +26,13 @@ export class Wool extends Component {
     public isInitalized = false
 
 
+    public matchZone: MatchZone
+
+    protected start(): void {
+        this.matchZone = ServiceLocator.get(MatchZone)
+    }
+
+
     // public init(samples: Vec3[], offset: number, speed: number, spline: Spline) {
     //     this.samples = samples;
     //     this.speed = speed;
@@ -36,18 +44,20 @@ export class Wool extends Component {
     //     this.applyPosition(spline);
 
     // }
-    // update(dt: number) {
-    //     if(!this.isInitalized) return
-    //     if (this.samples.length < 2) return;
+    update(dt: number) {
+        if(this.node.worldPositionX == this.matchZone.node.worldPositionX) {
+            console.log('check');
+        } 
+        // if(!this.isInitalized) return
+        // if (this.samples.length < 2) return;
 
-    //     this.distance += this.speed * dt;
+        // this.distance += this.speed * dt;
 
-    //     if (this.distance >= this.totalLength) {
-    //         this.distance -= this.totalLength;
-    //     }
-
-    //     // this.applyPosition(ServiceLocator.get(WoolManager).spline);
-    // }
+        // if (this.distance >= this.totalLength) {
+        //     this.distance -= this.totalLength;
+        // }
+        // this.applyPosition(ServiceLocator.get(WoolManager).spline);
+    }
 
     // private applyPosition(spline: Spline) {
     //     const pos = spline.getPointAtDistance(this.samples, this.distance);

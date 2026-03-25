@@ -136,7 +136,7 @@ export class Spool extends Clickable {
         for (const s of spoolManager.spools) {
             if (s === this) continue;
 
-            // cùng cột và nằm trên mình
+            // cùng cột và nằm trên
             if (s.col === this.col && s.row > this.row) {
                 return true;
             }

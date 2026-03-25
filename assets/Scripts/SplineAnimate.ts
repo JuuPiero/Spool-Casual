@@ -25,16 +25,13 @@ export class SplineAnimate extends Component {
     // protected update(dt: number): void {
     //     if (!this.isMoving) return;
     //     if (this.samples.length < 2) return;
-        
     //     this.currentDistance += this.speed * dt;
-        
     //     // Loop around when reaching the end
     //     if (this.currentDistance >= this.totalLength) {
     //         this.currentDistance -= this.totalLength;
     //     } else if (this.currentDistance < 0) {
     //         this.currentDistance += this.totalLength;
     //     }
-        
     //     this.updatePosition();
     // }
 
