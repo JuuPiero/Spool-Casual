@@ -57,10 +57,7 @@ export class WoolManager extends Component {
     //     }
     // }
 
-    // public remove(wool: Wool) {
-    //     const index = this.wools.indexOf(wool)
-    //     this.wools.splice(index, 1)
-    // }
+  
 
     @property({ type: SplineInstantiate, tooltip: "Reference đến SplineInstantiate" })
     public splineInstantiate: SplineInstantiate = null!;
@@ -81,6 +78,22 @@ export class WoolManager extends Component {
         if (!this.splineInstantiate) {
             this.splineInstantiate = this.node.getComponent(SplineInstantiate);
         }
+        const spoolManager = ServiceLocator.get(SpoolManager)
+
+        const base = Math.floor(this.splineInstantiate.items.length / spoolManager.spools.length); // 8
+        const extra = this.splineInstantiate.items.length % spoolManager.spools.length; // 4
+
+        let threadIndex = 0;
+        for (let i = 0; i < spoolManager.spools.length; i++) {
+            const count = base + (i < extra ? 1 : 0);
+            spoolManager.spools[i].capacity = count
+            for (let j = 0; j < count; j++) {
+                this.splineInstantiate.items[threadIndex].getComponent(Wool).setColor(spoolManager.spools[i].color)
+                threadIndex++;
+            }
+        }
+        // this.splineInstantiate.items.for
+
 
         if (this.splineInstantiate && this.splineInstantiate.items.length > 0) {
             this.calculateRelativeDistances();
@@ -89,6 +102,11 @@ export class WoolManager extends Component {
                 this.startMoving();
             }
         }
+    }
+
+    public remove(wool: Wool) {
+        // const index = this.splineInstantiate.items.indexOf(wool.getComponent(SplineAnimate))
+        // this.splineInstantiate.items.splice(index, 1)
     }
 
     protected update(dt: number): void {

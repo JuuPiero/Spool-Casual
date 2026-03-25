@@ -2779,7 +2779,7 @@
       "__uuid__": "e3363654-432a-4b36-8a65-582e9403b1fd",
       "__expectedType__": "cc.Prefab"
     },
-    "count": 100,
+    "count": 120,
     "startOffset": 0,
     "useUniformSpacing": true,
     "sampleCount": 200,
@@ -3115,7 +3115,7 @@
     "_priority": 1073741824,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 422.89502762430936,
+    "_orthoHeight": 374.76135040745055,
     "_near": 1,
     "_far": 2000,
     "_color": {

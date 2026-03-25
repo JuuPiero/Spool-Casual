@@ -52,27 +52,8 @@ export class MatchZone extends Component {
         }
     }
 
-    public GetBezierPoints(p0: Vec3, p1: Vec3, p2: Vec3, segments: number = 20): Vec3[] {
-        const points: Vec3[] = [];
-
-        for (let i = 0; i <= segments; i++) {
-            const t = i / segments;
-
-            const a = p0.clone().multiplyScalar((1 - t) * (1 - t));
-            const b = p1.clone().multiplyScalar(2 * (1 - t) * t);
-            const c = p2.clone().multiplyScalar(t * t);
-
-            const point = a.add(b).add(c);
-            points.push(point);
-        }
-
-        return points;
-    }
-
-
-
-    private playCollectAnimation(wool: Wool, spool: Spool, slot: Slot) {
-
+    
+    public playCollectAnimation(wool: Wool, spool: Spool, slot: Slot) {
         let t = { value: 0 };
         spool.isCollecting = true;
         // reset spool view
@@ -87,18 +68,15 @@ export class MatchZone extends Component {
                 onUpdate: () => {
                     const to = spool.node.worldPosition.clone();
                     const currentFrom = wool.node.worldPosition.clone();
-
-
                     const mid = currentFrom.clone().add(to).multiplyScalar(0.5);
                     mid.x += 1.5;
+                    // const dynamicPoints = this.GetBezierPoints(currentFrom, mid, to, 30);
 
-                    const dynamicPoints = this.GetBezierPoints(currentFrom, mid, to, 30);
+                    // const maxIndex = Math.floor(t.value * (dynamicPoints.length - 1));
+                    // const currentPoints = dynamicPoints.slice(0, maxIndex + 1);
 
-                    const maxIndex = Math.floor(t.value * (dynamicPoints.length - 1));
-                    const currentPoints = dynamicPoints.slice(0, maxIndex + 1);
-
-                    Gizmos.instance.DrawPath(currentPoints, wool.color);
-
+                    // Gizmos.instance.DrawPath(currentPoints, wool.color);
+                    spool.roolWool(wool)
                     // active spool
                     const activeCount = Math.floor(t.value * spool.woolsView.length);
 
@@ -110,29 +88,33 @@ export class MatchZone extends Component {
                                 .to(0.2, { scale: Vec3.ONE })
                                 .start();
                         }
+                        spool.count++
                     }
                     const woolItemsLenght = Math.floor(t.value * wool.woolItems.length);
                     for (let i = 0; i < woolItemsLenght; i++) {
                         const item = wool.woolItems[i];
                         const currentScale = item.scale.clone(); // lấy scale hiện tại
                         tween(item)
-                            .to(0.2, {
+                            .to(0.5, {
                                 scale: new Vec3(0, currentScale.y, currentScale.z)
+                            }).call(() => {
+                                wool.node.active = false
                             })
                             .start();
                     }
                 }
             })
             .call(() => {
-                Gizmos.instance.DrawPath([]);
+                // Gizmos.instance.DrawPath([]);
                 // this.woolManager.remove(wool);
-                wool.node.destroy();
-                slot.spool = null;
-                spool.node.destroy();
+                // this.woolManager.remove(wool)
+                // wool.node.destroy();
+                // wool.node.active = false
+                // slot.spool = null;
+                // spool.node.destroy();
             })
             .call(() => {
-                console.log('check win');
-                
+                // console.log('check win');
                 // if (this.woolManager.wools.length == 0) {
                 //     EventBus.emit(GameEvent.LEVEL_COMPLETED)
                 //     ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen');

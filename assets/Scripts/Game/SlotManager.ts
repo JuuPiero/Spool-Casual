@@ -20,14 +20,12 @@ export class SlotManager extends Component {
     onLoad() {
         ServiceLocator.register(SlotManager, this)
     }
-
     protected start(): void {
         this.spawnSlots();
     }
 
     private spawnSlots() {
         this.slots = [];
-
 
         const gameConfig = ServiceLocator.get(GameConfig)
         const levelData = ServiceLocator.get(GameManager).currentLevelData
