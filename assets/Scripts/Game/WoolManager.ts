@@ -14,7 +14,7 @@ export class WoolManager extends Component {
 
     @property(CCFloat)
     public speed: number = 200;
-   
+
     public wools: Wool[] = [];
 
     public spline: Spline
@@ -22,7 +22,7 @@ export class WoolManager extends Component {
 
     public woolByColor: Color[] = []
 
-    public getStartPos() : Vec3 {
+    public getStartPos(): Vec3 {
         return this.spline.points[0].position.clone()
     }
 
@@ -32,17 +32,25 @@ export class WoolManager extends Component {
     }
 
     protected start(): void {
-        const spools = ServiceLocator.get(SpoolManager).spools
+        const spools = ServiceLocator.get(SpoolManager).spools;
+
+        const samples = this.spline.getSamples(200);
+
+        const spacing = 5; // số sample cách nhau
 
         for (let i = 0; i < spools.length; i++) {
-            const node = instantiate(ServiceLocator.get(GameConfig).woolPrefab)
-            node.setParent(this.node)
-            const wool = node.getComponent(Wool)
-            wool.setColor(spools[i].color)
-            wool.currentIndex = i
-            node.setPosition(this.spline.points[i].position.clone())
-            this.wools.push(wool)
+
+            const node = instantiate(ServiceLocator.get(GameConfig).woolPrefab);
+            node.setParent(this.node);
+
+            const wool = node.getComponent(Wool)!;
+            wool.setColor(spools[i].color);
+
+            // 👇 quan trọng: set data thay vì index
+            wool.init(samples, i * spacing, this.speed);
+
+            this.wools.push(wool);
         }
     }
- 
+
 }

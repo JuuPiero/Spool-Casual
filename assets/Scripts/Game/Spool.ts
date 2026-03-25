@@ -12,10 +12,6 @@ const { ccclass, property } = _decorator;
 @ccclass('Spool')
 export class Spool extends Clickable {
 
-
-    @property(Node)
-    public woolView!: Node
-
     public data: SpoolData;
 
     public static maxCapacity: number = 20;
@@ -39,16 +35,31 @@ export class Spool extends Clickable {
 
     private isInSlot: boolean = false;
 
+    @property({ type: Node })
+    public woolsView: Node[] = []
+
+
+    @property(Node)
+    public inActiveView: Node;
+
+
     protected start(): void {
-        this.woolView.active = false
         
         this.renderers.forEach(renderer => {
             const mat = renderer.getMaterialInstance(0);
             mat.setProperty("baseColor", this.color);
         })
+        this.woolsView.forEach(item => {
+            item.active = false
+        })
 
         if (this.isBlocked()) {
             console.log("tắt spool");
+            this.renderers.forEach(renderer => {
+                renderer.node.active = false
+            })
+            this.inActiveView.active = true
+
         }
     }
 
@@ -79,6 +90,8 @@ export class Spool extends Clickable {
         const spool = spoolManager.getSpool(this.row - 1, this.col)
         if(spool) {
             console.log("active spool bottom");
+            spool.open()
+            
         }
 
         const targetPos = slot.node.worldPosition.clone();
@@ -102,6 +115,15 @@ export class Spool extends Clickable {
                 spoolManager.spools.splice(index, 1)
             })
             .start();
+    }
+
+    public open() {
+         this.renderers.forEach(renderer => {
+            renderer.node.active = true
+        })
+        this.woolsView.forEach(item => {
+            item.active = false
+        })
     }
 
 

@@ -5,8 +5,8 @@
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
-    "rows": 4,
-    "columns": 3,
+    "rows": 3,
+    "columns": 4,
     "maxSlots": 4,
     "spools": [
       {
@@ -26,8 +26,27 @@
       },
       {
         "__id__": 6
+      },
+      {
+        "__id__": 7
+      },
+      {
+        "__id__": 8
+      },
+      {
+        "__id__": 9
+      },
+      {
+        "__id__": 10
+      },
+      {
+        "__id__": 11
+      },
+      {
+        "__id__": 12
       }
-    ]
+    ],
+    "maxWoolsInMain": 8
   },
   {
     "__type__": "SpoolData",
@@ -44,6 +63,30 @@
   {
     "__type__": "SpoolData",
     "colorIndex": 1
+  },
+  {
+    "__type__": "SpoolData",
+    "colorIndex": 0
+  },
+  {
+    "__type__": "SpoolData",
+    "colorIndex": 0
+  },
+  {
+    "__type__": "SpoolData",
+    "colorIndex": 0
+  },
+  {
+    "__type__": "SpoolData",
+    "colorIndex": 0
+  },
+  {
+    "__type__": "SpoolData",
+    "colorIndex": 0
+  },
+  {
+    "__type__": "SpoolData",
+    "colorIndex": 0
   },
   {
     "__type__": "SpoolData",
