@@ -8,6 +8,7 @@ import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { Spool } from './Spool';
+import { Slot } from './Slot';
 const { ccclass, property } = _decorator;
 
 @ccclass('MatchZone')
@@ -16,6 +17,9 @@ export class MatchZone extends Component {
     private slotManager: SlotManager;
     private woolManager: WoolManager
 
+
+    private collider: BoxCollider;
+
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
         this.woolManager = ServiceLocator.get(WoolManager);
@@ -23,22 +27,24 @@ export class MatchZone extends Component {
 
 
     protected onLoad(): void {
-        let collider = this.getComponent(BoxCollider);
-        if (collider) {
-            collider.on('onTriggerEnter', this.onTriggerEnter, this);
+        this.collider = this.getComponent(BoxCollider);
+        if (this.collider) {
+            this.collider.on('onTriggerEnter', this.onTriggerEnter, this);
         }
+    }
+    protected onDestroy(): void {
+        this.collider.off('onTriggerEnter', this.onTriggerEnter, this);
     }
 
     onTriggerEnter(event: ITriggerEvent) {
         const slots = this.slotManager.slots
         const wool = event.otherCollider.getComponent(Wool)
         if (!wool) return
-        // console.log(wool.node.name);
         for (const slot of slots) {
-            if (slot.spool) {
+            if (slot.spool && !slot.spool.isCollecting) {
                 if (slot.spool.color.equals(wool.color)) {
-                    this.playCollectAnimation(wool, slot.spool);
-                    slot.spool = null;
+                    this.playCollectAnimation(wool, slot.spool, slot);
+                    // slot.spool = null;
                     return;
                 }
                
@@ -65,10 +71,10 @@ export class MatchZone extends Component {
 
 
 
-    private playCollectAnimation(wool: Wool, spool: Spool) {
+    private playCollectAnimation(wool: Wool, spool: Spool, slot: Slot) {
        
         let t = { value: 0 };
-
+        spool.isCollecting = true;
         // reset spool view
         spool.woolsView.forEach(item => {
             item.active = false;
@@ -79,11 +85,10 @@ export class MatchZone extends Component {
             .to(0.6, { value: 1 }, {
                 
                 onUpdate: () => {
-                    // const from = wool.node.worldPosition.clone();
                     const to = spool.node.worldPosition.clone();
                     const currentFrom = wool.node.worldPosition.clone();
 
-                    // rebuild curve từ vị trí hiện tại
+                    
                     const mid = currentFrom.clone().add(to).multiplyScalar(0.5);
                     mid.x += 1.5;
 
@@ -120,6 +125,7 @@ export class MatchZone extends Component {
                 Gizmos.instance.DrawPath([]);
                 this.woolManager.remove(wool);
                 wool.node.destroy();
+                slot.spool = null;
                 spool.node.destroy();
             })
             .call(() => {

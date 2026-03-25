@@ -38,6 +38,7 @@ export class Spool extends Clickable {
     @property({ type: Node })
     public woolsView: Node[] = []
 
+    public isCollecting: boolean
 
     @property(Node)
     public inActiveView: Node;
