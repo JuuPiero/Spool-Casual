@@ -22,46 +22,49 @@ export class Wool extends Component {
 
     private distance: number = 0;
     private totalLength: number = 0;
+    public isInitalized = false
 
 
-    public init(samples: Vec3[], offset: number, speed: number, spline: Spline) {
-        this.samples = samples;
-        this.speed = speed;
+    // public init(samples: Vec3[], offset: number, speed: number, spline: Spline) {
+    //     this.samples = samples;
+    //     this.speed = speed;
 
-        this.totalLength = spline.totalLength;
+    //     this.totalLength = spline.totalLength;
 
-        this.distance = offset;
+    //     this.distance = offset;
+    //     this.isInitalized = true
+    //     this.applyPosition(spline);
 
-        this.applyPosition(spline);
-    }
-    update(dt: number) {
-        if (this.samples.length < 2) return;
+    // }
+    // update(dt: number) {
+    //     if(!this.isInitalized) return
+    //     if (this.samples.length < 2) return;
 
-        this.distance += this.speed * dt;
+    //     this.distance += this.speed * dt;
 
-        if (this.distance >= this.totalLength) {
-            this.distance -= this.totalLength;
-        }
+    //     if (this.distance >= this.totalLength) {
+    //         this.distance -= this.totalLength;
+    //     }
 
-        this.applyPosition(ServiceLocator.get(WoolManager).spline);
-    }
+    //     // this.applyPosition(ServiceLocator.get(WoolManager).spline);
+    // }
 
-    private applyPosition(spline: Spline) {
-        const pos = spline.getPointAtDistance(this.samples, this.distance);
-        this.node.setWorldPosition(pos);
+    // private applyPosition(spline: Spline) {
+    //     const pos = spline.getPointAtDistance(this.samples, this.distance);
+    //     this.node.setWorldPosition(pos);
 
-        // hướng
-        const nextPos = spline.getPointAtDistance(this.samples, this.distance + 0.1);
+    //     // hướng
+    //     const nextPos = spline.getPointAtDistance(this.samples, this.distance + 0.1);
 
-        const dir = new Vec3();
-        Vec3.subtract(dir, nextPos, pos);
-        dir.normalize();
+    //     const dir = new Vec3();
+    //     Vec3.subtract(dir, nextPos, pos);
+    //     dir.normalize();
 
-        const rot = new Quat();
-        Quat.fromViewUp(rot, dir);
+    //     const rot = new Quat();
+    //     Quat.fromViewUp(rot, dir);
 
-        this.node.setWorldRotation(rot);
-    }
+    //     this.node.setWorldRotation(rot);
+    // }
     public setColor(color: Color) {
         const items = this.node.getComponentsInChildren(MeshRenderer);
         this.color = color;

@@ -44,10 +44,9 @@ export class MatchZone extends Component {
             if (slot.spool && !slot.spool.isCollecting) {
                 if (slot.spool.color.equals(wool.color)) {
                     this.playCollectAnimation(wool, slot.spool, slot);
-                    // slot.spool = null;
                     return;
                 }
-               
+
             }
         }
     }
@@ -72,7 +71,7 @@ export class MatchZone extends Component {
 
 
     private playCollectAnimation(wool: Wool, spool: Spool, slot: Slot) {
-       
+
         let t = { value: 0 };
         spool.isCollecting = true;
         // reset spool view
@@ -83,12 +82,12 @@ export class MatchZone extends Component {
 
         tween(t)
             .to(0.6, { value: 1 }, {
-                
+
                 onUpdate: () => {
                     const to = spool.node.worldPosition.clone();
                     const currentFrom = wool.node.worldPosition.clone();
 
-                    
+
                     const mid = currentFrom.clone().add(to).multiplyScalar(0.5);
                     mid.x += 1.5;
 
@@ -99,7 +98,6 @@ export class MatchZone extends Component {
 
                     Gizmos.instance.DrawPath(currentPoints, wool.color);
 
-                    
                     // active spool
                     const activeCount = Math.floor(t.value * spool.woolsView.length);
 
@@ -115,24 +113,29 @@ export class MatchZone extends Component {
                     const woolItemsLenght = Math.floor(t.value * wool.woolItems.length);
                     for (let i = 0; i < woolItemsLenght; i++) {
                         const item = wool.woolItems[i];
+                        const currentScale = item.scale.clone(); // lấy scale hiện tại
                         tween(item)
-                            .to(0.2, { scale: Vec3.ZERO })
+                            .to(0.2, {
+                                scale: new Vec3(0, currentScale.y, currentScale.z)
+                            })
                             .start();
                     }
                 }
             })
             .call(() => {
                 Gizmos.instance.DrawPath([]);
-                this.woolManager.remove(wool);
+                // this.woolManager.remove(wool);
                 wool.node.destroy();
                 slot.spool = null;
                 spool.node.destroy();
             })
             .call(() => {
-                if (this.woolManager.wools.length == 0) {
-                    EventBus.emit(GameEvent.LEVEL_COMPLETED)
-                    ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen');
-                }
+                console.log('check win');
+                
+                // if (this.woolManager.wools.length == 0) {
+                //     EventBus.emit(GameEvent.LEVEL_COMPLETED)
+                //     ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen');
+                // }
             })
             .start();
     }

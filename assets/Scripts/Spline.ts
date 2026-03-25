@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3 } from 'cc';
+import { _decorator, CCBoolean, Component, Node, Vec3 } from 'cc';
 import { Gizmos } from './Gizmos';
 
 const { ccclass, property } = _decorator;
@@ -9,16 +9,15 @@ export class Spline extends Component {
     @property({ type: Node })
     public points: Node[] = [];
 
-    @property({ type: Node })
-    public pointContainer: Node
+    // @property({ type: Node })
+    // public pointContainer: Node
 
 
-    @property
+    @property(CCBoolean)
     public isLoop: boolean = false;
 
     protected start(): void {
         // this.points = this.pointContainer.children
-
         const samples = this.getSamples(40);
         Gizmos.instance.DrawPath(samples);
     }

@@ -9,6 +9,8 @@ export class SpoolData {
     public colorIndex: number = 0
 }
 
+
+
 @bh.createAssetMenu('LevelData', 'Config/LevelData')
 @bh.scriptable('LevelData')
 export class LevelData extends bh.ScriptableAsset {
@@ -30,5 +32,6 @@ export class LevelData extends bh.ScriptableAsset {
 
     @property(CCInteger)
     public maxSubRay: number = 2
+
 
 } 
