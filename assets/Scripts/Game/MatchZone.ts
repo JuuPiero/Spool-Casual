@@ -41,49 +41,7 @@ export class MatchZone extends Component {
                     slot.spool = null;
                     return;
                 }
-                // if (slot.spool.color.equals(wool.color)) {
-                //     /* wool có khoảng 7 mesh con là các sợi len: wool.woolItems
-                //         spool có khoảng 5 mesh con là các sợi quấn xung quanh : slot.spool.woolsView
-                //         dùng Line vẽ 1 đường cong với 2 điểm (dùng bezier để suy ra các điểm khác rồi vẽ đường cong)
-                //         điểm dầu là từ 1 item của  wool.woolItems, điểm 2 là 1 item của slot.spool.woolsView
-                //         các item của slot.spool.woolsView cũng sẽ active từng cái (mặc định các item này inactive) và scale dần từ 0 -> 1
-                //     */
-
-                //     const from = wool.node.worldPosition;
-                //     const to = slot.spool.node.worldPosition;
-
-                //     slot.spool.woolsView.forEach(item => {
-                //         // thêm tween để active từng cái và scale dần từng cái
-                //         item.active = true
-
-                //     })
-
-                //     const mid = from.clone().add(to).multiplyScalar(0.5);
-                //     mid.x += 2.5; // chỉnh độ cong ở đây
-
-                //     const curvePoints = this.GetBezierPoints(from, mid, to, 20);
-
-                //     Gizmos.instance.DrawPath(curvePoints, wool.color);
-                //     this.woolManager.remove(wool)
-                //     wool.node.active = false
-                //     wool.node.setParent(null)
-                //     wool.node.destroy()
-
-                //     slot.spool.node.active = false
-                //     slot.spool = null
-                //     // Delay rồi mới xóa line
-                //     // Gizmos.instance.DrawPath([]);
-
-                //     console.log('matched')
-
-                //     if (this.woolManager.wools.length == 0) {
-                //         console.log('win');
-                //         EventBus.emit(GameEvent.LEVEL_COMPLETED)
-
-                //         ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
-                //     }
-                //     return
-                // }
+               
             }
         }
     }
@@ -136,9 +94,7 @@ export class MatchZone extends Component {
 
                     Gizmos.instance.DrawPath(currentPoints, wool.color);
 
-                    // const pos = dynamicPoints[maxIndex];
-                    // wool.node.setWorldPosition(pos);
-
+                    
                     // active spool
                     const activeCount = Math.floor(t.value * spool.woolsView.length);
 
@@ -150,6 +106,13 @@ export class MatchZone extends Component {
                                 .to(0.2, { scale: Vec3.ONE })
                                 .start();
                         }
+                    }
+                    const woolItemsLenght = Math.floor(t.value * wool.woolItems.length);
+                    for (let i = 0; i < woolItemsLenght; i++) {
+                        const item = wool.woolItems[i];
+                        tween(item)
+                            .to(0.2, { scale: Vec3.ZERO })
+                            .start();
                     }
                 }
             })

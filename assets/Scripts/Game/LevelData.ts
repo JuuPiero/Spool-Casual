@@ -28,10 +28,7 @@ export class LevelData extends bh.ScriptableAsset {
     @property(CCInteger)
     public maxWoolsInMain: number = 8
 
-    
-
-    // @property(CCInteger)
-    // public : number = 8
-
+    @property(CCInteger)
+    public maxSubRay: number = 2
 
 } 

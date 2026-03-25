@@ -797,7 +797,7 @@
     "node": {
       "__id__": 25
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -897,7 +897,7 @@
     "node": {
       "__id__": 28
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -997,7 +997,7 @@
     "node": {
       "__id__": 31
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1097,7 +1097,7 @@
     "node": {
       "__id__": 34
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1197,7 +1197,7 @@
     "node": {
       "__id__": 37
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1297,7 +1297,7 @@
     "node": {
       "__id__": 40
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1397,7 +1397,7 @@
     "node": {
       "__id__": 43
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1497,7 +1497,7 @@
     "node": {
       "__id__": 46
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1597,7 +1597,7 @@
     "node": {
       "__id__": 49
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1697,7 +1697,7 @@
     "node": {
       "__id__": 52
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1797,7 +1797,7 @@
     "node": {
       "__id__": 55
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1897,7 +1897,7 @@
     "node": {
       "__id__": 58
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -1963,7 +1963,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": -11.633,
-      "y": 5.628,
+      "y": 4.858,
       "z": -14.832
     },
     "_lrot": {
@@ -1997,7 +1997,7 @@
     "node": {
       "__id__": 61
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -2097,7 +2097,7 @@
     "node": {
       "__id__": 64
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
@@ -2197,7 +2197,7 @@
     "node": {
       "__id__": 67
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": null,
     "_materials": [
       {
