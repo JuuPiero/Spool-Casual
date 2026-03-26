@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider, Component, ITriggerEvent, Node, tween, Vec3 } from 'cc';
+import { _decorator, BoxCollider, Component, ITriggerEvent, Node, tween, Vec3, Quat } from 'cc';
 import { SlotManager } from './SlotManager';
 import { ServiceLocator } from '../ServiceLocator';
 import { Wool } from './Wool';
@@ -19,6 +19,30 @@ export class MatchZone extends Component {
 
 
     private collider: BoxCollider;
+
+    public contains(point: Vec3): boolean {
+        if (!this.collider) {
+            return false;
+        }
+
+        // Convert world point to the local space of matchZone node
+        const localPoint = new Vec3();
+        this.node.inverseTransformPoint(localPoint, point);
+
+        const localCenter = this.collider.center;
+        const halfSize = this.collider.size.clone().multiplyScalar(0.5);
+
+        const dx = Math.abs(localPoint.x - localCenter.x);
+        const dy = Math.abs(localPoint.y - localCenter.y);
+        const dz = Math.abs(localPoint.z - localCenter.z);
+
+        // Make hit test slightly tolerant to reduce misses.
+        const tolerance = 0.01;
+
+        return dx <= halfSize.x + tolerance &&
+            dy <= halfSize.y + tolerance &&
+            dz <= halfSize.z + tolerance;
+    }
 
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
@@ -70,13 +94,7 @@ export class MatchZone extends Component {
                     const currentFrom = wool.node.worldPosition.clone();
                     const mid = currentFrom.clone().add(to).multiplyScalar(0.5);
                     mid.x += 1.5;
-                    // const dynamicPoints = this.GetBezierPoints(currentFrom, mid, to, 30);
-
-                    // const maxIndex = Math.floor(t.value * (dynamicPoints.length - 1));
-                    // const currentPoints = dynamicPoints.slice(0, maxIndex + 1);
-
-                    // Gizmos.instance.DrawPath(currentPoints, wool.color);
-                    spool.roolWool(wool)
+                    spool.collectWool(wool)
                     // active spool
                     const activeCount = Math.floor(t.value * spool.woolsView.length);
 
@@ -98,7 +116,8 @@ export class MatchZone extends Component {
                             .to(0.5, {
                                 scale: new Vec3(0, currentScale.y, currentScale.z)
                             }).call(() => {
-                                wool.node.active = false
+                                // wool.node.active = false
+                                wool.node.destroy()
                             })
                             .start();
                     }

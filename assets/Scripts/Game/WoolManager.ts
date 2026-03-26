@@ -4,7 +4,6 @@ import { Spline } from '../Spline';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
-import { SplineAnimate } from '../SplineAnimate';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -74,6 +73,9 @@ export class WoolManager extends Component {
     private isMoving: boolean = false;
     private distances: number[] = []; // Lưu khoảng cách tương đối giữa các item
 
+
+    public isCollecting = false
+
     protected start(): void {
         if (!this.splineInstantiate) {
             this.splineInstantiate = this.node.getComponent(SplineInstantiate);
@@ -92,7 +94,6 @@ export class WoolManager extends Component {
                 threadIndex++;
             }
         }
-        // this.splineInstantiate.items.for
 
 
         if (this.splineInstantiate && this.splineInstantiate.items.length > 0) {
@@ -104,11 +105,6 @@ export class WoolManager extends Component {
         }
     }
 
-    public remove(wool: Wool) {
-        // const index = this.splineInstantiate.items.indexOf(wool.getComponent(SplineAnimate))
-        // this.splineInstantiate.items.splice(index, 1)
-    }
-
     protected update(dt: number): void {
         if (!this.isMoving) return;
         if (!this.splineInstantiate) return;
@@ -117,7 +113,6 @@ export class WoolManager extends Component {
         if (items.length === 0) return;
 
         if (this.maintainFormation) {
-            // Chế độ đoàn tàu: chỉ di chuyển item đầu, các item khác follow theo offset
             const leadItem = items[0];
             if (leadItem && leadItem.isValid) {
                 const currentDist = leadItem.getDistance();
@@ -143,7 +138,6 @@ export class WoolManager extends Component {
                 }
             }
         } else {
-            // Chế độ bình thường: mỗi item di chuyển độc lập
             for (const item of items) {
                 if (item && item.isValid && item.isMovingNow()) {
                     const currentDist = item.getDistance();
@@ -181,9 +175,7 @@ export class WoolManager extends Component {
         }
     }
 
-    /**
-     * Bắt đầu di chuyển
-     */
+    
     public startMoving(): void {
         if (!this.splineInstantiate) return;
 
@@ -191,12 +183,10 @@ export class WoolManager extends Component {
         const items = this.splineInstantiate.getAllItems();
 
         if (this.maintainFormation) {
-            // Chỉ start item đầu
             if (items.length > 0 && items[0]) {
                 items[0].startMoving();
             }
         } else {
-            // Start tất cả items
             for (const item of items) {
                 if (item && item.isValid) {
                     item.startMoving();
@@ -233,7 +223,7 @@ export class WoolManager extends Component {
             if (item && item.isValid) {
                 const originalDistance = this.splineInstantiate.useUniformSpacing
                     ? (i / this.splineInstantiate.count + this.splineInstantiate.startOffset) % 1 * item.getTotalLength()
-                    : 0; // Có thể lưu lại startDistance từ lúc instantiate
+                    : 0; 
                 item.setDistance(originalDistance);
             }
         }

@@ -85,6 +85,7 @@ export class SplineInstantiate extends Component {
 
             // Instantiate object
             const instance = instantiate(this.itemToInstantiate);
+            instance.name = `item_${i}`
             
             // Set parent
             instance.setParent(this.parentNode);

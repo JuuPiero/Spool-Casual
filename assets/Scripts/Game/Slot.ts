@@ -11,7 +11,7 @@ export class Slot extends Component {
 
     public isAvailable(): boolean {
 
-        return this.spool === null
+        return !this.spool
     }
 
     public setSpool(spool: Spool) {
