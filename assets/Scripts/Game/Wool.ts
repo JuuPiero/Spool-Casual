@@ -49,10 +49,10 @@ export class Wool extends Component {
         const posA = this.node?.worldPosition;
         const posB = this.matchZone.node?.worldPosition;
         const distance = Vec3.distance(posA, posB);
-        if (distance < 4) {
+        if (distance < 0.1) {
             const slots = ServiceLocator.get(SlotManager).slots
             for (const slot of slots) {
-                if (slot.spool && slot.spool.color.equals(this.color)) {
+                if (slot.spool && !slot.spool.isFull() && slot.spool.color.equals(this.color)) {
                     console.log('matched');
                     this.isRolling = true
                     slot.spool.roolWool(this)

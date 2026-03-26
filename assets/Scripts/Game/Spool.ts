@@ -121,6 +121,9 @@ export class Spool extends Clickable {
     //         //TODO: cuộn đủ len
     //     }
     // }
+    public isFull() {
+        return this.count == this.capacity
+    }
     public roolWool(wool: Wool) {
         if (this.isFlying) {
             this.scheduleOnce(() => {
@@ -144,6 +147,7 @@ export class Spool extends Clickable {
         tween(t)
             .to(0.5, { value: 1 }, {
                 onUpdate: () => {
+                    if(!this.node) return
                     const total = points.length - 1;
                     const exactIndex = t.value * total;
 
@@ -219,6 +223,7 @@ export class Spool extends Clickable {
 
         if (this.count === this.capacity) {
             // TODO: full spool
+            this.node.destroy()
         }
     }
     public drawPath(points: Vec3[], color: Color | null = null) {
