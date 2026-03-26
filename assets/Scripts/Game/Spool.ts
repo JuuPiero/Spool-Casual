@@ -54,6 +54,9 @@ export class Spool extends Clickable {
 
     public slot: Slot
 
+
+    public spoolManager: SpoolManager
+
     protected start(): void {
 
         this.renderers.forEach(renderer => {
@@ -71,6 +74,7 @@ export class Spool extends Clickable {
             this.inActiveView.active = true
 
         }
+        this.spoolManager = ServiceLocator.get(SpoolManager)
     }
     
     public isFull() {
@@ -82,6 +86,7 @@ export class Spool extends Clickable {
         }
 
         this.isCollecting = true;
+        wool.isCollecting = true
         const previousCount = this.count;
         this.count = Math.min(this.capacity, this.count + 1);
 
@@ -145,7 +150,8 @@ export class Spool extends Clickable {
             })
             .call(() => {
                 this.drawPath([]);
-                wool.node.active = false;
+                // wool.node.active = false;
+                wool.collect()
                 this.isCollecting = false;
                 this.syncWoolsView();
             })
@@ -153,10 +159,16 @@ export class Spool extends Clickable {
 
         if (this.count === this.capacity) {
             // TODO: full spool
+            // this.spoolManager
+            this.spoolManager.remove(this)
             this.slot.spool = null
             this.node.destroy();
+            this.spoolManager.checkWin()
+            // if()
         }
     }
+
+    
     public drawPath(points: Vec3[], color: Color | null = null) {
         if (!this.line) return;
 
@@ -202,7 +214,7 @@ export class Spool extends Clickable {
 
 
         const slotManager = ServiceLocator.get(SlotManager)
-        const spoolManager = ServiceLocator.get(SpoolManager)
+        // const spoolManager = ServiceLocator.get(SpoolManager)
 
         const slot = slotManager.getAvailableSlot()
         if (!slot) {
@@ -210,7 +222,7 @@ export class Spool extends Clickable {
             return;
         }
 
-        const spool = spoolManager.getSpool(this.row - 1, this.col)
+        const spool = this.spoolManager.getSpool(this.row - 1, this.col)
         console.log(`Clicked ${this.row}, ${this.col}`)
 
         if (spool) {
@@ -223,9 +235,9 @@ export class Spool extends Clickable {
         this.isInSlot = true
         this.slot = slot
 
-        const index = spoolManager.spools.indexOf(this)
-        spoolManager.spools.splice(index, 1)
-
+        // const index = this.spoolManager.spools.indexOf(this)
+        // this.spoolManager.spools.splice(index, 1)
+      
 
         const targetPos = slot.node.worldPosition.clone();
         targetPos.y = this.node.y
@@ -289,7 +301,7 @@ export class Spool extends Clickable {
             if (s === this) continue;
 
             // cùng cột và nằm trên
-            if (s.col === this.col && s.row > this.row) {
+            if (s.col === this.col && s.row > this.row && !s.isInSlot) {
                 return true;
             }
         }

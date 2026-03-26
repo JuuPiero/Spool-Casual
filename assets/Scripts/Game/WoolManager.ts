@@ -4,64 +4,18 @@ import { Spline } from '../Spline';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
+import { SubRay } from './SubRay';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
 export class WoolManager extends Component {
-
-    // @property(CCInteger)
-    // public maxColumns: number = 5;
-
-    // @property(CCFloat)
-    // public speed: number = 200;
-
-    // @property(CCFloat)
-    // public spacing: number = 5;
-
-    // public wools: Wool[] = [];
-
-    // public spline: Spline
-
-
-    // public woolByColor: Color[] = []
-
-    // public getStartPos(): Vec3 {
-    //     return this.spline.points[0].position.clone()
-    // }
-
-    // protected onLoad(): void {
-    //     ServiceLocator.register(WoolManager, this)
-    //     this.spline = this.getComponent(Spline)
-    // }
-
-
-    // protected start(): void {
-
-    //     const samples = this.spline.getSamples(300);
-    //     this.spline.buildLengthTable(samples);
-
-    //     const items = this.node.getComponent(SplineInstantiate).items
-
-
-    //     for (let i = 0; i < items.length; i++) {
-    //         const wool = items[i].getComponent(SplineAnimate)
-    //         if(wool) {
-    //             wool.init(this.spline, samples, 0)
-    //             // console.log('here');
-    //             // wool.init(samples, i * this.spacing, this.speed, this.spline);
-    //             // wool.setColor(spools[i].color);
-    //             // wool.init(samples, i * this.spacing, this.speed, this.spline);
-    //             // this.wools.push(wool);
-    //         }
-    //     }
-    // }
 
   
 
     @property({ type: SplineInstantiate, tooltip: "Reference đến SplineInstantiate" })
     public splineInstantiate: SplineInstantiate = null!;
 
-    @property({ tooltip: "Tốc độ di chuyển của đoàn tàu (đơn vị: khoảng cách/giây)" })
+    @property({})
     public speed: number = 5;
 
     @property({ tooltip: "Tự động di chuyển khi start" })
@@ -73,8 +27,19 @@ export class WoolManager extends Component {
     private isMoving: boolean = false;
     private distances: number[] = []; // Lưu khoảng cách tương đối giữa các item
 
+    @property({type: SubRay})
+    public subRays: SubRay[] = []
+
 
     public isCollecting = false
+
+
+    public wools: Wool[] = []
+
+    protected onLoad(): void {
+        ServiceLocator.register(WoolManager, this)
+    }
+
 
     protected start(): void {
         if (!this.splineInstantiate) {
@@ -90,7 +55,9 @@ export class WoolManager extends Component {
             const count = base + (i < extra ? 1 : 0);
             spoolManager.spools[i].capacity = count
             for (let j = 0; j < count; j++) {
-                this.splineInstantiate.items[threadIndex].getComponent(Wool).setColor(spoolManager.spools[i].color)
+                const wool = this.splineInstantiate.items[threadIndex].getComponent(Wool)
+                wool.setColor(spoolManager.spools[i].color)
+                this.wools.push(wool)
                 threadIndex++;
             }
         }
@@ -125,7 +92,6 @@ export class WoolManager extends Component {
 
                 leadItem.setDistance(newDist);
 
-                // Cập nhật các item khác dựa vào offset đã lưu
                 for (let i = 1; i < items.length; i++) {
                     const item = items[i];
                     if (item && item.isValid) {
@@ -174,6 +140,26 @@ export class WoolManager extends Component {
             this.distances.push(relativeDistance);
         }
     }
+
+    public updateFormation(): void {
+    if (this.maintainFormation && this.splineInstantiate) {
+        this.calculateRelativeDistances();
+        
+        if (this.isMoving) {
+            const items = this.splineInstantiate.getAllItems();
+            for (const item of items) {
+                if (item && item.isValid && !item.isMovingNow()) {
+                    item.startMoving();
+                }
+            }
+        }
+    }
+}
+
+// Hoặc public hóa method calculateRelativeDistances
+public recalculateDistances(): void {
+    this.calculateRelativeDistances();
+}
 
     
     public startMoving(): void {

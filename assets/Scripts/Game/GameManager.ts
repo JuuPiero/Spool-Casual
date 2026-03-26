@@ -4,6 +4,7 @@ import { ServiceLocator } from '../ServiceLocator';
 import { LevelData } from './LevelData';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
+import { NavigationContainer } from '../Navigation/NavigationContainer';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -25,5 +26,6 @@ export class GameManager extends Component {
 
     installGame = () => {
         sys.openURL(this.gameConfig.storeUrl)
+         ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
     }
 }

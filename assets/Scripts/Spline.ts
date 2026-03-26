@@ -11,15 +11,16 @@ export class Spline extends Component {
 
     // @property({ type: Node })
     // public pointContainer: Node
-
+    public gizmos: Gizmos
 
     @property(CCBoolean)
     public isLoop: boolean = false;
 
     protected start(): void {
         // this.points = this.pointContainer.children
-        const samples = this.getSamples(40);
-        Gizmos.instance.DrawPath(samples);
+        const samples = this.getSamples(80);
+        this.gizmos = this.node.getComponent(Gizmos)
+        this.gizmos?.DrawPath(samples);
     }
 
     // =========================

@@ -90,8 +90,7 @@ export class SplineInstantiate extends Component {
             // Set parent
             instance.setParent(this.parentNode);
             
-            // Thêm component SplineAnimate
-            const splineAnimate = instance.addComponent(SplineAnimate);
+            const splineAnimate = instance.getComponent(SplineAnimate);
             splineAnimate.autoStart = false;
             splineAnimate.init(this.spline, samples, startDistance);
             

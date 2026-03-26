@@ -4,14 +4,14 @@ const { ccclass, property } = _decorator;
 @ccclass('Gizmos')
 export class Gizmos extends Component {
 
-    public static instance: Gizmos;
+    // public static instance: Gizmos;
 
 
     private line: Line
 
 
     protected onLoad(): void {
-        Gizmos.instance = this
+        // Gizmos.instance = this
         this.line = this.node.getComponent(Line)
         // this.line.positions. 
     }

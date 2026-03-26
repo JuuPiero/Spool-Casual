@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider, Color, Component, log, MeshRenderer, Node, Quat, Vec3 } from 'cc';
+import { _decorator, BoxCollider, CCBoolean, Color, Component, log, MeshRenderer, Node, Quat, Vec3 } from 'cc';
 import { Spline } from '../Spline';
 import { ServiceLocator } from '../ServiceLocator';
 import { WoolManager } from './WoolManager';
@@ -17,36 +17,20 @@ export class Wool extends Component {
     @property({ type: Node })
     public woolItems: Node[] = []
 
+    @property({ type: CCBoolean })
+    public isCollected = false
+    @property({ type: CCBoolean })
+    public isCollecting = false
 
-    private isCollecting = false
-
-
-
-    public matchZone: MatchZone
-
-    protected start(): void {
-        this.matchZone = ServiceLocator.get(MatchZone)
+    public collect() {
+        this.woolItems.forEach(item => {
+            item.active = false
+        })
+        this.isCollected = true
+        this.isCollecting = false
     }
-
 
     
-    update(dt: number) {
-        if (this.isCollecting) return;
-
-        if (!this.matchZone || !this.matchZone.contains(this.node.worldPosition)) {
-            return;
-        }
-
-        const slots = ServiceLocator.get(SlotManager).slots;
-        for (const slot of slots) {
-            if (slot.spool && this.isMatched(slot.spool)) {
-                console.log('matched');
-                this.isCollecting = true;
-                slot.spool.collectWool(this);
-                return;
-            }
-        }
-    }
     public isMatched(spool: Spool) {
         return !spool.isCollecting && !spool.isFull() && spool.color.equals(this.color)
     }

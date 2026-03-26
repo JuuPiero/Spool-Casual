@@ -5,6 +5,8 @@ import { GameConfig } from './GameConfigSA';
 import { WoolManager } from './WoolManager';
 import { getRandomColor } from '../ultils';
 import { GameManager } from './GameManager';
+import { EventBus } from '../EventBus';
+import { GameEvent } from '../GameEvent';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -83,6 +85,19 @@ export class SpoolManager extends Component {
             }
         }
 
+    }
+
+    public remove(spool: Spool) {
+        const index = this.spools.indexOf(spool)
+        this.spools.splice(index, 1)
+        this.spoolsMap.delete(`Spool_(${spool.row}, ${spool.col})`)
+    }
+
+    public checkWin() {
+        if(this.spools.length == 0) {
+            console.log('win');
+            EventBus.emit(GameEvent.LEVEL_COMPLETED)
+        }
     }
 
 

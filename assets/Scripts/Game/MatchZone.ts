@@ -54,11 +54,14 @@ export class MatchZone extends Component {
         ServiceLocator.register(MatchZone, this)
         this.collider = this.getComponent(BoxCollider);
         if (this.collider) {
-            this.collider.on('onTriggerEnter', this.onTriggerEnter, this);
+            // this.collider.on('onTriggerEnter', this.onTriggerEnter, this);
+            this.collider.on('onTriggerStay', this.onTriggerEnter, this);
+
         }
     }
     protected onDestroy(): void {
-        this.collider.off('onTriggerEnter', this.onTriggerEnter, this);
+        // this.collider.off('onTriggerEnter', this.onTriggerEnter, this);
+            this.collider.off('onTriggerStay', this.onTriggerEnter, this);
     }
 
     onTriggerEnter(event: ITriggerEvent) {
@@ -66,79 +69,76 @@ export class MatchZone extends Component {
         const wool = event.otherCollider.getComponent(Wool)
         if (!wool) return
         for (const slot of slots) {
-            if (slot.spool && !slot.spool.isCollecting) {
-                if (slot.spool.color.equals(wool.color)) {
-                    this.playCollectAnimation(wool, slot.spool, slot);
-                    return;
-                }
-
+            if (slot.spool && !slot.spool.isCollecting && !slot.spool.isFull() && !wool.isCollecting && !wool.isCollected && slot.spool.color.equals(wool.color)) {
+                slot.spool.collectWool(wool);
+                break; // Collect to first matching slot only
             }
         }
     }
 
     
-    public playCollectAnimation(wool: Wool, spool: Spool, slot: Slot) {
-        let t = { value: 0 };
-        spool.isCollecting = true;
-        // reset spool view
-        spool.woolsView.forEach(item => {
-            item.active = false;
-            item.setScale(Vec3.ZERO);
-        });
+    // public playCollectAnimation(wool: Wool, spool: Spool, slot: Slot) {
+    //     let t = { value: 0 };
+    //     spool.isCollecting = true;
+    //     // reset spool view
+    //     spool.woolsView.forEach(item => {
+    //         item.active = false;
+    //         item.setScale(Vec3.ZERO);
+    //     });
 
-        tween(t)
-            .to(0.6, { value: 1 }, {
+    //     tween(t)
+    //         .to(0.6, { value: 1 }, {
 
-                onUpdate: () => {
-                    const to = spool.node.worldPosition.clone();
-                    const currentFrom = wool.node.worldPosition.clone();
-                    const mid = currentFrom.clone().add(to).multiplyScalar(0.5);
-                    mid.x += 1.5;
-                    spool.collectWool(wool)
-                    // active spool
-                    const activeCount = Math.floor(t.value * spool.woolsView.length);
+    //             onUpdate: () => {
+    //                 const to = spool.node.worldPosition.clone();
+    //                 const currentFrom = wool.node.worldPosition.clone();
+    //                 const mid = currentFrom.clone().add(to).multiplyScalar(0.5);
+    //                 mid.x += 1.5;
+    //                 spool.collectWool(wool)
+    //                 // active spool
+    //                 const activeCount = Math.floor(t.value * spool.woolsView.length);
 
-                    for (let i = 0; i < activeCount; i++) {
-                        const item = spool.woolsView[i];
-                        if (!item.active) {
-                            item.active = true;
-                            tween(item)
-                                .to(0.2, { scale: Vec3.ONE })
-                                .start();
-                        }
-                        spool.count++
-                    }
-                    const woolItemsLenght = Math.floor(t.value * wool.woolItems.length);
-                    for (let i = 0; i < woolItemsLenght; i++) {
-                        const item = wool.woolItems[i];
-                        const currentScale = item.scale.clone(); // lấy scale hiện tại
-                        tween(item)
-                            .to(0.5, {
-                                scale: new Vec3(0, currentScale.y, currentScale.z)
-                            }).call(() => {
-                                // wool.node.active = false
-                                wool.node.destroy()
-                            })
-                            .start();
-                    }
-                }
-            })
-            .call(() => {
-                // Gizmos.instance.DrawPath([]);
-                // this.woolManager.remove(wool);
-                // this.woolManager.remove(wool)
-                // wool.node.destroy();
-                // wool.node.active = false
-                // slot.spool = null;
-                // spool.node.destroy();
-            })
-            .call(() => {
-                // console.log('check win');
-                // if (this.woolManager.wools.length == 0) {
-                //     EventBus.emit(GameEvent.LEVEL_COMPLETED)
-                //     ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen');
-                // }
-            })
-            .start();
-    }
+    //                 for (let i = 0; i < activeCount; i++) {
+    //                     const item = spool.woolsView[i];
+    //                     if (!item.active) {
+    //                         item.active = true;
+    //                         tween(item)
+    //                             .to(0.2, { scale: Vec3.ONE })
+    //                             .start();
+    //                     }
+    //                     spool.count++
+    //                 }
+    //                 const woolItemsLenght = Math.floor(t.value * wool.woolItems.length);
+    //                 for (let i = 0; i < woolItemsLenght; i++) {
+    //                     const item = wool.woolItems[i];
+    //                     const currentScale = item.scale.clone(); // lấy scale hiện tại
+    //                     tween(item)
+    //                         .to(0.5, {
+    //                             scale: new Vec3(0, currentScale.y, currentScale.z)
+    //                         }).call(() => {
+    //                             // wool.node.active = false
+    //                             wool.node.destroy()
+    //                         })
+    //                         .start();
+    //                 }
+    //             }
+    //         })
+    //         .call(() => {
+    //             // Gizmos.instance.DrawPath([]);
+    //             // this.woolManager.remove(wool);
+    //             // this.woolManager.remove(wool)
+    //             // wool.node.destroy();
+    //             // wool.node.active = false
+    //             // slot.spool = null;
+    //             // spool.node.destroy();
+    //         })
+    //         .call(() => {
+    //             // console.log('check win');
+    //             // if (this.woolManager.wools.length == 0) {
+    //             //     EventBus.emit(GameEvent.LEVEL_COMPLETED)
+    //             //     ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen');
+    //             // }
+    //         })
+    //         .start();
+    // }
 }
