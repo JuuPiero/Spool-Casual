@@ -107,7 +107,7 @@ export class Spool extends Clickable {
         let t = { value: 0 };
 
         tween(t)
-            .to(0.5, { value: 1 }, {
+            .to(0.25, { value: 1 }, {
                 onUpdate: () => {
                     if (!this.node) return;
                     const total = points.length - 1;
@@ -128,28 +128,22 @@ export class Spool extends Clickable {
                     currentPoints.push(lastPoint);
                     this.drawPath(currentPoints, this.color);
 
-                    const currentActive = previousCount + Math.floor(t.value * newlyAdded);
-                    for (let i = previousCount; i < currentActive; i++) {
-                        const item = this.woolsView[i];
-                        if (item && !item.active) {
-                            item.active = true;
-                            item.setScale(Vec3.ZERO);
-                            tween(item)
-                                .to(0.2, { scale: Vec3.ONE })
-                                .start();
-                        }
-                    }
 
-                    const woolItemsLenght = Math.floor(t.value * raySlot.wool.woolItems.length);
-                    for (let i = 0; i < woolItemsLenght; i++) {
+                    const totalItems = raySlot.wool.woolItems.length;
+
+                    for (let i = 0; i < totalItems; i++) {
                         const item = raySlot.wool.woolItems[i];
+
+                        const itemProgress = t.value * totalItems - i;
+
+                        const clamped = Math.max(0, Math.min(1, itemProgress));
+
+                        const scaleX = 1 - clamped;
+
                         const currentScale = item.scale.clone();
-                        tween(item)
-                            .to(0.5, {
-                                scale: new Vec3(0, currentScale.y, currentScale.z)
-                            })
-                            .start();
+                        item.setScale(new Vec3(scaleX, currentScale.y, currentScale.z));
                     }
+                   
                 }
             })
             .call(() => {
@@ -163,8 +157,7 @@ export class Spool extends Clickable {
             .start();
 
         if (this.count === this.capacity) {
-            // TODO: full spool
-            // this.spoolManager
+
             this.spoolManager.remove(this)
             this.slot.spool = null
             this.node.destroy();
@@ -173,7 +166,7 @@ export class Spool extends Clickable {
         }
     }
 
-    
+
     public drawPath(points: Vec3[], color: Color | null = null) {
         if (!this.line) return;
 
@@ -240,9 +233,7 @@ export class Spool extends Clickable {
         this.isInSlot = true
         this.slot = slot
 
-        // const index = this.spoolManager.spools.indexOf(this)
-        // this.spoolManager.spools.splice(index, 1)
-      
+
 
         const targetPos = slot.node.worldPosition.clone();
         targetPos.y = this.node.y
@@ -265,25 +256,25 @@ export class Spool extends Clickable {
     }
 
     private syncWoolsView() {
-        if(!this.node) return
-        if (this.woolsView?.length === 0 || this.capacity <= 0) {
-            return;
-        }
+        if (!this.node) return;
+        if (!this.woolsView || this.woolsView.length === 0 || this.capacity <= 0) return;
 
-        const itemCapacity = this.capacity / this.woolsView.length;
-        const fullItems = Math.floor(this.count / itemCapacity);
-        const partialAmount = this.count - fullItems * itemCapacity;
-        const partialRatio = Math.min(1, Math.max(0, partialAmount / itemCapacity));
+        const capacityPerItem = this.capacity / this.woolsView.length;
 
-        for (let i = 0; i < this.woolsView?.length; i++) {
+        for (let i = 0; i < this.woolsView.length; i++) {
             const item = this.woolsView[i];
 
-            if (i < fullItems) {
+            // lượng fill của item này
+            const filled = this.count - i * capacityPerItem;
+
+            // clamp từ 0 → capacityPerItem
+            const clamped = Math.max(0, Math.min(capacityPerItem, filled));
+
+            const ratio = clamped / capacityPerItem;
+
+            if (ratio > 0) {
                 item.active = true;
-                item.setScale(Vec3.ONE);
-            } else if (i === fullItems && partialRatio > 0) {
-                item.active = true;
-                item.setScale(new Vec3(partialRatio, partialRatio, partialRatio));
+                item.setScale(new Vec3(ratio, ratio, ratio));
             } else {
                 item.active = false;
                 item.setScale(Vec3.ZERO);
@@ -298,7 +289,6 @@ export class Spool extends Clickable {
         this.woolsView.forEach(item => {
             item.active = false
         })
-        // this.syncWoolsView();
     }
 
 

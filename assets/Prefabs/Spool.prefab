@@ -1602,7 +1602,10 @@
       }
     ],
     "_visFlags": 0,
-    "_texture": null,
+    "_texture": {
+      "__uuid__": "24a704da-2867-446d-8d1a-5e920c75e09d@6c48a",
+      "__expectedType__": "cc.Texture2D"
+    },
     "_material": null,
     "_worldSpace": false,
     "_positions": [],

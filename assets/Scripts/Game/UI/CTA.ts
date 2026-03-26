@@ -1,12 +1,11 @@
-import { _decorator, Button, Component, Label, Node, tween, Vec3 } from 'cc';
+import { _decorator, Button, Component, Node, tween } from 'cc';
 import { ServiceLocator } from '../../ServiceLocator';
-import { ScreenBase } from '../../Navigation/ScreenBase';
 import { GameManager } from '../GameManager';
 const { ccclass, property } = _decorator;
 
-@ccclass('EndGameScreen')
-export class EndGameScreen extends ScreenBase {
-    @property({type: Button})
+@ccclass('CTA')
+export class CTA extends Component {
+     @property({type: Button})
     public installBtn: Button = null;
 
     @property({type: Node})
@@ -28,16 +27,16 @@ export class EndGameScreen extends ScreenBase {
     }
 
     protected onLoad(): void {
-        this.installBtn?.node.on(Button.EventType.CLICK, this.install, this);
-    }
-    protected onDestroy(): void {
-        this.installBtn?.node.off(Button.EventType.CLICK, this.install, this);
-    }
-
-    install() { 
-        ServiceLocator.get(GameManager).installGame()
-    }
+            this.installBtn?.node.on(Button.EventType.CLICK, this.install, this);
+        }
+        protected onDestroy(): void {
+            this.installBtn?.node.off(Button.EventType.CLICK, this.install, this);
+        }
     
+        install() { 
+            ServiceLocator.get(GameManager).installGame()
+        }
+
 }
 
 

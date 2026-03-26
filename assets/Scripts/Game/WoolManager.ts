@@ -6,12 +6,13 @@ import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
 import { SubRay } from './SubRay';
 import { RaySlot } from './RaySlot';
+import { SplineAnimate } from '../SplineAnimate';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
 export class WoolManager extends Component {
 
-  
+
 
     @property({ type: SplineInstantiate, tooltip: "Reference đến SplineInstantiate" })
     public splineInstantiate: SplineInstantiate = null!;
@@ -28,17 +29,16 @@ export class WoolManager extends Component {
     private isMoving: boolean = false;
     private distances: number[] = []; // Lưu khoảng cách tương đối giữa các item
 
-    @property({type: SubRay})
+    @property({ type: SubRay })
     public subRays: SubRay[] = []
 
 
     public isCollecting = false
 
 
-    // public wools: Wool[] = []
 
 
-    @property({type: RaySlot})
+    @property({ type: RaySlot })
     public slots: RaySlot[] = []
 
     protected onLoad(): void {
@@ -52,31 +52,57 @@ export class WoolManager extends Component {
         }
         const spoolManager = ServiceLocator.get(SpoolManager)
 
-        this.splineInstantiate.items.forEach(item => {
-            this.slots.push(item.node.getComponent(RaySlot))
-        })
+        this.scheduleOnce(() => {
 
-        const base = Math.floor(this.splineInstantiate.items.length / spoolManager.spools.length); // 8
-        const extra = this.splineInstantiate.items.length % spoolManager.spools.length; // 4
-        let threadIndex = 0;
-        for (let i = 0; i < spoolManager.spools.length; i++) {
-            const count = base + (i < extra ? 1 : 0);
-            spoolManager.spools[i].capacity = count
-            for (let j = 0; j < count; j++) {
-                const raySlot = this.splineInstantiate.items[threadIndex].getComponent(RaySlot)
-                raySlot.wool?.setColor(spoolManager.spools[i].color)
-                threadIndex++;
+            this.splineInstantiate.items.forEach(item => {
+                this.slots.push(item.getComponent(RaySlot))
+            });
+
+            const allItems: SplineAnimate[] = [...this.splineInstantiate.items];
+
+            for (let i = 0; i < this.subRays.length; i++) {
+                const sub = this.subRays[i];
+                if (!sub.splineInstantiate) continue;
+
+                const items = sub.splineInstantiate.items;
+
+                for (let j = 0; j < items.length; j++) {
+                    allItems.push(items[j]);
+                }
             }
-        }
 
+            const total = allItems.length;
 
-        if (this.splineInstantiate && this.splineInstantiate.items.length > 0) {
-            this.calculateRelativeDistances();
+            const spoolManager = ServiceLocator.get(SpoolManager);
 
-            if (this.autoMove) {
-                this.startMoving();
+            const base = Math.floor(total / spoolManager.spools.length);
+            const extra = total % spoolManager.spools.length;
+
+            let index = 0;
+
+            for (let i = 0; i < spoolManager.spools.length; i++) {
+                const count = base + (i < extra ? 1 : 0);
+                spoolManager.spools[i].capacity = count;
+
+                for (let j = 0; j < count; j++) {
+                    const raySlot = allItems[index].getComponent(RaySlot);
+                    raySlot?.wool?.setColor(spoolManager.spools[i].color);
+                    index++;
+                }
             }
-        }
+
+            // logic tiếp theo giữ nguyên
+            if (this.splineInstantiate && allItems.length > 0) {
+                this.calculateRelativeDistances();
+
+                if (this.autoMove) {
+                    this.startMoving();
+                }
+            }
+
+        }, 0);
+
+
     }
 
     protected update(dt: number): void {
@@ -149,26 +175,26 @@ export class WoolManager extends Component {
     }
 
     public updateFormation(): void {
-    if (this.maintainFormation && this.splineInstantiate) {
-        this.calculateRelativeDistances();
-        
-        if (this.isMoving) {
-            const items = this.splineInstantiate.getAllItems();
-            for (const item of items) {
-                if (item && item.isValid && !item.isMovingNow()) {
-                    item.startMoving();
+        if (this.maintainFormation && this.splineInstantiate) {
+            this.calculateRelativeDistances();
+
+            if (this.isMoving) {
+                const items = this.splineInstantiate.getAllItems();
+                for (const item of items) {
+                    if (item && item.isValid && !item.isMovingNow()) {
+                        item.startMoving();
+                    }
                 }
             }
         }
     }
-}
 
-// Hoặc public hóa method calculateRelativeDistances
-public recalculateDistances(): void {
-    this.calculateRelativeDistances();
-}
+    // Hoặc public hóa method calculateRelativeDistances
+    public recalculateDistances(): void {
+        this.calculateRelativeDistances();
+    }
 
-    
+
     public startMoving(): void {
         if (!this.splineInstantiate) return;
 
@@ -216,7 +242,7 @@ public recalculateDistances(): void {
             if (item && item.isValid) {
                 const originalDistance = this.splineInstantiate.useUniformSpacing
                     ? (i / this.splineInstantiate.count + this.splineInstantiate.startOffset) % 1 * item.getTotalLength()
-                    : 0; 
+                    : 0;
                 item.setDistance(originalDistance);
             }
         }

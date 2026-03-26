@@ -50,14 +50,17 @@ export class MatchZone extends Component {
         ServiceLocator.register(MatchZone, this)
         this.collider = this.getComponent(BoxCollider);
         if (this.collider) {
-            // this.collider.on('onTriggerEnter', this.onTriggerEnter, this);
+            this.collider.on('onTriggerEnter', this.onTriggerEnter, this);
             this.collider.on('onTriggerStay', this.onTriggerEnter, this);
+            this.collider.on('onTriggerExit', this.onTriggerEnter, this);
 
         }
     }
     protected onDestroy(): void {
-        // this.collider.off('onTriggerEnter', this.onTriggerEnter, this);
+        this.collider.off('onTriggerEnter', this.onTriggerEnter, this);
             this.collider.off('onTriggerStay', this.onTriggerEnter, this);
+            this.collider.off('onTriggerExit', this.onTriggerEnter, this);
+
     }
 
     onTriggerEnter(event: ITriggerEvent) {
