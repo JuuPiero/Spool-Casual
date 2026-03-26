@@ -6,6 +6,7 @@ import { SpoolManager } from './SpoolManager';
 import { SpoolData } from './LevelData';
 import { Wool } from './Wool';
 import { Slot } from './Slot';
+import { RaySlot } from './RaySlot';
 const { ccclass, property } = _decorator;
 
 
@@ -64,7 +65,7 @@ export class Spool extends Clickable {
             mat.setProperty("baseColor", this.color);
         })
 
-        this.syncWoolsView();
+        // this.syncWoolsView();
 
         if (this.isBlocked()) {
             console.log("tắt spool");
@@ -72,21 +73,24 @@ export class Spool extends Clickable {
                 renderer.node.active = false
             })
             this.inActiveView.active = true
-
         }
+
+        this.woolsView.forEach(item => {
+            item.active = false
+        })
         this.spoolManager = ServiceLocator.get(SpoolManager)
     }
-    
+
     public isFull() {
         return this.count == this.capacity
     }
-    public collectWool(wool: Wool) {
+    public collectWool(raySlot: RaySlot) {
         if (this.isFlying || this.isCollecting) {
             return;
         }
 
         this.isCollecting = true;
-        wool.isCollecting = true
+        raySlot.isCollecting = true
         const previousCount = this.count;
         this.count = Math.min(this.capacity, this.count + 1);
 
@@ -94,7 +98,7 @@ export class Spool extends Clickable {
         const newlyAdded = targetWoolsCount - previousCount; // should normally be 1
 
         const to = this.node.worldPosition.clone();
-        const from = wool.node.worldPosition.clone();
+        const from = raySlot.wool.node.worldPosition.clone();
 
         const mid = from.clone().add(to).multiplyScalar(0.5);
         mid.x += 1.5;
@@ -136,9 +140,9 @@ export class Spool extends Clickable {
                         }
                     }
 
-                    const woolItemsLenght = Math.floor(t.value * wool.woolItems.length);
+                    const woolItemsLenght = Math.floor(t.value * raySlot.wool.woolItems.length);
                     for (let i = 0; i < woolItemsLenght; i++) {
-                        const item = wool.woolItems[i];
+                        const item = raySlot.wool.woolItems[i];
                         const currentScale = item.scale.clone();
                         tween(item)
                             .to(0.5, {
@@ -150,8 +154,9 @@ export class Spool extends Clickable {
             })
             .call(() => {
                 this.drawPath([]);
-                // wool.node.active = false;
-                wool.collect()
+                raySlot.wool.node.destroy()
+                raySlot.wool = null
+                raySlot.isCollecting = false
                 this.isCollecting = false;
                 this.syncWoolsView();
             })
@@ -290,7 +295,10 @@ export class Spool extends Clickable {
         this.renderers.forEach(renderer => {
             renderer.node.active = true
         })
-        this.syncWoolsView();
+        this.woolsView.forEach(item => {
+            item.active = false
+        })
+        // this.syncWoolsView();
     }
 
 

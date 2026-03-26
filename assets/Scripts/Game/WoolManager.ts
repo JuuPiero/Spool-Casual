@@ -5,6 +5,7 @@ import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
 import { SubRay } from './SubRay';
+import { RaySlot } from './RaySlot';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -34,7 +35,11 @@ export class WoolManager extends Component {
     public isCollecting = false
 
 
-    public wools: Wool[] = []
+    // public wools: Wool[] = []
+
+
+    @property({type: RaySlot})
+    public slots: RaySlot[] = []
 
     protected onLoad(): void {
         ServiceLocator.register(WoolManager, this)
@@ -47,17 +52,19 @@ export class WoolManager extends Component {
         }
         const spoolManager = ServiceLocator.get(SpoolManager)
 
+        this.splineInstantiate.items.forEach(item => {
+            this.slots.push(item.node.getComponent(RaySlot))
+        })
+
         const base = Math.floor(this.splineInstantiate.items.length / spoolManager.spools.length); // 8
         const extra = this.splineInstantiate.items.length % spoolManager.spools.length; // 4
-
         let threadIndex = 0;
         for (let i = 0; i < spoolManager.spools.length; i++) {
             const count = base + (i < extra ? 1 : 0);
             spoolManager.spools[i].capacity = count
             for (let j = 0; j < count; j++) {
-                const wool = this.splineInstantiate.items[threadIndex].getComponent(Wool)
-                wool.setColor(spoolManager.spools[i].color)
-                this.wools.push(wool)
+                const raySlot = this.splineInstantiate.items[threadIndex].getComponent(RaySlot)
+                raySlot.wool?.setColor(spoolManager.spools[i].color)
                 threadIndex++;
             }
         }

@@ -12,23 +12,22 @@ const { ccclass, property } = _decorator;
 export class Wool extends Component {
 
     @property(Color)
-    public color: Color;
+    public color: Color = new Color();
 
     @property({ type: Node })
     public woolItems: Node[] = []
 
-    @property({ type: CCBoolean })
-    public isCollected = false
-    @property({ type: CCBoolean })
-    public isCollecting = false
+    // @property({ type: CCBoolean })
+    // public isCollected = false
+    // @property({ type: CCBoolean })
 
-    public collect() {
-        this.woolItems.forEach(item => {
-            item.active = false
-        })
-        this.isCollected = true
-        this.isCollecting = false
-    }
+    // public collect() {
+    //     this.woolItems.forEach(item => {
+    //         item.active = false
+    //     })
+    //     // this.isCollected = true
+    //     // this.isCollecting = false
+    // }
 
     
     public isMatched(spool: Spool) {

@@ -5,6 +5,7 @@ import { Wool } from './Wool';
 import { ServiceLocator } from '../ServiceLocator';
 import { WoolManager } from './WoolManager';
 import { SplineAnimate } from '../SplineAnimate';
+import { RaySlot } from './RaySlot';
 const { ccclass, property } = _decorator;
 
 @ccclass('SubRay')
@@ -19,13 +20,24 @@ export class SubRay extends Component {
 
     public woolManager: WoolManager
 
+    @property({
+        type: RaySlot
+    })
+    public raySlots : RaySlot[] = []
+
     protected onLoad(): void {
         this.rayTrigger?.on('onTriggerStay', this.onTriggerEnter, this);
     }
 
 
     protected start(): void {
+        console.log('herre');
+        
         this.woolManager = ServiceLocator.get(WoolManager)
+
+        this.splineInstantiate.items.forEach(item => {
+            this.raySlots.push(item.node.getComponent(RaySlot))
+        })
 
     }
 
@@ -35,63 +47,21 @@ export class SubRay extends Component {
     }
 
 
+
     onTriggerEnter(event: ITriggerEvent) {
-        const wool = event.otherCollider.getComponent(Wool)
-        // if (!wool || !wool.isCollected) return
-        // if (!this.splineInstantiate.items.length) return
-
-        // // Lấy item cuối cùng từ SubRay
-        // const itemToMove: SplineAnimate = this.splineInstantiate.items[0]
-        // const indexToMove = this.splineInstantiate.items?.indexOf(itemToMove)
-        // // Chuyển item sang WoolManager
-        // itemToMove.node.setParent(this.woolManager.splineInstantiate.parentNode)
-
-        // // Cập nhật danh sách trong WoolManager
-        // const woolManagerItems = this.woolManager.splineInstantiate.getAllItems();
-        // const oldIndex = woolManagerItems.indexOf(wool.getComponent(SplineAnimate))
-
-        // woolManagerItems[oldIndex] = itemToMove
-
-        // // Cập nhật lại danh sách items của WoolManager (nếu cần)
-        // // Nếu SplineInstantiate có mảng items riêng, cần cập nhật nó
-
-        // // Xóa item khỏi SubRay
-        // this.splineInstantiate.items.splice(indexToMove, 1)
-
-        // // Cập nhật lại formation trong WoolManager
-        // if (this.woolManager.maintainFormation) {
-        //     this.woolManager['calculateRelativeDistances'](); // Gọi private method, cần public hóa hoặc tạo method public
-        // }
-
-        // return
-    }
-
-    public setColorsForItems(spoolColors: Color[], startIndex: number, count: number): number {
-        if (!this.splineInstantiate || !this.splineInstantiate.items) return startIndex;
-        
-        let colorIndex = 0;
-        let currentCount = 0;
-        let currentStartIndex = startIndex;
-        
-        for (let i = 0; i < this.splineInstantiate.items.length; i++) {
-            if (currentCount >= count) break;
-            
-            // Tìm spool phù hợp dựa vào currentStartIndex
-            while (colorIndex < spoolColors.length && currentStartIndex >= spoolColors.length) {
-                currentStartIndex -= spoolColors.length;
-                colorIndex++;
+        const raySlotTarget = event.otherCollider.getComponent(RaySlot)
+        if (!raySlotTarget) return
+        if(raySlotTarget.wool) return
+        if (!this.splineInstantiate.items.length) return
+        for (let i = 0; i < this.raySlots.length; i++) {
+            const element = this.raySlots[i];
+            if(element.wool) {
+                element.wool.node.setParent(raySlotTarget.node)
+                raySlotTarget.wool = element.wool
+                element.wool = null
+                return
             }
             
-            if (colorIndex < spoolColors.length) {
-                const wool = this.splineInstantiate.items[i].getComponent(Wool);
-                if (wool) {
-                    wool.setColor(spoolColors[colorIndex]);
-                }
-                currentStartIndex++;
-                currentCount++;
-            }
         }
-        
-        return startIndex + count;
     }
 }

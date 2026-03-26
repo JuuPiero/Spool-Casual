@@ -2,8 +2,6 @@ import { _decorator, CCFloat, CCInteger, Component, instantiate, Node, Prefab, V
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
-import { WoolManager } from './WoolManager';
-import { getRandomColor } from '../ultils';
 import { GameManager } from './GameManager';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
@@ -99,7 +97,6 @@ export class SpoolManager extends Component {
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
     }
-
 
 }
 
