@@ -9,23 +9,25 @@ export class EndGameScreen extends ScreenBase {
     @property({type: Button})
     public installBtn: Button = null;
 
+
     @property({type: Node})
     public logo: Node = null;
 
     protected start(): void {
         tween(this.logo)
-            .to(0.5, { scale: new Vec3(0.4, 0.4, 1.1) })
-            .to(0.5, { scale: new Vec3(0.3, 0.3, 1) }) 
+            .to(0.5, { scale: new Vec3(0.5, 0.5, 1.1) })
+            .to(0.5, { scale: new Vec3(0.6, 0.6, 1) }) 
             .union()
             .repeatForever()
             .start();
         tween(this.installBtn.node)
-            .to(0.5, { scale: new Vec3(1.1, 1.1, 1.1) }) 
-            .to(0.5, { scale: new Vec3(1, 1, 1) }) 
+            .to(0.5, { scale: new Vec3(0.7, 0.7, 1.1) }) 
+            .to(0.5, { scale: new Vec3(0.8, 0.8, 1) }) 
             .union()
             .repeatForever()
             .start();
     }
+
 
     protected onLoad(): void {
         this.installBtn?.node.on(Button.EventType.CLICK, this.install, this);

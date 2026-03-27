@@ -350,6 +350,22 @@
       "scenes": [
         "0edd335b-efa3-48e8-93ea-cba867a92e72@82003"
       ]
-    }
+    },
+    "meshSimplify": {
+      "enable": true,
+      "targetRatio": 0.6,
+      "errorRate": 0.6
+    },
+    "meshCompress": {
+      "enable": true,
+      "compress": true
+    },
+    "meshOptimize": {
+      "enable": true,
+      "vertexCache": true,
+      "vertexFetch": true
+    },
+    "tangents": 1,
+    "allowMeshDataAccess": false
   }
 }

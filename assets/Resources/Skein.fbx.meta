@@ -250,7 +250,9 @@
       "vertexFetch": true
     },
     "meshSimplify": {
-      "enable": true
+      "enable": true,
+      "targetRatio": 0.8,
+      "errorRate": 0.8
     },
     "meshCompress": {
       "enable": true,
