@@ -18,6 +18,10 @@ export class GameConfig extends bh.ScriptableAsset {
     @property(Prefab)
     public woolPrefab: Prefab
 
+    
+    @property(Prefab)
+    public ropePrefab: Prefab
+
 
     @property(CCString)
     public storeUrl: string

@@ -26,6 +26,6 @@ export class GameManager extends Component {
 
     installGame = () => {
         sys.openURL(this.gameConfig.storeUrl)
-         ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
+        // ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
     }
 }

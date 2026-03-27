@@ -1,0 +1,75 @@
+CCEffect %{
+  techniques:
+  - name: ditcumay
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      properties: &props
+        mainTexture:    { value: white }
+        mainColor:      { value: [1, 1, 1, 1], linear: true, editor: { type: color } }
+        shadowColor:      { value: [0.5, 0.5, 0.5, 0], linear: true, editor: { type: color } }
+        tiling:  { value: [1, 1], editor: { type: vector, range: [0.1, 10], step: 0.01 } }
+        fill:    { value: 1, editor: { slide: true, range: [0, 2.0], step: 0.001 } }
+}%
+
+CCProgram unlit-vs %{
+  precision mediump float;
+  #include <legacy/input>
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/local-batch>
+
+  out mediump vec2 v_uv;
+
+  mediump vec4 vert () {
+    mediump vec4 position;
+    CCVertInput(position);
+
+    mediump mat4 matWorld;
+    CCGetWorldMatrix(matWorld);
+
+    v_uv = a_texCoord;
+
+    return cc_matProj * (cc_matView * matWorld) * position;
+  }
+}%
+
+CCProgram unlit-fs %{
+  precision mediump float;
+  #include <legacy/output-standard>
+  
+  
+  in mediump vec2 v_uv;
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    mediump vec4 mainColor;
+    mediump vec4 shadowColor;
+  mediump vec2 tiling;
+
+  mediump float fill;
+  };
+
+
+  mediump vec4 frag () {
+  mediump vec2 tiledUV = v_uv * tiling;
+  mediump vec3 mask = texture(mainTexture, tiledUV).rgb;  
+	mask = SRGBToLinear(mask);
+	mediump vec4 col = mix(shadowColor, mainColor, mask.x);
+	col += mask.y;
+    col.a = 1.0;
+
+  //Effect
+  mediump float uv2 = v_uv.y ;
+  mediump float fill2 = fill;
+  if (fill > 1.0)
+  {
+    uv2 = 1.0 - v_uv.y;
+    fill2 = fill - 1.0;
+  }
+	mediump float alpha = clamp(((uv2*0.85+0.15)-(1.0-fill2))*5.0,0.0,1.0);
+	
+	if (alpha < 0.005) discard;
+
+	return CCFragOutput(col);
+  }
+}%

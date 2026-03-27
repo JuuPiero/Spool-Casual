@@ -14,8 +14,8 @@ export class EndGameScreen extends ScreenBase {
 
     protected start(): void {
         tween(this.logo)
-            .to(0.5, { scale: new Vec3(1.1, 1.1, 1.1) })
-            .to(0.5, { scale: new Vec3(1, 1, 1) }) 
+            .to(0.5, { scale: new Vec3(0.4, 0.4, 1.1) })
+            .to(0.5, { scale: new Vec3(0.3, 0.3, 1) }) 
             .union()
             .repeatForever()
             .start();

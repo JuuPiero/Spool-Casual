@@ -16,6 +16,10 @@
     "__uuid__": "e2a36323-b745-49ae-a077-dbf77a8a6410",
     "__expectedType__": "cc.Prefab"
   },
+  "ropePrefab": {
+    "__uuid__": "20569450-25f4-4ea6-9a99-911d835dc7c6",
+    "__expectedType__": "cc.Prefab"
+  },
   "storeUrl": "https://play.google.com/store/apps/details?id=ig.com.wool.loop.qdc",
   "colors": [
     {

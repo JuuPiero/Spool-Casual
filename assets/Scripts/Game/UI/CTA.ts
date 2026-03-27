@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Node, tween } from 'cc';
+import { _decorator, Button, Component, Node, tween, Vec3 } from 'cc';
 import { ServiceLocator } from '../../ServiceLocator';
 import { GameManager } from '../GameManager';
 const { ccclass, property } = _decorator;
@@ -12,15 +12,15 @@ export class CTA extends Component {
     public logo: Node = null;
 
     protected start(): void {
-        tween(this.logo)
-            .to(0.5, { scale: new Vec3(1.1, 1.1, 1.1) })
-            .to(0.5, { scale: new Vec3(1, 1, 1) }) 
-            .union()
-            .repeatForever()
-            .start();
+        // tween(this.logo)
+        //     .to(0.5, { scale: new Vec3(0.4, 0.4, 1.1) })
+        //     .to(0.5, { scale: new Vec3(0.3, 0.3, 1) }) 
+        //     .union()
+        //     .repeatForever()
+        //     .start();
         tween(this.installBtn.node)
-            .to(0.5, { scale: new Vec3(1.1, 1.1, 1.1) }) 
-            .to(0.5, { scale: new Vec3(1, 1, 1) }) 
+            .to(0.5, { scale: new Vec3(0.55, 0.55, 1) }) 
+            .to(0.5, { scale: new Vec3(0.5, 0.5, 1) }) 
             .union()
             .repeatForever()
             .start();

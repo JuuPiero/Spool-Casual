@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider, Component, ITriggerEvent, Node, tween, Vec3, Quat } from 'cc';
+import { _decorator, BoxCollider, Component, ITriggerEvent, Node, tween, Vec3, Quat, PhysicsSystem } from 'cc';
 import { SlotManager } from './SlotManager';
 import { ServiceLocator } from '../ServiceLocator';
 
@@ -16,29 +16,6 @@ export class MatchZone extends Component {
 
     private collider: BoxCollider;
 
-    public contains(point: Vec3): boolean {
-        if (!this.collider) {
-            return false;
-        }
-
-        // Convert world point to the local space of matchZone node
-        const localPoint = new Vec3();
-        this.node.inverseTransformPoint(localPoint, point);
-
-        const localCenter = this.collider.center;
-        const halfSize = this.collider.size.clone().multiplyScalar(0.5);
-
-        const dx = Math.abs(localPoint.x - localCenter.x);
-        const dy = Math.abs(localPoint.y - localCenter.y);
-        const dz = Math.abs(localPoint.z - localCenter.z);
-
-        // Make hit test slightly tolerant to reduce misses.
-        const tolerance = 0.01;
-
-        return dx <= halfSize.x + tolerance &&
-            dy <= halfSize.y + tolerance &&
-            dz <= halfSize.z + tolerance;
-    }
 
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
@@ -51,15 +28,15 @@ export class MatchZone extends Component {
         this.collider = this.getComponent(BoxCollider);
         if (this.collider) {
             this.collider.on('onTriggerEnter', this.onTriggerEnter, this);
-            this.collider.on('onTriggerStay', this.onTriggerEnter, this);
+            // this.collider.on('onTriggerStay', this.onTriggerEnter, this);
             this.collider.on('onTriggerExit', this.onTriggerEnter, this);
 
         }
     }
     protected onDestroy(): void {
         this.collider.off('onTriggerEnter', this.onTriggerEnter, this);
-            this.collider.off('onTriggerStay', this.onTriggerEnter, this);
-            this.collider.off('onTriggerExit', this.onTriggerEnter, this);
+        // this.collider.off('onTriggerStay', this.onTriggerEnter, this);
+        this.collider.off('onTriggerExit', this.onTriggerEnter, this);
 
     }
 
@@ -68,7 +45,7 @@ export class MatchZone extends Component {
         const raySlot = event.otherCollider.getComponent(RaySlot)
         if (!raySlot) return
         if(!raySlot.wool) return
-        
+
 
         for (const slot of slots) {
             if (slot.spool && !slot.spool.isCollecting && !slot.spool.isFull() && !raySlot.isCollecting && !raySlot.isAvaialble() 
@@ -78,6 +55,4 @@ export class MatchZone extends Component {
             }
         }
     }
-
-    
 }

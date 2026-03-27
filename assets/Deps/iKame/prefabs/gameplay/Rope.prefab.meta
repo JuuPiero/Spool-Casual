@@ -2,12 +2,12 @@
   "ver": "1.1.50",
   "importer": "prefab",
   "imported": true,
-  "uuid": "29fff014-3d5a-4bed-a1da-413d2929ca08",
+  "uuid": "20569450-25f4-4ea6-9a99-911d835dc7c6",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "Slot"
+    "syncNodeName": "Rope"
   }
 }

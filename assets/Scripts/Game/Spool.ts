@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Color, Component, Line, MeshRenderer, Node, tween, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Color, Component, Label, Line, MeshRenderer, Node, tween, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
@@ -7,6 +7,8 @@ import { SpoolData } from './LevelData';
 import { Wool } from './Wool';
 import { Slot } from './Slot';
 import { RaySlot } from './RaySlot';
+import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
+import { darkenColor } from '../ultils';
 const { ccclass, property } = _decorator;
 
 
@@ -21,6 +23,7 @@ export class Spool extends Clickable {
 
     @property(CCInteger)
     public count: number = 0; // Count ~ woolsView(count and scale 0 -> 1)
+
 
 
     public currentCapacity: number;
@@ -58,14 +61,22 @@ export class Spool extends Clickable {
 
     public spoolManager: SpoolManager
 
+
+    public rope: RopeBezierWave3D
+
+
+
     protected start(): void {
 
         this.renderers.forEach(renderer => {
             const mat = renderer.getMaterialInstance(0);
             mat.setProperty("baseColor", this.color);
+            mat.setProperty("shadeColor1", darkenColor(this.color, 0.7));
+            mat.setProperty("shadeColor2", darkenColor(this.color, 0.9));
+
         })
 
-        // this.syncWoolsView();
+        // this.rope = this.node.getComponentInChildren(RopeBezierWave3D)
 
         if (this.isBlocked()) {
             console.log("tắt spool");
@@ -88,84 +99,118 @@ export class Spool extends Clickable {
         if (this.isFlying || this.isCollecting) {
             return;
         }
+        this.slot.labelProcess.node.active = true
 
+
+        this.rope.node.active = true;
+
+        this.rope.setColor(this.color)
         this.isCollecting = true;
-        raySlot.isCollecting = true
+        raySlot.isCollecting = true;
+
         const previousCount = this.count;
         this.count = Math.min(this.capacity, this.count + 1);
 
-        const targetWoolsCount = Math.min(this.count, this.woolsView.length);
-        const newlyAdded = targetWoolsCount - previousCount; // should normally be 1
 
-        const to = this.node.worldPosition.clone();
-        const from = raySlot.wool.node.worldPosition.clone();
+        // const to = this.node.worldPosition.clone();
+        // const from = raySlot.wool.node.worldPosition.clone();
 
-        const mid = from.clone().add(to).multiplyScalar(0.5);
-        mid.x += 1.5;
-        const points = this.GetBezierPoints(from, mid, to, 40);
+        // const mid = from.clone().add(to).multiplyScalar(0.5);
+        // mid.x += 1.5;
+
+        // const points = this.GetBezierPoints(from, mid, to, 40);
+
 
         let t = { value: 0 };
 
         tween(t)
-            .to(0.25, { value: 1 }, {
+            .to(0.1, { value: 1 }, {
                 onUpdate: () => {
+
                     if (!this.node) return;
-                    const total = points.length - 1;
-                    const exactIndex = t.value * total;
 
-                    const currentIndex = Math.floor(exactIndex);
-                    const nextIndex = Math.min(currentIndex + 1, total);
-                    const alpha = exactIndex - currentIndex;
+                    // const total = points.length - 1;
+                    // const exactIndex = t.value * total;
 
-                    const lastPoint = new Vec3();
-                    lastPoint.y += Math.sin(t.value * Math.PI) * 0.2;
-                    Vec3.lerp(lastPoint, points[currentIndex], points[nextIndex], alpha);
+                    // const currentIndex = Math.floor(exactIndex);
 
-                    const currentPoints: Vec3[] = [];
-                    for (let i = 0; i < currentIndex; i++) {
-                        currentPoints.push(points[i]);
-                    }
-                    currentPoints.push(lastPoint);
-                    this.drawPath(currentPoints, this.color);
+                    // const currentPoints: Vec3[] = [];
+
+                    // const waveAmp = 0.15;
+                    // const waveFreq = 6;
+                    // const waveSpeed = 12;
+
+                    // for (let i = 0; i <= currentIndex; i++) {
+                    //     const p = points[i].clone();
+
+                    //     const pathT = i / total;
+
+                    //     const wave = Math.sin(pathT * waveFreq * Math.PI + t.value * waveSpeed);
+
+                    //     const fade = 1 - pathT; // gần spool thì ít rung hơn
+
+                    //     p.y += wave * waveAmp * fade;
+
+                    //     currentPoints.push(p);
+                    // }
+
+
+                    // this.drawPath(currentPoints, this.color); // cũ
 
 
                     const totalItems = raySlot.wool.woolItems.length;
 
                     for (let i = 0; i < totalItems; i++) {
                         const item = raySlot.wool.woolItems[i];
+                        if (this.rope.node.isValid) {
+                            this.rope?.endPoint.setWorldPosition(raySlot.wool.woolItems[i].worldPosition);
+                        }
 
                         const itemProgress = t.value * totalItems - i;
 
                         const clamped = Math.max(0, Math.min(1, itemProgress));
 
-                        const scaleX = 1 - clamped;
+                        // easing cho đẹp
+                        const smooth = Math.sin(clamped * Math.PI * 0.5);
+
+                        const scaleX = 1 - smooth;
 
                         const currentScale = item.scale.clone();
                         item.setScale(new Vec3(scaleX, currentScale.y, currentScale.z));
                     }
-                   
+                },
+                onComplete: () => {
+                    // if (this.rope.node.isValid) {
+                        this.rope.node.active = false
+                    // }
+                    this.isCollecting = false;
+                    // this.drawPath([]); // cũ
+                    raySlot.wool.node.active = false;
+                    raySlot.wool = null;
+                    raySlot.isCollecting = false;
+
+                    this.syncWoolsView();
                 }
             })
-            .call(() => {
-                this.drawPath([]);
-                raySlot.wool.node.destroy()
-                raySlot.wool = null
-                raySlot.isCollecting = false
-                this.isCollecting = false;
-                this.syncWoolsView();
-            })
+            // .call(() => {
+
+
+            // })
             .start();
 
         if (this.count === this.capacity) {
+            this.slot.labelProcess.node.active = false
+            this.node.active = false
+            this.spoolManager.remove(this);
+            this.slot.spool = null;
+            this.spoolManager.checkWin();
 
-            this.spoolManager.remove(this)
-            this.slot.spool = null
-            this.node.destroy();
-            this.spoolManager.checkWin()
-            // if()
         }
     }
 
+    protected onDestroy(): void {
+        this.rope.node.active = false
+    }
 
     public drawPath(points: Vec3[], color: Color | null = null) {
         if (!this.line) return;
@@ -176,7 +221,7 @@ export class Spool extends Clickable {
 
         const localPoints: Vec3[] = [];
 
-        for (let i = 0; i < points.length; i++) {
+        for (let i = 0; i < points?.length; i++) {
             const out = new Vec3();
             this.node.inverseTransformPoint(out, points[i]);
             localPoints.push(out);
@@ -184,22 +229,22 @@ export class Spool extends Clickable {
 
         this.line.positions = localPoints;
     }
-    public GetBezierPoints(p0: Vec3, p1: Vec3, p2: Vec3, segments: number = 20): Vec3[] {
-        const points: Vec3[] = [];
+    // public GetBezierPoints(p0: Vec3, p1: Vec3, p2: Vec3, segments: number = 20): Vec3[] {
+    //     const points: Vec3[] = [];
 
-        for (let i = 0; i <= segments; i++) {
-            const t = i / segments;
+    //     for (let i = 0; i <= segments; i++) {
+    //         const t = i / segments;
 
-            const a = p0.clone().multiplyScalar((1 - t) * (1 - t));
-            const b = p1.clone().multiplyScalar(2 * (1 - t) * t);
-            const c = p2.clone().multiplyScalar(t * t);
+    //         const a = p0.clone().multiplyScalar((1 - t) * (1 - t));
+    //         const b = p1.clone().multiplyScalar(2 * (1 - t) * t);
+    //         const c = p2.clone().multiplyScalar(t * t);
 
-            const point = a.add(b).add(c);
-            points.push(point);
-        }
+    //         const point = a.add(b).add(c);
+    //         points.push(point);
+    //     }
 
-        return points;
-    }
+    //     return points;
+    // }
 
 
     public onClick() {
@@ -232,6 +277,8 @@ export class Spool extends Clickable {
         slot.setSpool(this);
         this.isInSlot = true
         this.slot = slot
+        this.slot.setProcess(0)
+        this.slot.labelProcess.node.active = true;
 
 
 
@@ -241,9 +288,12 @@ export class Spool extends Clickable {
         const parent = this.node.parent!;
         const localTarget = new Vec3();
         parent.inverseTransformPoint(localTarget, targetPos);
+        if (this.rope) {
+            this.rope.node.active = false
+        }
 
         tween(this.node)
-            .to(0.3, {
+            .to(0.2, {
                 position: localTarget,
                 eulerAngles: new Vec3(0, 0, 90)
             }, {
@@ -251,6 +301,9 @@ export class Spool extends Clickable {
             })
             .call(() => {
                 this.isFlying = false;
+                this.rope?.startPoint.setWorldPosition(this.node.worldPosition);
+                this.rope?.endPoint.setWorldPosition(this.node.worldPosition);
+
             })
             .start();
     }
@@ -280,6 +333,8 @@ export class Spool extends Clickable {
                 item.setScale(Vec3.ZERO);
             }
         }
+        this.slot?.setProcess(Math.round(this.count / this.capacity * 100));
+
     }
 
     public open() {

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Label, Node } from 'cc';
 import { Spool } from './Spool';
 const { ccclass, property } = _decorator;
 
@@ -9,6 +9,8 @@ export class Slot extends Component {
     public spool?: Spool = null
 
 
+    @property(Label)
+    public labelProcess!: Label
     public isAvailable(): boolean {
 
         return !this.spool
@@ -18,6 +20,10 @@ export class Slot extends Component {
         this.spool = spool
     }
 
+
+    public setProcess(process) {
+this.labelProcess.string = process + "%"
+    }
 
 }
 

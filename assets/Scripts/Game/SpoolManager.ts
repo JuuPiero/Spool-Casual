@@ -5,6 +5,8 @@ import { GameConfig } from './GameConfigSA';
 import { GameManager } from './GameManager';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
+import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
+import { NavigationContainer } from '../Navigation/NavigationContainer';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -19,6 +21,11 @@ export class SpoolManager extends Component {
 
     public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
 
+    // @property(Prefab)
+    // public ropePrefab: Prefab
+    @property({ type: RopeBezierWave3D })
+    public ropes: RopeBezierWave3D[] = []
+
 
     protected onLoad(): void {
         ServiceLocator.register(SpoolManager, this)
@@ -26,6 +33,7 @@ export class SpoolManager extends Component {
 
     protected start(): void {
         this.spawnGrid();
+
     }
 
     
@@ -37,6 +45,8 @@ export class SpoolManager extends Component {
         this.spools = [];
 
         const gameConfig = ServiceLocator.get(GameConfig)
+        
+
         const levelData = ServiceLocator.get(GameManager).currentLevelData
 
         const spoolDatas = levelData.spools
@@ -57,7 +67,13 @@ export class SpoolManager extends Component {
             const col = i % columns;
 
             const node = instantiate(gameConfig.spoolPrefab);
+            const ropeNode = instantiate(gameConfig.ropePrefab)
+            ropeNode.setParent(this.node)
+            
+           
             const spool = node.getComponent(Spool)
+
+            
 
             if (spool) {
                 spool.row = row;
@@ -79,10 +95,19 @@ export class SpoolManager extends Component {
 
             if (spool) {
                 this.spools.push(spool);
+
+                const rope = ropeNode.getComponent(RopeBezierWave3D)
+                this.ropes.push(rope);
+                rope.endPoint.setWorldPosition(rope.startPoint.worldPosition)
+                spool.rope = rope
+
                 this.spoolsMap.set(`${row}_${col}`, spool)
             }
         }
+    }
 
+    public activeRope(active, index) {
+        this.ropes[index].node.active = active
     }
 
     public remove(spool: Spool) {
@@ -94,6 +119,7 @@ export class SpoolManager extends Component {
     public checkWin() {
         if(this.spools.length == 0) {
             console.log('win');
+            ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
     }

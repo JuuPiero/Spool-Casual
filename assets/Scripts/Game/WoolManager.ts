@@ -153,9 +153,7 @@ export class WoolManager extends Component {
         }
     }
 
-    /**
-     * Tính toán khoảng cách tương đối giữa các item
-     */
+
     private calculateRelativeDistances(): void {
         if (!this.splineInstantiate) return;
 
@@ -188,8 +186,31 @@ export class WoolManager extends Component {
             }
         }
     }
+    public getAllRaySlots(): RaySlot[] {
+        const result: RaySlot[] = [];
 
-    // Hoặc public hóa method calculateRelativeDistances
+        // main spline trước
+        for (let i = 0; i < this.splineInstantiate.items.length; i++) {
+            const slot = this.splineInstantiate.items[i].getComponent(RaySlot);
+            if (slot) result.push(slot);
+        }
+
+        // sub rays nối tiếp
+        for (let i = 0; i < this.subRays.length; i++) {
+            const sub = this.subRays[i];
+            if (!sub.splineInstantiate) continue;
+
+            const items = sub.splineInstantiate.items;
+
+            for (let j = 0; j < items.length; j++) {
+                const slot = items[j].getComponent(RaySlot);
+                if (slot) result.push(slot);
+            }
+        }
+
+        return result;
+    }
+
     public recalculateDistances(): void {
         this.calculateRelativeDistances();
     }

@@ -9,6 +9,16 @@ function getRandomColor(): Color {
     return new Color(r, g, b, 255); // 255 là alpha (độ đậm)
 }
 
+
+function  darkenColor(color, percent) {
+    // percent: 0-1, càng lớn càng tối (0: giữ nguyên, 1: đen hoàn toàn)
+        let r = color.r * (1 - percent);
+        let g = color.g * (1 - percent);
+        let b = color.b * (1 - percent);
+        
+        return new Color(r, g, b, color.a);
+    }
 export {
-    getRandomColor
+    getRandomColor,
+    darkenColor
 }
