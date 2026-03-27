@@ -5,7 +5,6 @@ import { WoolManager } from './WoolManager';
 import { MatchZone } from './MatchZone';
 import { SlotManager } from './SlotManager';
 import { Spool } from './Spool';
-import { darkenColor } from '../../Deps/iKame/scripts/utils/ColorUtils';
 
 const { ccclass, property } = _decorator;
 
@@ -40,11 +39,8 @@ export class Wool extends Component {
         this.color = color;
 
         for (const element of items) {
-            // element.material.setProperty("albedo", color);
             const mat = element.getMaterialInstance(0);
-            mat.setProperty("baseColor", this.color);
-            mat.setProperty("shadeColor1", darkenColor(this.color, 0.7));
-            // mat.setProperty("shadeColor2", darkenColor(this.color, 0.9));
+            mat.setProperty("color", this.color);
         }
     }
 }

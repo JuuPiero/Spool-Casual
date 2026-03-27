@@ -1,0 +1,141 @@
+// Knit.effect — Cocos Creator 3.8.6
+// Chuyển đổi từ Unity Shader Graphs/Knit (URP Unlit)
+// Logic: diffuse toon shading + Blinn-Phong specular + mask texture blend
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: knit-vs:vert
+      frag: knit-fs:frag
+      properties: &props
+        mainTexture: { value: white, editor: { displayName: Mask } }
+        mainColor:   { value: [1.0, 0.2275, 0.1373, 1.0], target: color, editor: { displayName: Color, type: color } }
+      rasterizerState:
+        cullMode: back
+      depthStencilState:
+        depthTest: true
+        depthWrite: true
+    - &shadow-caster
+      vert: shadow-caster-vs:vert
+      frag: shadow-caster-fs:frag
+      phase: shadow-caster
+      propertyIndex: 0
+      rasterizerState:
+        cullMode: back
+      depthStencilState:
+        depthTest: true
+        depthWrite: true
+}%
+
+CCProgram knit-vs %{
+  precision highp float;
+  #include <legacy/input-standard>
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/decode-standard>
+  #include <legacy/local-batch>
+
+  out vec3 v_position_ws;
+  out vec3 v_normal_ws;
+  out vec2 v_uv;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCDecode(In);
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    vec4 positionWS = matWorld * In.position;
+    v_position_ws = positionWS.xyz;
+    v_normal_ws   = normalize((matWorldIT * vec4(In.normal, 0.0)).xyz);
+    v_uv          = a_texCoord;
+
+    return cc_matProj * (cc_matView * positionWS);
+  }
+}%
+
+CCProgram knit-fs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/output-standard>
+
+  in vec3 v_position_ws;
+  in vec3 v_normal_ws;
+  in vec2 v_uv;
+
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    vec4 color;
+  };
+
+  vec4 frag () {
+    // ---- Normal & View ----
+    vec3 N = normalize(v_normal_ws);
+    vec3 V = normalize(cc_cameraPos.xyz - v_position_ws);
+
+    // Hướng ánh sáng chính
+    vec3 L = normalize(cc_mainLitDir.xyz);
+
+    // ---- Shadow color = color^2 * 0.5 ----
+    vec3 colorLinear = color.rgb * color.rgb;
+    vec3 shadowColor = colorLinear * 0.5;
+
+    // ---- Diffuse toon ----
+    float NdotL     = dot(L, N);
+    float diffuse   = smoothstep(0.0, 1.0, -NdotL);
+    vec3 diffuseColor = mix(shadowColor, color.rgb, diffuse);
+
+    // ---- Specular highlight ----
+    vec3  R          = reflect(L, N);
+    float RdotV      = clamp(dot(R, V), 0.0, 1.0);
+    float spec       = pow(RdotV, 3.0);
+    vec3  highlightColor = diffuseColor * 1.3 + 0.001;
+    vec3  litColor   = mix(diffuseColor, highlightColor, spec);
+
+    // ---- Mask texture ----
+    float maskR    = texture(mainTexture, v_uv).r;
+    float maskBlend = clamp(maskR + 0.4, 0.0, 1.0);
+
+    vec3 finalColor = mix(shadowColor, litColor, maskBlend);
+
+    return CCFragOutput(vec4(finalColor, 1.0));
+  }
+}%
+
+CCProgram shadow-caster-vs %{
+  precision highp float;
+  #include <legacy/input-standard>
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/uniforms/cc-shadow>
+  #include <legacy/decode-standard>
+  #include <legacy/local-batch>
+
+  out vec2 v_uv;
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCDecode(In);
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    vec4 positionWS = matWorld * In.position;
+    v_uv = a_texCoord;
+
+    return cc_matLightViewProj * positionWS;
+  }
+}%
+
+CCProgram shadow-caster-fs %{
+  precision highp float;
+
+  in vec2 v_uv;
+
+  vec4 frag () {
+    return vec4(0.0, 0.0, 0.0, 1.0);
+  }
+}%

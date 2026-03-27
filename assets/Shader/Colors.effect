@@ -1,0 +1,249 @@
+// Colors.effect — Cocos Creator 3.8.8
+// Chuyển đổi từ Unity Shader Graphs/Colors (URP Unlit)
+// Logic: diffuse toon shading + Blinn-Phong specular + matcap mask texture blend
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: colors-vs:vert
+      frag: colors-fs:frag
+      properties: &props
+        mainTexture: { value: white, editor: { displayName: Mask } }
+        mainColor:   { value: [1.0, 0.227451, 0.137255, 1.0], target: color, editor: { displayName: Color, type: color } }
+      rasterizerState:
+        cullMode: back
+      depthStencilState:
+        depthTest: true
+        depthWrite: true
+    - switch: USE_OUTLINE_PASS
+      vert: silhouette-edge-vs
+      frag: silhouette-edge-fs
+      rasterizerState: &r1
+        cullMode: front
+      depthStencilState: &d1
+        depthFunc: less_equal
+        depthTest: true
+        depthWrite: true
+      properties:
+        lineWidth:     { value: 10, target: outlineParams.x }
+        depthBias:     { value: 0,  target: outlineParams.y }
+        baseColor:     { editor: { type: color } }
+        baseColorMap:  { value: grey }
+    
+}%
+
+CCProgram colors-vs %{
+  precision highp float;
+  #include <legacy/input-standard>
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/decode-standard>
+  #include <legacy/local-batch>
+
+  out vec3 v_position_ws;
+  out vec3 v_normal_ws;
+  out vec3 v_normal_vs;   // view-space normal (dùng cho matcap UV)
+
+  vec4 vert () {
+    StandardVertInput In;
+    CCDecode(In);
+    CCVertInput(In);
+
+    mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    vec4 positionWS = matWorld * In.position;
+    v_position_ws  = positionWS.xyz;
+
+    // World-space normal
+    vec3 normalWS  = normalize((matWorldIT * vec4(In.normal, 0.0)).xyz);
+    v_normal_ws    = normalWS;
+
+    // View-space normal (normal * inverse(V) = normal * transpose(V))
+    // cc_matView là mat4: nhân normal (w=0) để lấy view-space normal
+    v_normal_vs    = normalize((cc_matView * vec4(normalWS, 0.0)).xyz);
+
+    return cc_matProj * (cc_matView * positionWS);
+  }
+}%
+
+CCProgram colors-fs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/output-standard>
+
+  in vec3 v_position_ws;
+  in vec3 v_normal_ws;
+  in vec3 v_normal_vs;
+
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    vec4 color;
+  };
+
+  vec4 frag () {
+    // ---- Normal & View (world space) ----
+    vec3 N  = normalize(v_normal_ws);
+    vec3 V  = normalize(cc_cameraPos.xyz - v_position_ws);
+
+    // Hướng ánh sáng chính (cc_mainLitDir đã normalize sẵn trong Cocos)
+    vec3 L  = normalize(cc_mainLitDir.xyz);
+
+    // ---- Shadow color = color^2 * 0.15 ----
+    //   Unity: Power(color, 2) * 0.15
+    vec3 colorSq    = color.rgb * color.rgb;
+    vec3 shadowColor = colorSq * 0.15;
+
+    // ---- Diffuse toon ----
+    //   Unity: smoothstep(0, 1, -dot(L, N))
+    //   → 0 khi L·N > 0 (sáng), 1 khi L·N < 0 (tối)
+    float NdotL   = dot(L, N);
+    float diffuse = smoothstep(0.0, 1.0, -NdotL);
+
+    //   Lerp: shadow → color theo diffuse
+    vec3 diffuseColor = mix(shadowColor, color.rgb, diffuse);
+
+    // ---- Specular highlight ----
+    //   Unity: reflect(L, N) · V, saturate → pow 3
+    vec3  R          = reflect(L, N);
+    float RdotV      = clamp(dot(R, V), 0.0, 1.0);
+    float spec       = pow(RdotV, 3.0);
+
+    //   highlight = diffuseColor * 1.3 + 0.1
+    vec3 highlightColor = diffuseColor * 1.3 + 0.1;
+
+    //   litColor = lerp(diffuseColor, highlightColor, spec)
+    vec3 litColor = mix(diffuseColor, highlightColor, spec);
+
+    // ---- Matcap UV từ view-space normal & view-space view-dir ----
+    //   Unity: cross(viewSpaceNormal, viewSpaceViewDirection)
+    //   View-space view direction = transform WorldViewDir → ViewDir
+    vec3 NVS = normalize(v_normal_vs);
+    // Hướng nhìn trong view-space: luôn là (0, 0, -1) → dùng sẵn
+    vec3 VVS = vec3(0.0, 0.0, -1.0);
+
+    //   cross(NVS, VVS) → lấy .x, .y rồi negate .y → combine (-G, R)
+    //   Trong Unity: cross_G negate, kết quả UV = (-G, R) * 0.5 + 0.5
+    vec3 crossNV = cross(NVS, VVS);
+    float matcapU = -crossNV.y * 0.5 + 0.5;
+    float matcapV =  crossNV.x * 0.5 + 0.5;
+    vec2  matcapUV = vec2(matcapU, matcapV);
+
+    // ---- Sample mask texture (matcap) ----
+    //   Unity lấy kênh B, nhân 2
+    float maskB       = texture(mainTexture, matcapUV).b;
+    float maskFactor  = maskB * 2.0;
+
+    // ---- Final color ----
+    //   Unity: litColor + (0.1 + diffuseColor) * maskFactor
+    //   Bước "Add 0.1 vào diffuseColor" xảy ra trước khi nhân mask:
+    //     addedDiffuse = diffuseColor + 0.1
+    //     finalColor   = litColor + addedDiffuse * maskFactor
+    vec3 addedDiffuse = diffuseColor + 0.1;
+    vec3 finalColor   = litColor + addedDiffuse * maskFactor;
+
+    return CCFragOutput(vec4(finalColor, 1.0));
+  }
+}%
+
+CCProgram surface-vertex-silhouette-edge %{
+  uniform OutlineVert {
+  vec4 outlineParams; // x: line width, y: depth hack
+};
+
+  #define CC_SURFACES_VERTEX_MODIFY_LOCAL_POS
+  vec3 SurfacesVertexModifyLocalPos(in SurfacesStandardVertexIntermediate In)
+  {
+    float width = outlineParams.x * 0.001;
+    vec3 localPos = In.position.xyz;
+
+  #if USE_POSITION_SCALING
+    vec3 dir = normalize(localPos);
+    float flip = dot(dir, normalize(In.normal)) < 0.0 ? -1.0 : 1.0;
+    localPos += flip * dir * width * 2.0;
+  #else
+    localPos += normalize(In.normal) * width;
+  #endif
+    return localPos;
+  }
+
+  #define CC_SURFACES_VERTEX_MODIFY_CLIP_POS
+  vec4 SurfacesVertexModifyClipPos(in SurfacesStandardVertexIntermediate In)
+  {
+    vec4 clipPos = In.clipPos;
+    float scaleZ = cc_nearFar.z == 0.0 ? 0.5 : 1.0;
+    clipPos.z -= outlineParams.y * 0.002 * scaleZ;
+    return clipPos;
+  }
+}%
+CCProgram surface-vertex-silhouette-edge %{
+  uniform OutlineVert {
+  vec4 outlineParams; // x: line width, y: depth hack
+};
+
+  #define CC_SURFACES_VERTEX_MODIFY_LOCAL_POS
+  vec3 SurfacesVertexModifyLocalPos(in SurfacesStandardVertexIntermediate In)
+  {
+    float width = outlineParams.x * 0.001;
+    vec3 localPos = In.position.xyz;
+
+  #if USE_POSITION_SCALING
+    vec3 dir = normalize(localPos);
+    float flip = dot(dir, normalize(In.normal)) < 0.0 ? -1.0 : 1.0;
+    localPos += flip * dir * width * 2.0;
+  #else
+    localPos += normalize(In.normal) * width;
+  #endif
+    return localPos;
+  }
+
+  #define CC_SURFACES_VERTEX_MODIFY_CLIP_POS
+  vec4 SurfacesVertexModifyClipPos(in SurfacesStandardVertexIntermediate In)
+  {
+    vec4 clipPos = In.clipPos;
+    float scaleZ = cc_nearFar.z == 0.0 ? 0.5 : 1.0;
+    clipPos.z -= outlineParams.y * 0.002 * scaleZ;
+    return clipPos;
+  }
+}%
+
+CCProgram surface-fragment-silhouette-edge %{
+  uniform OutlineFrag {
+    vec4 baseColor;
+  };
+  #if USE_BASE_COLOR_MAP
+    uniform sampler2D baseColorMap;
+  #endif
+
+  // only for render-to-shadow-map or misc usage
+  #define CC_SURFACES_FRAGMENT_MODIFY_BASECOLOR_AND_TRANSPARENCY
+  vec4 SurfacesFragmentModifyBaseColorAndTransparency()
+  {
+    vec4 color = vec4(cc_mainLitColor.rgb, 1.0);
+    color.rgb = SRGBToLinear(baseColor.rgb);
+    #if USE_BASE_COLOR_MAP
+      vec4 texColor = texture(baseColorMap, FSInput_texcoord);
+      texColor.rgb = SRGBToLinear(texColor.rgb);
+      color *= texColor;
+    #endif
+
+    return color;
+  }
+}%
+
+CCProgram silhouette-edge-vs %{
+  precision highp float;
+  #include <surfaces/effect-macros/silhouette-edge>
+  #include <surfaces/includes/common-vs>
+  #include <surface-vertex-silhouette-edge>
+  #include <shading-entries/main-functions/misc/silhouette-edge-vs>
+}%
+
+CCProgram silhouette-edge-fs %{
+  precision highp float;
+  #include <surfaces/effect-macros/silhouette-edge>
+  #include <surfaces/includes/common-fs>
+  #include <surface-fragment-silhouette-edge>
+  #include <shading-entries/main-functions/misc/silhouette-edge-fs>
+}%

@@ -23,26 +23,6 @@
       ],
       "subMetas": {}
     },
-    "48b02": {
-      "importer": "gltf-embeded-image",
-      "uuid": "e269f46b-7f93-4a81-afed-adaacc98d147@48b02",
-      "displayName": "",
-      "id": "48b02",
-      "name": "base_color_texture.image",
-      "userData": {
-        "gltfIndex": 0,
-        "fixAlphaTransparencyArtifacts": true,
-        "hasAlpha": true,
-        "type": "texture"
-      },
-      "ver": "1.0.3",
-      "imported": true,
-      "files": [
-        ".json",
-        ".png"
-      ],
-      "subMetas": {}
-    },
     "7d6ab": {
       "importer": "texture",
       "uuid": "e269f46b-7f93-4a81-afed-adaacc98d147@7d6ab",
@@ -56,8 +36,8 @@
         "magfilter": "linear",
         "mipfilter": "none",
         "anisotropy": 0,
-        "isUuid": true,
-        "imageUuidOrDatabaseUri": "e269f46b-7f93-4a81-afed-adaacc98d147@48b02"
+        "isUuid": false,
+        "imageUuidOrDatabaseUri": "db://assets/Textures/Main.png"
       },
       "ver": "1.0.22",
       "imported": true,
@@ -103,7 +83,7 @@
     "imageMetas": [
       {
         "name": "base_color_texture",
-        "uri": "e269f46b-7f93-4a81-afed-adaacc98d147@48b02"
+        "uri": "db://assets/Textures/Main.png"
       }
     ],
     "fbx": {
