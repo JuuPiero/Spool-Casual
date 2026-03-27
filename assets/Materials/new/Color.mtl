@@ -10,9 +10,21 @@
   },
   "_techIdx": 0,
   "_defines": [
-    {}
+    {},
+    {
+      "USE_OUTLINE_PASS": true
+    }
   ],
   "_states": [
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
     {
       "rasterizerState": {},
       "depthStencilState": {},
@@ -36,6 +48,7 @@
         "b": 17,
         "a": 255
       }
-    }
+    },
+    {}
   ]
 }
