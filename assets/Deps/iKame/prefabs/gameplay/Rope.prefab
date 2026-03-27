@@ -309,7 +309,7 @@
     "updateInRealtime": false,
     "animationSpeed": 1,
     "points": [],
-    "lineWidth": 0.1,
+    "lineWidth": 0.2,
     "enableBillboard": true,
     "targetCamera": null,
     "doubleSided": false,
