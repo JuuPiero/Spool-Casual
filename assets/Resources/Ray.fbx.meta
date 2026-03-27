@@ -77,6 +77,26 @@
       ],
       "subMetas": {}
     },
+    "fd73d": {
+      "importer": "gltf-embeded-image",
+      "uuid": "5e2cf0f8-39a9-43cb-ae5c-509306e81876@fd73d",
+      "displayName": "",
+      "id": "fd73d",
+      "name": "DiffuseColor_Texture.image",
+      "userData": {
+        "gltfIndex": 0,
+        "fixAlphaTransparencyArtifacts": true,
+        "hasAlpha": true,
+        "type": "texture"
+      },
+      "ver": "1.0.3",
+      "imported": true,
+      "files": [
+        ".json",
+        ".png"
+      ],
+      "subMetas": {}
+    },
     "4f17a": {
       "importer": "texture",
       "uuid": "5e2cf0f8-39a9-43cb-ae5c-509306e81876@4f17a",
@@ -90,8 +110,8 @@
         "magfilter": "linear",
         "mipfilter": "none",
         "anisotropy": 0,
-        "isUuid": false,
-        "imageUuidOrDatabaseUri": "db://assets/Textures/Main.png"
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "5e2cf0f8-39a9-43cb-ae5c-509306e81876@fd73d"
       },
       "ver": "1.0.22",
       "imported": true,
@@ -137,7 +157,7 @@
     "imageMetas": [
       {
         "name": "DiffuseColor_Texture",
-        "uri": "db://assets/Textures/Main.png"
+        "uri": "5e2cf0f8-39a9-43cb-ae5c-509306e81876@fd73d"
       }
     ],
     "fbx": {

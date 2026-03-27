@@ -46,7 +46,8 @@
         "__id__": 12
       }
     ],
-    "maxWoolsInMain": 8
+    "maxWoolsInMain": 8,
+    "maxSubRay": 2
   },
   {
     "__type__": "SpoolData",
@@ -66,7 +67,7 @@
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": 4
   },
   {
     "__type__": "SpoolData",

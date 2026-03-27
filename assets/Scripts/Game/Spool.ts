@@ -72,9 +72,9 @@ export class Spool extends Clickable {
 
         this.renderers.forEach(renderer => {
             const mat = renderer.getMaterialInstance(0);
-            mat.setProperty("baseColor", this.color);
-            mat.setProperty("shadeColor1", darkenColor(this.color, 0.7));
-            mat.setProperty("shadeColor2", darkenColor(this.color, 0.9));
+            mat.setProperty("color", this.color);
+            // mat.setProperty("shadeColor1", darkenColor(this.color, 0.7));
+            // mat.setProperty("shadeColor2", darkenColor(this.color, 0.9));
         })
 
         if (this.isBlocked()) {

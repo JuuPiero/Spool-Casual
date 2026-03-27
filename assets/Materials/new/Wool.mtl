@@ -27,6 +27,13 @@
       "rasterizerState": {},
       "depthStencilState": {},
       "blendState": {
+        "blendColor": {
+          "__type__": "cc.Color",
+          "r": 116,
+          "g": 116,
+          "b": 116,
+          "a": 255
+        },
         "targets": [
           {}
         ]
