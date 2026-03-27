@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Color, Component, Label, Line, MeshRenderer, Node, tween, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, Label, Line, MeshRenderer, Node, tween, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
@@ -9,6 +9,8 @@ import { Slot } from './Slot';
 import { RaySlot } from './RaySlot';
 import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
 import { darkenColor } from '../ultils';
+import { GameConfig } from './GameConfigSA';
+import { SoundManager } from '../SoundManager';
 const { ccclass, property } = _decorator;
 
 
@@ -73,13 +75,9 @@ export class Spool extends Clickable {
             mat.setProperty("baseColor", this.color);
             mat.setProperty("shadeColor1", darkenColor(this.color, 0.7));
             mat.setProperty("shadeColor2", darkenColor(this.color, 0.9));
-
         })
 
-        // this.rope = this.node.getComponentInChildren(RopeBezierWave3D)
-
         if (this.isBlocked()) {
-            console.log("tắt spool");
             this.renderers.forEach(renderer => {
                 renderer.node.active = false
             })
@@ -99,7 +97,6 @@ export class Spool extends Clickable {
         if (this.isFlying || this.isCollecting) {
             return;
         }
-        this.slot.labelProcess.node.active = true
 
 
         this.rope.node.active = true;
@@ -108,83 +105,54 @@ export class Spool extends Clickable {
         this.isCollecting = true;
         raySlot.isCollecting = true;
 
-        const previousCount = this.count;
         this.count = Math.min(this.capacity, this.count + 1);
 
 
-        // const to = this.node.worldPosition.clone();
-        // const from = raySlot.wool.node.worldPosition.clone();
-
-        // const mid = from.clone().add(to).multiplyScalar(0.5);
-        // mid.x += 1.5;
-
-        // const points = this.GetBezierPoints(from, mid, to, 40);
-
-
         let t = { value: 0 };
+        const items = raySlot.wool.woolItems;
+        const totalItems = items.length;
 
+        const tempScale = new Vec3();
         tween(t)
-            .to(0.1, { value: 1 }, {
+            .to(0.15, { value: 1 }, {
                 onUpdate: () => {
 
                     if (!this.node) return;
 
-                    // const total = points.length - 1;
-                    // const exactIndex = t.value * total;
+                    const progress = t.value * totalItems;
+                    const currentIndex = Math.floor(progress);
 
-                    // const currentIndex = Math.floor(exactIndex);
+                    // chỉ update các item cần thiết
+                    for (let i = 0; i <= currentIndex && i < totalItems; i++) {
 
-                    // const currentPoints: Vec3[] = [];
+                        const item = items[i];
 
-                    // const waveAmp = 0.15;
-                    // const waveFreq = 6;
-                    // const waveSpeed = 12;
-
-                    // for (let i = 0; i <= currentIndex; i++) {
-                    //     const p = points[i].clone();
-
-                    //     const pathT = i / total;
-
-                    //     const wave = Math.sin(pathT * waveFreq * Math.PI + t.value * waveSpeed);
-
-                    //     const fade = 1 - pathT; // gần spool thì ít rung hơn
-
-                    //     p.y += wave * waveAmp * fade;
-
-                    //     currentPoints.push(p);
-                    // }
-
-
-                    // this.drawPath(currentPoints, this.color); // cũ
-
-
-                    const totalItems = raySlot.wool.woolItems.length;
-
-                    for (let i = 0; i < totalItems; i++) {
-                        const item = raySlot.wool.woolItems[i];
-                        if (this.rope.node.isValid) {
-                            this.rope?.endPoint.setWorldPosition(raySlot.wool.woolItems[i].worldPosition);
-                        }
-
-                        const itemProgress = t.value * totalItems - i;
-
+                        const itemProgress = progress - i;
                         const clamped = Math.max(0, Math.min(1, itemProgress));
 
-                        // easing cho đẹp
                         const smooth = Math.sin(clamped * Math.PI * 0.5);
-
                         const scaleX = 1 - smooth;
 
-                        const currentScale = item.scale.clone();
-                        item.setScale(new Vec3(scaleX, currentScale.y, currentScale.z));
+                        // KHÔNG clone nữa
+                        tempScale.set(scaleX, item.scale.y, item.scale.z);
+                        item.setScale(tempScale);
+                    }
+
+                    // rope chỉ follow item hiện tại
+                    if (this.rope.node.isValid) {
+                        const followIndex = Math.min(currentIndex, totalItems - 1);
+                        this.rope.endPoint.setWorldPosition(items[followIndex].worldPosition);
+
+                        if (!this.slot.labelProcess.node.active) {
+                            this.slot.labelProcess.node.active = true;
+                        }
                     }
                 },
+
                 onComplete: () => {
-                    // if (this.rope.node.isValid) {
-                        this.rope.node.active = false
-                    // }
+                    this.rope.node.active = false;
                     this.isCollecting = false;
-                    // this.drawPath([]); // cũ
+
                     raySlot.wool.node.active = false;
                     raySlot.wool = null;
                     raySlot.isCollecting = false;
@@ -192,19 +160,34 @@ export class Spool extends Clickable {
                     this.syncWoolsView();
                 }
             })
-            // .call(() => {
-
-
-            // })
             .start();
 
         if (this.count === this.capacity) {
-            this.slot.labelProcess.node.active = false
-            this.node.active = false
-            this.spoolManager.remove(this);
-            this.slot.spool = null;
-            this.spoolManager.checkWin();
+            // CUỘN XONG
+            this.isFlying = true;
+            // console.log('play sound and vfx');
+            SoundManager.instance.playOneShot('Success')
+            const effect = instantiate(ServiceLocator.get(GameConfig).completedEffect)
+            effect.setParent(this.node)
 
+            tween(this.node)
+                .by(0.1, { eulerAngles: new Vec3(0, 0, 20) })
+                .by(0.1, { eulerAngles: new Vec3(0, 0, -40) })
+                .by(0.1, { eulerAngles: new Vec3(0, 0, 20) })
+                .to(0.2, {
+                    scale: Vec3.ZERO
+                }, {
+                    easing: "backIn"
+                })
+                .call(() => {
+                    this.node.active = false;
+                    this.slot.labelProcess.node.active = false;
+                    this.slot.setProcess(0)
+                    this.spoolManager.remove(this);
+                    this.slot.spool = null;
+                    this.spoolManager.checkWin();
+                })
+                .start();
         }
     }
 
@@ -229,49 +212,34 @@ export class Spool extends Clickable {
 
         this.line.positions = localPoints;
     }
-    // public GetBezierPoints(p0: Vec3, p1: Vec3, p2: Vec3, segments: number = 20): Vec3[] {
-    //     const points: Vec3[] = [];
-
-    //     for (let i = 0; i <= segments; i++) {
-    //         const t = i / segments;
-
-    //         const a = p0.clone().multiplyScalar((1 - t) * (1 - t));
-    //         const b = p1.clone().multiplyScalar(2 * (1 - t) * t);
-    //         const c = p2.clone().multiplyScalar(t * t);
-
-    //         const point = a.add(b).add(c);
-    //         points.push(point);
-    //     }
-
-    //     return points;
-    // }
-
 
     public onClick() {
         if (this.isFlying || this.isInSlot) return;
 
         if (this.isBlocked()) {
-            console.log("bị che");
+            SoundManager.instance.playOneShot('Failed')
+
             return;
         }
 
-
         const slotManager = ServiceLocator.get(SlotManager)
-        // const spoolManager = ServiceLocator.get(SpoolManager)
 
         const slot = slotManager.getAvailableSlot()
         if (!slot) {
-            console.log('hết')
+            // console.log('hết')
+            SoundManager.instance.playOneShot('Failed')
             return;
         }
 
+
         const spool = this.spoolManager.getSpool(this.row - 1, this.col)
         console.log(`Clicked ${this.row}, ${this.col}`)
-
         if (spool) {
-            console.log(`active spool bottom ${this.row - 1}, ${this.col}`);
+            console.log(`active spool at ${this.row - 1}, ${this.col}`);
             spool.open()
         }
+
+        SoundManager.instance.playOneShot('Click')
 
         this.isFlying = true;
         slot.setSpool(this);
@@ -317,10 +285,7 @@ export class Spool extends Clickable {
         for (let i = 0; i < this.woolsView.length; i++) {
             const item = this.woolsView[i];
 
-            // lượng fill của item này
             const filled = this.count - i * capacityPerItem;
-
-            // clamp từ 0 → capacityPerItem
             const clamped = Math.max(0, Math.min(capacityPerItem, filled));
 
             const ratio = clamped / capacityPerItem;
@@ -353,7 +318,6 @@ export class Spool extends Clickable {
         for (const s of spoolManager.spools) {
             if (s === this) continue;
 
-            // cùng cột và nằm trên
             if (s.col === this.col && s.row > this.row && !s.isInSlot) {
                 return true;
             }

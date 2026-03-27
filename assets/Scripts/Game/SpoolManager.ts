@@ -1,4 +1,4 @@
-import { _decorator, CCFloat, CCInteger, Component, instantiate, Node, Prefab, Vec3 } from 'cc';
+import { _decorator, CCFloat, CCInteger, Component, director, instantiate, Node, Prefab, Vec3 } from 'cc';
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
@@ -7,6 +7,8 @@ import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
 import { NavigationContainer } from '../Navigation/NavigationContainer';
+import { TutorialController } from './UI/TutorialController';
+import { SoundManager } from '../SoundManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -21,6 +23,9 @@ export class SpoolManager extends Component {
 
     public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
 
+    @property(TutorialController)
+    public tutorial: TutorialController
+
     // @property(Prefab)
     // public ropePrefab: Prefab
     @property({ type: RopeBezierWave3D })
@@ -34,6 +39,8 @@ export class SpoolManager extends Component {
     protected start(): void {
         this.spawnGrid();
 
+
+        this.tutorial.setPos(this.spools[this.spools.length - 1].node)
     }
 
     
@@ -104,6 +111,8 @@ export class SpoolManager extends Component {
                 this.spoolsMap.set(`${row}_${col}`, spool)
             }
         }
+
+
     }
 
     public activeRope(active, index) {
@@ -119,6 +128,10 @@ export class SpoolManager extends Component {
     public checkWin() {
         if(this.spools.length == 0) {
             console.log('win');
+            SoundManager.instance.playOneShot('Win')
+            const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
+            const scene = director.getScene();
+            confetiEffect.setParent(scene)
             ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }

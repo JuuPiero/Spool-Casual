@@ -33,7 +33,7 @@ export class SoundManager extends Component {
         this.initPool();
     }
     protected start(): void {
-        this.playMusic("BG", true)
+        this.playMusic("BGM", true)
     }
 
     initPool() {

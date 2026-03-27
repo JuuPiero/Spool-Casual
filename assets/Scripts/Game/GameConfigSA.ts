@@ -22,6 +22,11 @@ export class GameConfig extends bh.ScriptableAsset {
     @property(Prefab)
     public ropePrefab: Prefab
 
+    @property(Prefab)
+    public completedEffect: Prefab
+
+    @property(Prefab)
+    public confettiEffect: Prefab
 
     @property(CCString)
     public storeUrl: string
