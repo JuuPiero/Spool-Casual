@@ -15,23 +15,6 @@ export class Wool extends Component {
     @property({ type: Node })
     public woolItems: Node[] = []
 
-    // @property({ type: CCBoolean })
-    // public isCollected = false
-    // @property({ type: CCBoolean })
-
-    // public collect() {
-    //     this.woolItems.forEach(item => {
-    //         item.active = false
-    //     })
-    //     // this.isCollected = true
-    //     // this.isCollecting = false
-    // }
-
-    
-    public isMatched(spool: Spool) {
-        return !spool.isCollecting && !spool.isFull() && spool.color.equals(this.color)
-    }
-
     public setColor(color: Color) {
         const items = this.node.getComponentsInChildren(MeshRenderer);
         this.color = color;

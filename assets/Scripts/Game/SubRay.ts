@@ -69,8 +69,8 @@ export class SubRay extends Component {
         }
     }
     private shiftWools(startIndex: number) {
-        const moveDuration = 0.2;
-        const delayStep = 0.05;
+        const moveDuration = 0.4;
+        const delayStep = 0.1;
 
         for (let i = startIndex; i < this.raySlots.length - 1; i++) {
             const current = this.raySlots[i];

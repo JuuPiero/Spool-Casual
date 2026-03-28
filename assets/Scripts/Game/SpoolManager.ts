@@ -105,8 +105,10 @@ export class SpoolManager extends Component {
 
                 const rope = ropeNode.getComponent(RopeBezierWave3D)
                 this.ropes.push(rope);
-                rope.startPoint.setPosition(Vec3.ZERO)
-                rope.endPoint.setPosition(Vec3.ZERO)
+                // rope.startPoint.setPosition(Vec3.ZERO)
+                // rope.endPoint.setPosition(Vec3.ZERO)
+                rope.initIfNeeded(true);
+                rope.node.active = false
                 spool.rope = rope
                 this.spoolsMap.set(`${row}_${col}`, spool)
             }

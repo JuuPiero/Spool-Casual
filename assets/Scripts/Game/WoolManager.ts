@@ -1,6 +1,4 @@
 import { _decorator, CCFloat, CCInteger, Color, Component, instantiate, Node, tween, Vec3 } from 'cc';
-import { Wool } from './Wool';
-import { Spline } from '../Spline';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
@@ -63,13 +61,17 @@ export class WoolManager extends Component {
             for (let i = 0; i < this.subRays.length; i++) {
                 const sub = this.subRays[i];
                 if (!sub.splineInstantiate) continue;
-
                 const items = sub.splineInstantiate.items;
-
                 for (let j = 0; j < items.length; j++) {
                     allItems.push(items[j]);
                 }
             }
+            // for (let i = 0; i < allItems.length; i++) {
+            //     const raySlot = allItems[i].getComponent(RaySlot);
+            //     if (raySlot) {
+            //         raySlot.index = i;
+            //     }
+            // }
 
             const total = allItems.length;
 

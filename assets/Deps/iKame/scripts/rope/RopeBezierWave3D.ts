@@ -252,7 +252,7 @@ export class RopeBezierWave3D extends Component {
     private eVel: Vec3 = new Vec3();
 
     protected lateUpdate(dt: number): void {
-        if(!this.node.isValid) return
+        if (!this.node.isValid) return
         if (!this.startPoint || !this.endPoint)
             return;
         if (this.points == null || this.points?.length != this.pointCount) {
@@ -305,7 +305,7 @@ export class RopeBezierWave3D extends Component {
         }
     }
 
-   
+
     private pos = new Vec3();
     private newPos = new Vec3();
     private vel = new Vec3();
@@ -641,11 +641,11 @@ export class RopeBezierWave3D extends Component {
     public setColor(color: Color) {
         const renderer = this.getComponent(MeshRenderer)
         // renderers.forEach(renderer => {
-            const mat = renderer.getMaterialInstance(0);
-            mat.setProperty("mainColor", color);
-            mat.setProperty("shadowColor", darkenColor(color, 0.7));
-            // mat.setProperty("shadeColor1", this.darkenColor(this.color, 0.7));
-            // mat.setProperty("shadeColor2", this.darkenColor(this.color, 0.9));
+        const mat = renderer.getMaterialInstance(0);
+        mat.setProperty("mainColor", color);
+        mat.setProperty("shadowColor", darkenColor(color, 0.7));
+        // mat.setProperty("shadeColor1", this.darkenColor(this.color, 0.7));
+        // mat.setProperty("shadeColor2", this.darkenColor(this.color, 0.9));
         // })
 
     }
