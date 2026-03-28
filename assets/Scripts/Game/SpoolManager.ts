@@ -75,7 +75,7 @@ export class SpoolManager extends Component {
 
             const node = instantiate(gameConfig.spoolPrefab);
             const ropeNode = instantiate(gameConfig.ropePrefab)
-            ropeNode.setParent(this.node)
+            ropeNode.setParent(node)
             
            
             const spool = node.getComponent(Spool)
@@ -105,9 +105,9 @@ export class SpoolManager extends Component {
 
                 const rope = ropeNode.getComponent(RopeBezierWave3D)
                 this.ropes.push(rope);
-                rope.endPoint.setWorldPosition(rope.startPoint.worldPosition)
+                rope.startPoint.setPosition(Vec3.ZERO)
+                rope.endPoint.setPosition(Vec3.ZERO)
                 spool.rope = rope
-
                 this.spoolsMap.set(`${row}_${col}`, spool)
             }
         }
@@ -115,9 +115,6 @@ export class SpoolManager extends Component {
 
     }
 
-    public activeRope(active, index) {
-        this.ropes[index].node.active = active
-    }
 
     public remove(spool: Spool) {
         const index = this.spools.indexOf(spool)

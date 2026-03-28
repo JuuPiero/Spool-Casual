@@ -7,7 +7,7 @@ export class RaySlot extends Component {
     @property(Wool)
     public wool: Wool
     public isCollecting = false
-public index: number = 0;
+    // public index: number = 0;
 
     public isAvaialble() {
         return this.wool == null

@@ -1,10 +1,8 @@
 import { _decorator, BoxCollider, CCBoolean, Color, Component, log, MeshRenderer, Node, Quat, Vec3 } from 'cc';
-import { Spline } from '../Spline';
-import { ServiceLocator } from '../ServiceLocator';
-import { WoolManager } from './WoolManager';
-import { MatchZone } from './MatchZone';
-import { SlotManager } from './SlotManager';
+
 import { Spool } from './Spool';
+import { darkenColor } from '../ultils';
+
 
 const { ccclass, property } = _decorator;
 
@@ -40,7 +38,7 @@ export class Wool extends Component {
 
         for (const element of items) {
             const mat = element.getMaterialInstance(0);
-            mat.setProperty("color", this.color);
+            mat.setProperty("color", darkenColor(this.color, 0.1));
         }
     }
 }

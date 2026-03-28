@@ -33,9 +33,12 @@ export class EndGameScreen extends ScreenBase {
 
     protected onLoad(): void {
         this.installBtn?.node.on(Button.EventType.CLICK, this.install, this);
+        this?.node.on(Button.EventType.CLICK, this.install, this);
+
     }
     protected onDestroy(): void {
         this.installBtn?.node.off(Button.EventType.CLICK, this.install, this);
+        this?.node.off(Button.EventType.CLICK, this.install, this);
     }
 
     install() { 

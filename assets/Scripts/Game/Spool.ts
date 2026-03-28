@@ -69,24 +69,13 @@ export class Spool extends Clickable {
 
 
     protected start(): void {
-
-        this.renderers.forEach(renderer => {
-            const mat = renderer.getMaterialInstance(0);
-            mat.setProperty("color", this.color);
-            // mat.setProperty("shadeColor1", darkenColor(this.color, 0.7));
-            // mat.setProperty("shadeColor2", darkenColor(this.color, 0.9));
-        })
-
+       
+        this.open()
         if (this.isBlocked()) {
-            this.renderers.forEach(renderer => {
-                renderer.node.active = false
-            })
-            this.inActiveView.active = true
+            this.close()
         }
 
-        this.woolsView.forEach(item => {
-            item.active = false
-        })
+       
         this.spoolManager = ServiceLocator.get(SpoolManager)
     }
 
@@ -98,15 +87,14 @@ export class Spool extends Clickable {
             return;
         }
 
-
         this.rope.node.active = true;
-
+        this.rope.startPoint.setPosition(Vec3.ZERO)
+        this.rope.endPoint.setPosition(Vec3.ZERO)
         this.rope.setColor(this.color)
         this.isCollecting = true;
         raySlot.isCollecting = true;
 
         this.count = Math.min(this.capacity, this.count + 1);
-
 
         let t = { value: 0 };
         const items = raySlot.wool.woolItems;
@@ -121,12 +109,9 @@ export class Spool extends Clickable {
 
                     const progress = t.value * totalItems;
                     const currentIndex = Math.floor(progress);
-
                     // chỉ update các item cần thiết
                     for (let i = 0; i <= currentIndex && i < totalItems; i++) {
-
                         const item = items[i];
-
                         const itemProgress = progress - i;
                         const clamped = Math.max(0, Math.min(1, itemProgress));
 
@@ -152,13 +137,15 @@ export class Spool extends Clickable {
                 onComplete: () => {
                     this.rope.node.active = false;
                     this.isCollecting = false;
-
                     raySlot.wool.node.active = false;
                     raySlot.wool = null;
                     raySlot.isCollecting = false;
-
                     this.syncWoolsView();
                 }
+            })
+            .call(() => {
+                // this.rope.startPoint.setPosition(Vec3.ZERO)
+                //     this.rope.endPoint.setPosition(Vec3.ZERO)
             })
             .start();
 
@@ -226,11 +213,9 @@ export class Spool extends Clickable {
 
         const slot = slotManager.getAvailableSlot()
         if (!slot) {
-            // console.log('hết')
             SoundManager.instance.playOneShot('Failed')
             return;
         }
-
 
         const spool = this.spoolManager.getSpool(this.row - 1, this.col)
         console.log(`Clicked ${this.row}, ${this.col}`)
@@ -238,7 +223,6 @@ export class Spool extends Clickable {
             console.log(`active spool at ${this.row - 1}, ${this.col}`);
             spool.open()
         }
-
         SoundManager.instance.playOneShot('Click')
 
         this.isFlying = true;
@@ -247,8 +231,6 @@ export class Spool extends Clickable {
         this.slot = slot
         this.slot.setProcess(0)
         this.slot.labelProcess.node.active = true;
-
-
 
         const targetPos = slot.node.worldPosition.clone();
         targetPos.y = this.node.y
@@ -269,8 +251,8 @@ export class Spool extends Clickable {
             })
             .call(() => {
                 this.isFlying = false;
-                this.rope?.startPoint.setWorldPosition(this.node.worldPosition);
-                this.rope?.endPoint.setWorldPosition(this.node.worldPosition);
+                this.rope.startPoint.setPosition(Vec3.ZERO)
+                this.rope.endPoint.setPosition(Vec3.ZERO)
 
             })
             .start();
@@ -305,10 +287,21 @@ export class Spool extends Clickable {
     public open() {
         this.renderers.forEach(renderer => {
             renderer.node.active = true
+            const mat = renderer.getMaterialInstance(0)
+            mat.setProperty("color", this.color);
+            mat.setProperty('lineWidth', 70)
         })
         this.woolsView.forEach(item => {
             item.active = false
         })
+    }
+    public close() {
+        this.renderers.forEach(renderer => {
+            renderer.node.active = false
+            const mat = renderer.getMaterialInstance(0)
+            mat.setProperty('lineWidth', 0)
+        })
+        this.inActiveView.active = true
     }
 
 
