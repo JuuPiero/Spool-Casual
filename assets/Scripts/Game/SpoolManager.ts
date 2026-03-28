@@ -23,9 +23,6 @@ export class SpoolManager extends Component {
 
     public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
 
-    @property(TutorialController)
-    public tutorial: TutorialController
-
     // @property(Prefab)
     // public ropePrefab: Prefab
     @property({ type: RopeBezierWave3D })
@@ -38,9 +35,6 @@ export class SpoolManager extends Component {
 
     protected start(): void {
         this.spawnGrid();
-
-
-        this.tutorial.setPos(this.spools[this.spools.length - 1].node)
     }
 
     

@@ -392,8 +392,7 @@ export class CustomLineMesh extends Component
         // Ensure node is visible
         this.node.active = true;
         
-        // Position the mesh where it's visible (if needed)
-        // this.node.setPosition(new Vec3(0, 0, 0));
+      
     }
     
     /**

@@ -11,6 +11,11 @@ CCEffect %{
       properties: &props
         mainTexture: { value: white, editor: { displayName: Mask } }
         mainColor:   { value: [1.0, 0.227451, 0.137255, 1.0], target: color, editor: { displayName: Color, type: color } }
+        shadowIntensity:   { value: 0.15, editor: { displayName: Shadow Intensity, range: [0, 1] } }
+        shadowDarkness:    { value: 0.5, editor: { displayName: Shadow Darkness, range: [0, 1] } }
+        highlightStrength: { value: 1.3, editor: { displayName: Highlight Strength, range: [0, 3] } }
+        highlightAdd:      { value: 0.1, editor: { displayName: Highlight Add, range: [0, 1] } }
+        matcapIntensity:   { value: 2.0, editor: { displayName: Matcap Intensity, range: [0, 5] } }
       rasterizerState:
         cullMode: back
       depthStencilState:
@@ -80,6 +85,11 @@ CCProgram colors-fs %{
 
   uniform Constant {
     vec4 color;
+    float shadowIntensity;
+    float shadowDarkness;
+    float highlightStrength;
+    float highlightAdd;
+    float matcapIntensity;
   };
 
   vec4 frag () {
@@ -90,10 +100,9 @@ CCProgram colors-fs %{
     // Hướng ánh sáng chính (cc_mainLitDir đã normalize sẵn trong Cocos)
     vec3 L  = normalize(cc_mainLitDir.xyz);
 
-    // ---- Shadow color = color^2 * 0.15 ----
-    //   Unity: Power(color, 2) * 0.15
+    // ---- Shadow color với thông số có thể điều chỉnh ----
     vec3 colorSq    = color.rgb * color.rgb;
-    vec3 shadowColor = colorSq * 0.15;
+    vec3 shadowColor = mix(color.rgb, colorSq, shadowDarkness) * shadowIntensity;
 
     // ---- Diffuse toon ----
     //   Unity: smoothstep(0, 1, -dot(L, N))
@@ -104,14 +113,14 @@ CCProgram colors-fs %{
     //   Lerp: shadow → color theo diffuse
     vec3 diffuseColor = mix(shadowColor, color.rgb, diffuse);
 
-    // ---- Specular highlight ----
+    // ---- Specular highlight với thông số có thể điều chỉnh ----
     //   Unity: reflect(L, N) · V, saturate → pow 3
     vec3  R          = reflect(L, N);
     float RdotV      = clamp(dot(R, V), 0.0, 1.0);
     float spec       = pow(RdotV, 3.0);
 
-    //   highlight = diffuseColor * 1.3 + 0.1
-    vec3 highlightColor = diffuseColor * 1.3 + 0.1;
+    //   highlight = diffuseColor * highlightStrength + highlightAdd
+    vec3 highlightColor = diffuseColor * highlightStrength + highlightAdd;
 
     //   litColor = lerp(diffuseColor, highlightColor, spec)
     vec3 litColor = mix(diffuseColor, highlightColor, spec);
@@ -130,10 +139,10 @@ CCProgram colors-fs %{
     float matcapV =  crossNV.x * 0.5 + 0.5;
     vec2  matcapUV = vec2(matcapU, matcapV);
 
-    // ---- Sample mask texture (matcap) ----
-    //   Unity lấy kênh B, nhân 2
+    // ---- Sample mask texture (matcap) với thông số có thể điều chỉnh ----
+    //   Unity lấy kênh B, nhân với matcapIntensity
     float maskB       = texture(mainTexture, matcapUV).b;
-    float maskFactor  = maskB * 2.0;
+    float maskFactor  = maskB * matcapIntensity;
 
     // ---- Final color ----
     //   Unity: litColor + (0.1 + diffuseColor) * maskFactor
@@ -177,6 +186,7 @@ CCProgram surface-vertex-silhouette-edge %{
     return clipPos;
   }
 }%
+
 CCProgram surface-vertex-silhouette-edge %{
   uniform OutlineVert {
   vec4 outlineParams; // x: line width, y: depth hack

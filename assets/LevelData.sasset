@@ -59,11 +59,11 @@
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": 2
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 1
+    "colorIndex": 3
   },
   {
     "__type__": "SpoolData",
@@ -71,19 +71,19 @@
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": 5
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 2
+    "colorIndex": 6
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": 7
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 3
+    "colorIndex": 4
   },
   {
     "__type__": "SpoolData",
