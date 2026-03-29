@@ -56,7 +56,7 @@ export class Spool extends Clickable {
     public spoolManager: SpoolManager;
     public rope: RopeBezierWave3D;
 
-    private tempVec3 = new Vec3(); // 🔥 reuse tránh new liên tục
+    private tempVec3 = new Vec3();
 
     protected start(): void {
         this.open();
@@ -83,36 +83,20 @@ export class Spool extends Clickable {
         const start = wool.startPoint.worldPosition.clone();
         const end = wool.endPoint.worldPosition.clone();
 
-        let tMove = { value: 0 };
-
-        // 🔥 Phase 1: rope chạy từ start → end
-        tween(tMove)
-            .to(0.2, { value: 1 }, {
-                onUpdate: () => {
-                    Vec3.lerp(this.tempVec3, start, end, tMove.value);
-                    this.rope.endPoint.setWorldPosition(this.tempVec3);
-                }
-            })
-            .call(() => {
-                this.startAbsorb(items, raySlot);
-            })
-            .start();
-    }
-
-    private startAbsorb(items: Node[], raySlot: RaySlot) {
-        const totalItems = items.length;
         let t = { value: 0 };
 
         tween(t)
-            .to(0.1, { value: 1 }, {
+            .to(0.2, { value: 1 }, {
+                easing: "quadOut",
                 onUpdate: () => {
-                    if (!this.node) return;
+                    const smooth = Math.sin(t.value * Math.PI * 0.5);
+                    Vec3.lerp(this.tempVec3, start, end, smooth);
+                    this.rope.endPoint.setWorldPosition(this.tempVec3);
 
-                    const progress = t.value * totalItems;
+                    const progress = t.value * items.length;
                     const currentIndex = Math.floor(progress);
 
                     this.updateWoolItems(items, progress, currentIndex);
-                    this.updateRopeFollow(items, currentIndex);
                 },
                 onComplete: () => {
                     this.finishCollecting(raySlot);
@@ -127,6 +111,7 @@ export class Spool extends Clickable {
         }
     }
 
+
     private shakeTween: Tween<Node> | null = null;
     private startShake() {
         if (this.shakeTween) {
@@ -136,9 +121,9 @@ export class Spool extends Clickable {
 
         this.shakeTween = tween(this.node)
             .sequence(
-                tween().by(0.2, { eulerAngles: new Vec3(0, 0, 30) }),
-                tween().by(0.2, { eulerAngles: new Vec3(0, 0, -40) }),
-                tween().by(0.2, { eulerAngles: new Vec3(0, 0, 30) }),
+                tween().by(0.2, { eulerAngles: new Vec3(0, 0, 20) }),
+                tween().by(0.2, { eulerAngles: new Vec3(0, 0, -30) }),
+                tween().by(0.2, { eulerAngles: new Vec3(0, 0, 20) }),
             )
             .repeatForever()
             .start();
@@ -151,10 +136,10 @@ export class Spool extends Clickable {
     }
 
     private startCollecting(raySlot: RaySlot) {
+        this.rope.node.active = false;
         const startPos = this.rope.startPoint.worldPosition.clone();
         const endPos = raySlot.wool.woolItems[0].worldPosition.clone();
 
-        this.rope.node.active = false;
 
         this.resetRopeToStraightLine(startPos, endPos);
 
@@ -224,7 +209,6 @@ export class Spool extends Clickable {
         }
     }
 
-    private waveTime: number = 0;
 
     private updateRopeFollow(items: Node[], currentIndex: number) {
         if (!this.rope.node.isValid) return;
@@ -233,19 +217,8 @@ export class Spool extends Clickable {
         const target = items[followIndex];
 
         if (target) {
-            this.waveTime += 0.2; // tốc độ lắc
-
-            const offsetX = Math.sin(this.waveTime) * 0.2; // 🔥 lắc theo X
-
             const pos = target.worldPosition;
-
-            this.tempVec3.set(
-                pos.x + offsetX, // 👈 X thay vì Y
-                pos.y,
-                pos.z
-            );
-
-            this.rope.endPoint.setWorldPosition(this.tempVec3);
+            this.rope.endPoint.setWorldPosition(pos);
         }
 
         if (!this.slot.labelProcess.node.active) {
@@ -382,7 +355,6 @@ export class Spool extends Clickable {
 
     public open() {
         this.setRendererActive(true);
-
         this.woolsView.forEach(item => item.active = false);
     }
 

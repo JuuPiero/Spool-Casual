@@ -5221,7 +5221,7 @@
     "splineInstantiate": {
       "__id__": 175
     },
-    "speed": 2.7,
+    "speed": 3,
     "autoMove": true,
     "maintainFormation": true,
     "subRays": [

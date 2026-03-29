@@ -11,13 +11,11 @@ const { ccclass, property } = _decorator;
 export class MatchZone extends Component {
 
     private slotManager: SlotManager;
-    // private woolManager: WoolManager
 
     private collider: BoxCollider;
 
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
-        // this.woolManager = ServiceLocator.get(WoolManager);
     }
 
     protected onLoad(): void {
@@ -46,7 +44,7 @@ export class MatchZone extends Component {
             if (slot.spool && !slot.spool.isCollecting && !slot.spool.isFull() 
                 && slot.spool.color.equals(raySlot.wool.color)) {
                 slot.spool.collectWool(raySlot);
-                break; // Collect to first matching slot only
+                break; 
             }
         }
     }

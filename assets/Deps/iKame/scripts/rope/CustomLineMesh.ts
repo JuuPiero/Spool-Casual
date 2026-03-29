@@ -78,7 +78,7 @@ export class CustomLineMesh extends Component
             }
         }
         
-        if (this.points.length > 0) {
+        if (this.points?.length > 0) {
             this.createLineMeshFromPoints();
         } else {
             this.createDynamicMesh();
@@ -122,7 +122,7 @@ export class CustomLineMesh extends Component
      * Efficiently update mesh data without recreating the entire mesh
      */
     private updateMeshData() {
-        if (!this.dynamicMesh || this.points.length < 2) return;
+        if (!this.dynamicMesh || this.points?.length < 2) return;
 
         const positions: number[] = [];
         const indices: number[] = [];

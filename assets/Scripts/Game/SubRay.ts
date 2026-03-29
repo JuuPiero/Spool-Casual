@@ -40,8 +40,6 @@ export class SubRay extends Component {
     }
 
 
-
-
     onTriggerEnter(event: ITriggerEvent) {
         const raySlotTarget = event.otherCollider.getComponent(RaySlot);
         if (!raySlotTarget) return;
@@ -61,7 +59,6 @@ export class SubRay extends Component {
                 // remove khỏi slot
                 slot.wool = null;
 
-                // 🔥 shift queue
                 this.shiftWools(i);
 
                 return;
