@@ -1,9 +1,4 @@
 import { _decorator, BoxCollider, CCBoolean, Color, Component, log, MeshRenderer, Node, Quat, Vec3 } from 'cc';
-
-import { Spool } from './Spool';
-import { darkenColor } from '../ultils';
-
-
 const { ccclass, property } = _decorator;
 
 @ccclass('Wool')

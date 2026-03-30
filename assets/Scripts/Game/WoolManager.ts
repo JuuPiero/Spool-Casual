@@ -51,7 +51,6 @@ export class WoolManager extends Component {
         const spoolManager = ServiceLocator.get(SpoolManager)
 
         this.scheduleOnce(() => {
-
             this.splineInstantiate.items.forEach(item => {
                 this.slots.push(item.getComponent(RaySlot))
             });
@@ -66,12 +65,12 @@ export class WoolManager extends Component {
                     allItems.push(items[j]);
                 }
             }
-            // for (let i = 0; i < allItems.length; i++) {
-            //     const raySlot = allItems[i].getComponent(RaySlot);
-            //     if (raySlot) {
-            //         raySlot.index = i;
-            //     }
-            // }
+            for (let i = 0; i < allItems.length; i++) {
+                const raySlot = allItems[i].getComponent(RaySlot);
+                if (raySlot) {
+                    raySlot.index = i;
+                }
+            }
 
             const total = allItems.length;
 

@@ -5058,9 +5058,9 @@
     },
     "_size": {
       "__type__": "cc.Vec3",
-      "x": 2.929,
+      "x": 2.935,
       "y": 2,
-      "z": 2
+      "z": 2.228
     },
     "_id": "f23GUAarJFsKlvuCpYyuf5"
   },
@@ -5221,7 +5221,7 @@
     "splineInstantiate": {
       "__id__": 175
     },
-    "speed": 3,
+    "speed": 2.5,
     "autoMove": true,
     "maintainFormation": true,
     "subRays": [

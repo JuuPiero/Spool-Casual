@@ -7,10 +7,11 @@ export class RaySlot extends Component {
     @property(Wool)
     public wool: Wool
     public isCollecting = false
-    // public index: number = 0;
-    // public isAvailable() {
-    //     return this.wool == null
-    // }
+
+    public canCollect = false;
+
+    @property
+    public index: number
 }
 
 

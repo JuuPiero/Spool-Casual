@@ -56,7 +56,6 @@ export class Spool extends Clickable {
 
     public slot: Slot;
     public spoolManager: SpoolManager;
-    public woolManager: WoolManager;
     public rope: RopeBezierWave3D;
 
     private tempVec3 = new Vec3();
@@ -64,7 +63,6 @@ export class Spool extends Clickable {
 
     protected start(): void {
         this.spoolManager = ServiceLocator.get(SpoolManager);
-        this.woolManager = ServiceLocator.get(WoolManager);
 
         this.open();
 
@@ -79,11 +77,14 @@ export class Spool extends Clickable {
     }
 
 
-    colllectTween: Tween<any> | null = null;
+    public queue: RaySlot[] = [];
+
+
 
     public collectWool(raySlot: RaySlot) {
         if (this.isFlying || this.isCollecting) return;
-        
+        // if (this.isFlying) return;
+
 
         this.startCollecting(raySlot);
 
@@ -96,9 +97,8 @@ export class Spool extends Clickable {
         let t = { value: 0 };
 
 
-   
         tween(t)
-            .to(0.2, { value: 1 }, {
+            .to(0.18, { value: 1 }, {
                 easing: "quadOut",
                 onUpdate: () => {
                     const smooth = Math.sin(t.value * Math.PI * 0.5);
@@ -112,11 +112,16 @@ export class Spool extends Clickable {
                 },
                 onComplete: () => {
                     this.finishCollecting(raySlot);
+                    const index = this.queue.indexOf(raySlot);
+                    if (index !== -1) {
+                        this.queue.splice(index, 1);
+                    }
                 }
             })
             .start();
-
+       
         this.count = Math.min(this.capacity, this.count + 1);
+        
 
         if (this.isFull()) {
             this.collectedDone();
@@ -208,51 +213,34 @@ export class Spool extends Clickable {
         this.rope.updateLine();
     }
 
-    private updateWoolItems(items: Node[], progress: number, currentIndex: number) {
+
+   private updateWoolItems(items: Node[], progress: number, currentIndex: number) {
         for (let i = 0; i <= currentIndex && i < items.length; i++) {
             const item = items[i];
 
             const clamped = Math.max(0, Math.min(1, progress - i));
             const smooth = Math.sin(clamped * Math.PI * 0.5);
             const scaleX = 1 - smooth;
-
-            this.tempVec3.set(scaleX, item.scale.y, item.scale.z);
-            item.setScale(this.tempVec3);
-
-
-            // tween(item)
-            //         .to(0.2, {
-            //             eulerAngles: new Vec3(0, 30, 0)
-            //         }, { easing: "quadOut" })
-            //         // tween(item).to(0.5, {
-            //         //     scale: new Vec3(scaleX, item.scale.y, item.scale.z)
-            //         // }, { easing: "quadOut" })
-            //     .start()
-            //     .call(() => { 
-            //         this.tempVec3.set(scaleX, item.scale.y, item.scale.z);
-            //         item.setScale(this.tempVec3);
-            //     });
-           
+            // this.tempVec3.set(scaleX, item.scale.y, item.scale.z);
+            // item.setScale(this.tempVec3);
+                tween(item)
+                    .to(0.3, {
+                        eulerAngles: new Vec3(0, 50, 0)
+                    }, { easing: "quadOut" })
+                  
+                .start()
+                .call(() => { 
+                    // this.tempVec3.set(scaleX, item.scale.y, item.scale.z);
+                    // raySlot.wool.node.setScale(this.tempVec3);
+                });
         }
     }
 
 
-    private updateRopeFollow(items: Node[], currentIndex: number) {
-        if (!this.rope.node.isValid) return;
 
-        const followIndex = Math.min(currentIndex, items.length - 1);
-        const target = items[followIndex];
-
-        if (target) {
-            const pos = target.worldPosition;
-            this.rope.endPoint.setWorldPosition(pos);
-        }
-
-        if (!this.slot.labelProcess.node.active) {
-            this.slot.labelProcess.node.active = true;
-        }
-    }
     private finishCollecting(raySlot: RaySlot) {
+
+         
         this.stopShake();
         this.rope.node.active = false;
         this.isCollecting = false;
@@ -270,7 +258,7 @@ export class Spool extends Clickable {
         effect.setParent(this.node);
 
         tween(this.node)
-            .by(0.1, { eulerAngles: new Vec3(0, 0, 20) })
+            // .by(0.1, { position: this.node.worldPosition.add(new Vec3(0, 1, 0)) })
             .by(0.1, { eulerAngles: new Vec3(0, 0, -40) })
             .by(0.1, { eulerAngles: new Vec3(0, 0, 20) })
             .to(0.2, { scale: Vec3.ZERO }, { easing: "backIn" })
@@ -322,13 +310,13 @@ export class Spool extends Clickable {
         this.moveToSlot(slot);
     }
 
-    private activateNextSpools() { 
-        const right = this.spoolManager.getSpool(this.row, this.col + 1); 
-        if (right) right.open(); 
-        const left = this.spoolManager.getSpool(this.row, this.col - 1); 
-        if (left) left.open(); 
-        const down = this.spoolManager.getSpool(this.row - 1, this.col); 
-        if (down) down.open(); 
+    private activateNextSpools() {
+        const right = this.spoolManager.getSpool(this.row, this.col + 1);
+        if (right) right.open();
+        const left = this.spoolManager.getSpool(this.row, this.col - 1);
+        if (left) left.open();
+        const down = this.spoolManager.getSpool(this.row - 1, this.col);
+        if (down) down.open();
     }
 
     private moveToSlot(slot: Slot) {
@@ -350,10 +338,13 @@ export class Spool extends Clickable {
 
         tween(this.node)
             .to(0.2, {
+                // 
                 position: localTarget,
-                eulerAngles: new Vec3(-90, 90, 90)
+                eulerAngles: new Vec3(-90, 90, 90),
             }, { easing: "quadOut" })
             .call(() => {
+             
+                this.syncWoolsView();
                 this.isFlying = false;
                 this.rope.startPoint.setPosition(Vec3.ZERO);
                 this.rope.endPoint.setPosition(Vec3.ZERO);
@@ -365,15 +356,14 @@ export class Spool extends Clickable {
         if (!this.node || !this.woolsView.length || this.capacity <= 0) return;
 
         const capacityPerItem = this.capacity / this.woolsView.length;
+        if (capacityPerItem <= 0) return; // Tránh division by zero
 
         for (let i = 0; i < this.woolsView.length; i++) {
             const item = this.woolsView[i];
-
             const filled = this.count - i * capacityPerItem;
             const ratio = Math.max(0, Math.min(1, filled / capacityPerItem));
 
             item.active = ratio > 0;
-
             if (item.active) {
                 item.setScale(ratio, ratio, ratio);
             } else {
@@ -381,15 +371,19 @@ export class Spool extends Clickable {
             }
         }
 
-        this.slot?.setProcess(Math.round(this.count / this.capacity * 100));
+        if (this.slot) {
+            this.slot.setProcess(Math.round(this.count / this.capacity * 100));
+        }
     }
 
     public open() {
+        if(this.isInSlot) return;
         this.setRendererActive(true);
         this.woolsView.forEach(item => item.active = false);
     }
 
     public close() {
+        
         this.setRendererActive(false);
         this.inActiveView.active = true;
     }
@@ -409,18 +403,18 @@ export class Spool extends Clickable {
         });
     }
 
-    private isBlocked(): boolean { 
-        const level = ServiceLocator.get(GameManager).currentLevelData; 
-        const maxRow = level.rows - 1; 
-        const maxCol = level.columns - 1; 
-        const right = this.spoolManager.getSpool(this.row, this.col + 1); 
-        const left = this.spoolManager.getSpool(this.row, this.col - 1); 
-        const down = this.spoolManager.getSpool(this.row - 1, this.col); 
-        const top = this.spoolManager.getSpool(this.row + 1, this.col); 
-        const blockRight = this.col === maxCol || (right && !right.isInSlot); 
-        const blockLeft = this.col === 0 || (left && !left.isInSlot); 
-        const blockDown = this.row === 0 || (down && !down.isInSlot); 
-        const blockTop = this.row === maxRow ? false : (top && !top.isInSlot); 
-        return blockRight && blockLeft && blockDown && blockTop; 
+    private isBlocked(): boolean {
+        const level = ServiceLocator.get(GameManager).currentLevelData;
+        const maxRow = level.rows - 1;
+        const maxCol = level.columns - 1;
+        const right = this.spoolManager.getSpool(this.row, this.col + 1);
+        const left = this.spoolManager.getSpool(this.row, this.col - 1);
+        const down = this.spoolManager.getSpool(this.row - 1, this.col);
+        const top = this.spoolManager.getSpool(this.row + 1, this.col);
+        const blockRight = this.col === maxCol || (right && !right.isInSlot);
+        const blockLeft = this.col === 0 || (left && !left.isInSlot);
+        const blockDown = this.row === 0 || (down && !down.isInSlot);
+        const blockTop = this.row === maxRow ? false : (top && !top.isInSlot);
+        return blockRight && blockLeft && blockDown && blockTop;
     }
 }

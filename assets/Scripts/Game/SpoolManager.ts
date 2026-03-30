@@ -9,6 +9,7 @@ import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D
 import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { TutorialController } from './UI/TutorialController';
 import { SoundManager } from '../SoundManager';
+import { WoolManager } from './WoolManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -128,6 +129,9 @@ export class SpoolManager extends Component {
             ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
+        // else if(this.spools.length > 0 && this.spools.length < 3) {
+        //     ServiceLocator.get(WoolManager).speed = 4
+        // }
     }
 
 }
