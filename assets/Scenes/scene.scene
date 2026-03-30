@@ -5105,9 +5105,6 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "zoneStartX": 300,
-    "zoneEndX": 350,
-    "matchZoneRadius": 20,
     "_id": "71d64Dl/hII7DYSfpXAxUm"
   },
   {

@@ -73,6 +73,7 @@ export class Spool extends Clickable {
         return this.count === this.capacity;
     }
 
+
     public collectWool(raySlot: RaySlot) {
         if (this.isFlying || this.isCollecting) return;
         if (!raySlot.wool || !raySlot.wool.node) return;
@@ -80,6 +81,7 @@ export class Spool extends Clickable {
         this.rope.getComponent(CustomLineMesh).lineWidth = 0
         this.rope.node.active = true;
         this.isCollecting = true
+        raySlot.isCollecting = true;
 
 
         const tweenWoolRotation = tween(raySlot.wool.node)
@@ -96,8 +98,8 @@ export class Spool extends Clickable {
                 easing: "quadOut",
                 onUpdate: () => {
                     const end = wool?.endPoint.worldPosition.clone();
-                    // const smooth = Math.sin(t.value * Math.PI * 0.5);
-                    // Vec3.lerp(tempVec3, start, end, smooth);
+                    const smooth = Math.sin(t.value * Math.PI * 0.5);
+                    Vec3.lerp(tempVec3, start, end, smooth);
                     this.rope.getComponent(CustomLineMesh).lineWidth = 0.2
 
                     this.rope.endPoint.setWorldPosition(end);
@@ -106,19 +108,19 @@ export class Spool extends Clickable {
                 onComplete: () => {
                     // this.finishSpool()
                     // this.rope.node.active = false;
-                    this.isCollecting = false;
                     // tween(this.node)
                     //     .parallel(
                     //         tweenWoolRotation,
                     //         tweenWoolScale
                     //     ).call(() => {
-                            
                     //     })
                     //     .start();
-                        this.rope.getComponent(CustomLineMesh).lineWidth = 0
-                        this.syncWoolsView();
-                        raySlot.wool.node.active = false;
-                        raySlot.wool = null;
+                    this.isCollecting = false;
+                    raySlot.isCollecting = false;
+                    this.rope.getComponent(CustomLineMesh).lineWidth = 0
+                    this.syncWoolsView();
+                    raySlot.wool.node.active = false;
+                    raySlot.wool = null;
                 }
             })
             .start();

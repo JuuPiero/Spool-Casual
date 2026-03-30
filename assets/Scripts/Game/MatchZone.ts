@@ -49,6 +49,7 @@ export class MatchZone extends Component {
     onTriggerEnter(event: ITriggerEvent) {
         const raySlot = event.otherCollider.getComponent(RaySlot)
         if (!raySlot || !raySlot.wool ) return
+        if(raySlot.isCollecting) return;
         raySlot.canCollect = true;
 
         const slots = this.slotManager.slots
