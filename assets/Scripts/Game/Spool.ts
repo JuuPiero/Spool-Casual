@@ -11,6 +11,8 @@ import { GameConfig } from './GameConfigSA';
 import { SoundManager } from '../SoundManager';
 import { darkenColor } from '../ultils';
 import { TutorialController } from './UI/TutorialController';
+import { WoolManager } from './WoolManager';
+import { GameManager } from './GameManager';
 const { ccclass, property } = _decorator;
 
 
@@ -54,26 +56,34 @@ export class Spool extends Clickable {
 
     public slot: Slot;
     public spoolManager: SpoolManager;
+    public woolManager: WoolManager;
     public rope: RopeBezierWave3D;
 
     private tempVec3 = new Vec3();
 
+
     protected start(): void {
+        this.spoolManager = ServiceLocator.get(SpoolManager);
+        this.woolManager = ServiceLocator.get(WoolManager);
+
         this.open();
 
         if (this.isBlocked()) {
             this.close();
         }
 
-        this.spoolManager = ServiceLocator.get(SpoolManager);
     }
 
     public isFull() {
         return this.count === this.capacity;
     }
 
+
+    colllectTween: Tween<any> | null = null;
+
     public collectWool(raySlot: RaySlot) {
         if (this.isFlying || this.isCollecting) return;
+        
 
         this.startCollecting(raySlot);
 
@@ -85,6 +95,8 @@ export class Spool extends Clickable {
 
         let t = { value: 0 };
 
+
+   
         tween(t)
             .to(0.2, { value: 1 }, {
                 easing: "quadOut",
@@ -206,6 +218,21 @@ export class Spool extends Clickable {
 
             this.tempVec3.set(scaleX, item.scale.y, item.scale.z);
             item.setScale(this.tempVec3);
+
+
+            // tween(item)
+            //         .to(0.2, {
+            //             eulerAngles: new Vec3(0, 30, 0)
+            //         }, { easing: "quadOut" })
+            //         // tween(item).to(0.5, {
+            //         //     scale: new Vec3(scaleX, item.scale.y, item.scale.z)
+            //         // }, { easing: "quadOut" })
+            //     .start()
+            //     .call(() => { 
+            //         this.tempVec3.set(scaleX, item.scale.y, item.scale.z);
+            //         item.setScale(this.tempVec3);
+            //     });
+           
         }
     }
 
@@ -288,16 +315,20 @@ export class Spool extends Clickable {
         }
 
 
-        this.activateNextSpool();
+        this.activateNextSpools();
 
         SoundManager.instance.playOneShot('Click');
 
         this.moveToSlot(slot);
     }
 
-    private activateNextSpool() {
-        const spool = this.spoolManager.getSpool(this.row - 1, this.col);
-        if (spool) spool.open();
+    private activateNextSpools() { 
+        const right = this.spoolManager.getSpool(this.row, this.col + 1); 
+        if (right) right.open(); 
+        const left = this.spoolManager.getSpool(this.row, this.col - 1); 
+        if (left) left.open(); 
+        const down = this.spoolManager.getSpool(this.row - 1, this.col); 
+        if (down) down.open(); 
     }
 
     private moveToSlot(slot: Slot) {
@@ -378,14 +409,18 @@ export class Spool extends Clickable {
         });
     }
 
-    private isBlocked(): boolean {
-        const spools = ServiceLocator.get(SpoolManager).spools;
-
-        return spools.some(s =>
-            s !== this &&
-            s.col === this.col &&
-            s.row > this.row &&
-            !s.isInSlot
-        );
+    private isBlocked(): boolean { 
+        const level = ServiceLocator.get(GameManager).currentLevelData; 
+        const maxRow = level.rows - 1; 
+        const maxCol = level.columns - 1; 
+        const right = this.spoolManager.getSpool(this.row, this.col + 1); 
+        const left = this.spoolManager.getSpool(this.row, this.col - 1); 
+        const down = this.spoolManager.getSpool(this.row - 1, this.col); 
+        const top = this.spoolManager.getSpool(this.row + 1, this.col); 
+        const blockRight = this.col === maxCol || (right && !right.isInSlot); 
+        const blockLeft = this.col === 0 || (left && !left.isInSlot); 
+        const blockDown = this.row === 0 || (down && !down.isInSlot); 
+        const blockTop = this.row === maxRow ? false : (top && !top.isInSlot); 
+        return blockRight && blockLeft && blockDown && blockTop; 
     }
 }
