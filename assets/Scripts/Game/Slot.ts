@@ -12,8 +12,7 @@ export class Slot extends Component {
     @property(Label)
     public labelProcess!: Label
     public isAvailable(): boolean {
-
-        return !this.spool
+        return this.spool == null
     }
 
     public setSpool(spool: Spool) {
@@ -22,7 +21,7 @@ export class Slot extends Component {
 
 
     public setProcess(process) {
-this.labelProcess.string = process + "%"
+        this.labelProcess.string = process + "%"
     }
 
 }

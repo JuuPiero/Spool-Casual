@@ -7,10 +7,18 @@ import { RaySlot } from './RaySlot';
 import { SplineAnimate } from '../SplineAnimate';
 const { ccclass, property } = _decorator;
 
+@ccclass('FragmentData')
+export class FragmentData {
+    @property({ type: Color })
+    public color!: Color;
+    @property(RaySlot)
+    public raySlots: RaySlot[] = [];
+}
+
+
+
 @ccclass('WoolManager')
 export class WoolManager extends Component {
-
-
 
     @property({ type: SplineInstantiate, tooltip: "Reference đến SplineInstantiate" })
     public splineInstantiate: SplineInstantiate = null!;
@@ -29,15 +37,11 @@ export class WoolManager extends Component {
 
     @property({ type: SubRay })
     public subRays: SubRay[] = []
-
-
-    public isCollecting = false
-
-
-
-
     @property({ type: RaySlot })
     public slots: RaySlot[] = []
+
+    @property({ type: FragmentData })
+    public fragments: FragmentData[] = [];
 
     protected onLoad(): void {
         ServiceLocator.register(WoolManager, this)
@@ -84,12 +88,17 @@ export class WoolManager extends Component {
             for (let i = 0; i < spoolManager.spools.length; i++) {
                 const count = base + (i < extra ? 1 : 0);
                 spoolManager.spools[i].capacity = count;
+                const fragment = new FragmentData();
+                fragment.color = spoolManager.spools[i].color;
 
                 for (let j = 0; j < count; j++) {
                     const raySlot = allItems[index].getComponent(RaySlot);
                     raySlot?.wool?.setColor(spoolManager.spools[i].color);
+                    fragment.raySlots.push(raySlot!);
+                    raySlot.fragmentIndex = fragment.raySlots.length - 1;
                     index++;
                 }
+                this.fragments.push(fragment);
             }
 
             // logic tiếp theo giữ nguyên

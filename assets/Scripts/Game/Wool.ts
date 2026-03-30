@@ -8,7 +8,7 @@ export class Wool extends Component {
     public color: Color = new Color();
 
     @property({ type: Node })
-    public woolItems: Node[] = []
+    public visual: Node
 
     @property(Node)
     public startPoint: Node

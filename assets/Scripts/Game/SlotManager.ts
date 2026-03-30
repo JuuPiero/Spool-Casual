@@ -55,7 +55,6 @@ export class SlotManager extends Component {
             if(slot.isAvailable()) return slot
         }
         return null
-        
     }
    
 }

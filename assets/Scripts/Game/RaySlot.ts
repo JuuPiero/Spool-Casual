@@ -12,6 +12,9 @@ export class RaySlot extends Component {
 
     @property
     public index: number
+
+    @property
+    public fragmentIndex: number
 }
 
 

@@ -5105,6 +5105,9 @@
     },
     "_enabled": true,
     "__prefab": null,
+    "zoneStartX": 300,
+    "zoneEndX": 350,
+    "matchZoneRadius": 20,
     "_id": "71d64Dl/hII7DYSfpXAxUm"
   },
   {
@@ -5233,6 +5236,7 @@
       }
     ],
     "slots": [],
+    "fragments": [],
     "_id": "669S6TogRJPJUJUv+rLzB2"
   },
   {

@@ -69,13 +69,10 @@ export class SpoolManager extends Component {
             const col = i % columns;
 
             const node = instantiate(gameConfig.spoolPrefab);
-            const ropeNode = instantiate(gameConfig.ropePrefab)
-            ropeNode.setParent(node)
-            
+            // const ropeNode = instantiate(gameConfig.ropePrefab)
+            // ropeNode.setParent(node)
            
             const spool = node.getComponent(Spool)
-
-            
 
             if (spool) {
                 spool.row = row;
@@ -90,21 +87,19 @@ export class SpoolManager extends Component {
             node.setParent(this.node);
 
             const x = startX + col * this.spacing;
-
             const z = startZ - row * this.spacing;
 
             node.setPosition(new Vec3(x, 0, z))
 
             if (spool) {
                 this.spools.push(spool);
-
-                const rope = ropeNode.getComponent(RopeBezierWave3D)
-                this.ropes.push(rope);
+                // const rope = ropeNode.getComponent(RopeBezierWave3D)
+                // this.ropes.push(rope);
                 // rope.startPoint.setPosition(Vec3.ZERO)
                 // rope.endPoint.setPosition(Vec3.ZERO)
-                rope.initIfNeeded(true);
-                rope.node.active = false
-                spool.rope = rope
+                // rope.initIfNeeded(true);
+                // rope.node.active = false
+                // spool.rope = rope
                 this.spoolsMap.set(`${row}_${col}`, spool)
             }
         }
@@ -129,9 +124,7 @@ export class SpoolManager extends Component {
             ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
-        // else if(this.spools.length > 0 && this.spools.length < 3) {
-        //     ServiceLocator.get(WoolManager).speed = 4
-        // }
+       
     }
 
 }

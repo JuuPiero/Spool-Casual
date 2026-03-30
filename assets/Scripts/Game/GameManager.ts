@@ -4,7 +4,6 @@ import { ServiceLocator } from '../ServiceLocator';
 import { LevelData } from './LevelData';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
-import { NavigationContainer } from '../Navigation/NavigationContainer';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
