@@ -13,6 +13,7 @@ import { darkenColor } from '../ultils';
 import { TutorialController } from './UI/TutorialController';
 import { WoolManager } from './WoolManager';
 import { GameManager } from './GameManager';
+import { CustomLineMesh } from '../../Deps/iKame/scripts/rope/CustomLineMesh';
 const { ccclass, property } = _decorator;
 
 
@@ -85,7 +86,6 @@ export class Spool extends Clickable {
         if (this.isFlying || this.isCollecting) return;
         // if (this.isFlying) return;
 
-
         this.startCollecting(raySlot);
 
         const wool = raySlot.wool;
@@ -98,7 +98,7 @@ export class Spool extends Clickable {
 
 
         tween(t)
-            .to(0.18, { value: 1 }, {
+            .to(0.2, { value: 1 }, {
                 easing: "quadOut",
                 onUpdate: () => {
                     const smooth = Math.sin(t.value * Math.PI * 0.5);
@@ -153,16 +153,16 @@ export class Spool extends Clickable {
     }
 
     private startCollecting(raySlot: RaySlot) {
-        this.rope.node.active = false;
+        // this.rope.node.active = false;
         const startPos = this.rope.startPoint.worldPosition.clone();
         const endPos = raySlot.wool.woolItems[0].worldPosition.clone();
 
-
-        this.resetRopeToStraightLine(startPos, endPos);
-
+        // this.resetRopeToStraightLine(startPos, endPos);
+        this.rope.getComponent(CustomLineMesh).lineWidth = 0
         this.rope.endPoint.setWorldPosition(endPos);
-
         this.rope.node.active = true;
+        this.rope.getComponent(CustomLineMesh).lineWidth = 0.2
+
         this.rope.setColor(this.color);
         this.isCollecting = true;
         raySlot.isCollecting = true;
@@ -242,7 +242,8 @@ export class Spool extends Clickable {
 
          
         this.stopShake();
-        this.rope.node.active = false;
+        // this.rope.node.active = false;
+        this.rope.getComponent(CustomLineMesh).lineWidth = 0
         this.isCollecting = false;
         raySlot.isCollecting = false;
         raySlot.wool.node.active = false;
