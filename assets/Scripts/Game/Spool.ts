@@ -73,6 +73,13 @@ export class Spool extends Clickable {
         return this.count === this.capacity;
     }
 
+    public async collectWools(raySlots: RaySlot[]) {
+        for (const raySlot of raySlots) {
+            this.collectWool(raySlot);
+            await this.delay(0.1);
+        }
+    }
+    
 
     public collectWool(raySlot: RaySlot) {
         if (this.isFlying || this.isCollecting) return;
@@ -99,34 +106,36 @@ export class Spool extends Clickable {
                 onUpdate: () => {
                     const end = wool?.endPoint.worldPosition.clone();
                     const smooth = Math.sin(t.value * Math.PI * 0.5);
-                    Vec3.lerp(tempVec3, start, end, smooth);
+                    // Vec3.lerp(tempVec3, start, end, smooth);
                     this.rope.getComponent(CustomLineMesh).lineWidth = 0.2
 
                     this.rope.endPoint.setWorldPosition(end);
 
                 },
                 onComplete: () => {
-                    // this.finishSpool()
-                    // this.rope.node.active = false;
-                    // tween(this.node)
-                    //     .parallel(
-                    //         tweenWoolRotation,
-                    //         tweenWoolScale
-                    //     ).call(() => {
-                    //     })
-                    //     .start();
+                    // tweenWoolRotation.start().call(() => {
+                        
+                    // });
+
                     this.isCollecting = false;
                     raySlot.isCollecting = false;
                     this.rope.getComponent(CustomLineMesh).lineWidth = 0
                     this.syncWoolsView();
                     raySlot.wool.node.active = false;
                     raySlot.wool = null;
+
                 }
             })
             .start();
 
         this.count = Math.min(this.capacity, this.count + 1);
 
+    }
+
+    delay(time: number) {
+        return new Promise(resolve => {
+            this.scheduleOnce(resolve, time);
+        });
     }
 
     public collectedDone() {

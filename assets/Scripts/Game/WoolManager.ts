@@ -101,7 +101,6 @@ export class WoolManager extends Component {
                 this.fragments.push(fragment);
             }
 
-            // logic tiếp theo giữ nguyên
             if (this.splineInstantiate && allItems.length > 0) {
                 this.calculateRelativeDistances();
 

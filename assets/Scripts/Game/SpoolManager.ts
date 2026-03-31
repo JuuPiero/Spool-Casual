@@ -52,6 +52,7 @@ export class SpoolManager extends Component {
         const levelData = ServiceLocator.get(GameManager).currentLevelData
 
         const spoolDatas = levelData.spools
+        
         const total = spoolDatas.length;
 
         const columns = levelData.columns;

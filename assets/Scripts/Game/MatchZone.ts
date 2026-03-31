@@ -24,12 +24,12 @@ export class MatchZone extends Component {
         ServiceLocator.register(MatchZone, this)
         this.collider = this.getComponent(BoxCollider);
         this.collider?.on('onTriggerEnter', this.onTriggerEnter, this);
-        this.collider?.on('onTriggerStay', this.onTriggerEnter, this);
+        this.collider?.on('onTriggerStay', this.onTriggerStay, this);
         this.collider?.on('onTriggerExit', this.onTriggerExit, this);
     }
     protected onDestroy(): void {
         this.collider?.off('onTriggerEnter', this.onTriggerEnter, this);
-        this.collider?.off('onTriggerStay', this.onTriggerEnter, this);
+        this.collider?.off('onTriggerStay', this.onTriggerStay, this);
         this.collider?.off('onTriggerExit', this.onTriggerExit, this);
     }
     onTriggerExit(event: ITriggerEvent) {
@@ -39,13 +39,13 @@ export class MatchZone extends Component {
         raySlot.canCollect = false;
 
     }
-    // onTriggerStay(event: ITriggerEvent) {
-    //     const raySlot = event.otherCollider.getComponent(RaySlot)
-    //     if (!raySlot) return
-    //     if (!raySlot.wool) return
-    //     raySlot.canCollect = true;
-    //     // this.onTriggerEnter(event)
-    // }
+    onTriggerStay(event: ITriggerEvent) {
+        const raySlot = event.otherCollider.getComponent(RaySlot)
+        if (!raySlot) return
+        if (!raySlot.wool) return
+        raySlot.canCollect = true;
+        // this.onTriggerEnter(event)
+    }
     onTriggerEnter(event: ITriggerEvent) {
         const raySlot = event.otherCollider.getComponent(RaySlot)
         if (!raySlot || !raySlot.wool ) return
