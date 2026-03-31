@@ -139,13 +139,17 @@ export class Spool extends Clickable {
     }
 
 
-    public onClick() {
-        if (this.isFlying || this.isInSlot) return;
+    static delay = false
 
+    public onClick() {
+        if(Spool.delay) return
+        if (this.isFlying || this.isInSlot) return;
         if (this.isBlocked()) {
             SoundManager.instance.playOneShot('Failed');
             return;
         }
+        
+
         const tut = ServiceLocator.get(TutorialController)
         if (tut && tut.node.active) {
             tut.node.active = false
@@ -158,6 +162,7 @@ export class Spool extends Clickable {
             console.log('out of slot');
             return;
         }
+        Spool.delay = true
 
         this.activateNextSpools();
         SoundManager.instance.playOneShot('Click');
@@ -203,11 +208,10 @@ export class Spool extends Clickable {
                 }
                 // this.queue.sort((a, b) => a.index - b.index)
                 this.collects()
+                Spool.delay = false
 
             })
-            .start().call(() => {
-                
-            });
+            .start();
     }
     @property(RaySlot)
     public queue: RaySlot[] = [];
@@ -249,7 +253,7 @@ export class Spool extends Clickable {
             let t = { value: 0 };
 
             tween(t)
-                .to(0.2, { value: 1 }, {
+                .to(0.3, { value: 1 }, {
                     easing: "quadOut",
                     onUpdate: () => {
                         Vec3.lerp(this.tempVec3, start, end, t.value);
