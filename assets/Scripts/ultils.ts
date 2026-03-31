@@ -18,13 +18,46 @@ function darkenColor(color, percent) {
 
     return new Color(r, g, b, color.a);
 }
-// function delay(time: number) {
-//     return new Promise(resolve => {
-//         this.scheduleOnce(resolve, time);
-//     });
-// }
+
 export {
     getRandomColor,
     darkenColor,
-    // delay
 }
+
+
+//  public collectOne(item: RaySlot): Promise<void> {
+//         return new Promise(resolve => {
+//             if (!item.wool) {
+//                 resolve();
+//                 return;
+//             }
+
+//             const start = this.rope.endPoint.worldPosition.clone();
+//             const end = item.wool.startPoint.worldPosition.clone();
+//             let t = { value: 0 };
+//             const lineMesh = this.rope.getComponent(CustomLineMesh);
+//             lineMesh.lineWidth = 0.2;
+
+//             tween(t)
+//                 .to(0.2, { value: 1 }, {
+//                     easing: "quadOut",
+//                     onUpdate: () => {
+//                         Vec3.lerp(this.tempVec3, start, end, t.value);
+//                         this.rope.endPoint.setWorldPosition(this.tempVec3);
+//                     },
+//                     onComplete: () => {
+//                         lineMesh.lineWidth = 0;
+//                         this.syncWoolsView();
+
+//                         if (item.wool) {
+//                             item.wool.node.active = false;
+//                             item.wool = null;
+//                         }
+
+//                         this.count = Math.min(this.capacity, this.count + 1);
+//                         resolve();
+//                     }
+//                 })
+//                 .start();
+//         });
+//     }

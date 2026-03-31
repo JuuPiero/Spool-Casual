@@ -70,8 +70,7 @@ export class SpoolManager extends Component {
             const col = i % columns;
 
             const node = instantiate(gameConfig.spoolPrefab);
-            // const ropeNode = instantiate(gameConfig.ropePrefab)
-            // ropeNode.setParent(node)
+           
            
             const spool = node.getComponent(Spool)
 

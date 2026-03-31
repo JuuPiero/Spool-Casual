@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, Label, Line, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, Label, Line, log, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
@@ -12,6 +12,7 @@ import { SoundManager } from '../SoundManager';
 import { TutorialController } from './UI/TutorialController';
 import { GameManager } from './GameManager';
 import { CustomLineMesh } from '../../Deps/iKame/scripts/rope/CustomLineMesh';
+import { MatchZone } from './MatchZone';
 const { ccclass, property } = _decorator;
 
 
@@ -73,70 +74,9 @@ export class Spool extends Clickable {
         return this.count === this.capacity;
     }
 
-    public async collectWools(raySlots: RaySlot[]) {
-        for (const raySlot of raySlots) {
-            this.collectWool(raySlot);
-            await this.delay(0.1);
-        }
-    }
-    
 
-    public collectWool(raySlot: RaySlot) {
-        if (this.isFlying || this.isCollecting) return;
-        if (!raySlot.wool || !raySlot.wool.node) return;
-        this.rope.endPoint.setWorldPosition(raySlot.wool.startPoint.worldPosition);
-        this.rope.getComponent(CustomLineMesh).lineWidth = 0
-        this.rope.node.active = true;
-        this.isCollecting = true
-        raySlot.isCollecting = true;
+    private tempVec3: Vec3 = new Vec3()
 
-
-        const tweenWoolRotation = tween(raySlot.wool.node)
-            .to(0.5, { eulerAngles: new Vec3(0, 30, 0) });
-
-        const tweenWoolScale = tween(raySlot.wool.node)
-            .to(0.5, { scale: Vec3.ZERO });
-
-        const wool = raySlot.wool
-        let t = { value: 0 };
-        const start = wool.startPoint.worldPosition.clone();
-        tween(t)
-            .to(0.2, { value: 1 }, {
-                easing: "quadOut",
-                onUpdate: () => {
-                    const end = wool?.endPoint.worldPosition.clone();
-                    const smooth = Math.sin(t.value * Math.PI * 0.5);
-                    // Vec3.lerp(tempVec3, start, end, smooth);
-                    this.rope.getComponent(CustomLineMesh).lineWidth = 0.2
-
-                    this.rope.endPoint.setWorldPosition(end);
-
-                },
-                onComplete: () => {
-                    // tweenWoolRotation.start().call(() => {
-                        
-                    // });
-
-                    this.isCollecting = false;
-                    raySlot.isCollecting = false;
-                    this.rope.getComponent(CustomLineMesh).lineWidth = 0
-                    this.syncWoolsView();
-                    raySlot.wool.node.active = false;
-                    raySlot.wool = null;
-
-                }
-            })
-            .start();
-
-        this.count = Math.min(this.capacity, this.count + 1);
-
-    }
-
-    delay(time: number) {
-        return new Promise(resolve => {
-            this.scheduleOnce(resolve, time);
-        });
-    }
 
     public collectedDone() {
         this.isFlying = true;
@@ -146,7 +86,6 @@ export class Spool extends Clickable {
         effect.setParent(this.node);
 
         tween(this.node)
-            // .by(0.1, { position: this.node.worldPosition.add(new Vec3(0, 1, 0)) })
             .by(0.1, { eulerAngles: new Vec3(0, 0, -40) })
             .by(0.1, { eulerAngles: new Vec3(0, 0, 20) })
             .to(0.2, { scale: Vec3.ZERO }, { easing: "backIn" })
@@ -218,13 +157,96 @@ export class Spool extends Clickable {
                 eulerAngles: new Vec3(-90, 90, 90),
             }, { easing: "quadOut" })
             .call(() => {
-                this.syncWoolsView();
-                this.isFlying = false;
-                this.slot = slot;
-                slot.setSpool(this);
+                this.syncWoolsView()
+                this.isFlying = false
+                this.slot = slot
+                slot.setSpool(this)
+                const itemsInMatchZone = ServiceLocator.get(MatchZone).itemsInMatchZone
+                for (const raySlot of itemsInMatchZone) {
+                    // if (!raySlot.wool || !raySlot.wool.color) continue;
+                    if (raySlot.wool.color.equals(this.color) && !this.isFull()) {
+                        this.queue.push(raySlot)
+                        itemsInMatchZone.delete(raySlot)
+                    }
+                }
+                // this.queue.sort((a, b) => a.index - b.index)
+                this.collects()
+
             })
             .start();
     }
+    @property(RaySlot)
+    public queue: RaySlot[] = [];
+
+    public async collects() {
+        if (this.isCollecting) return; // tránh chạy 2 loop
+        this.isCollecting = true;
+
+        while (this.queue.length > 0) {
+            this.queue.sort((a, b) => a.index - b.index);
+            const item = this.queue.shift();
+
+            if (!item || !item.wool) continue;
+            // await this.collectOne(item);
+            this.rope.getComponent(CustomLineMesh).lineWidth = 0.2
+            item.isCollecting = true
+            this.rope.endPoint.setWorldPosition(item.wool.endPoint.worldPosition);
+            this.count++
+            this.syncWoolsView()
+            // await this.collectOne(item)
+            await this.delay(0.2) /// replace by tween anim
+            if (item.wool) {
+                item.wool.node.active = false;
+                item.wool = null;
+
+            }
+
+            item.isCollecting = false
+        }
+        this.rope.getComponent(CustomLineMesh).lineWidth = 0
+
+
+        this.isCollecting = false;
+    }
+
+    delay(time: number) { return new Promise(resolve => { this.scheduleOnce(resolve, time); }); }
+
+    public collectOne(item: RaySlot): Promise<void> {
+        return new Promise(resolve => {
+            if (!item.wool) {
+                resolve();
+                return;
+            }
+
+            const start = this.rope.endPoint.worldPosition.clone();
+            const end = item.wool.startPoint.worldPosition.clone();
+            let t = { value: 0 };
+            const lineMesh = this.rope.getComponent(CustomLineMesh);
+            lineMesh.lineWidth = 0.2;
+
+            tween(t)
+                .to(0.2, { value: 1 }, {
+                    easing: "quadOut",
+                    onUpdate: () => {
+                        Vec3.lerp(this.tempVec3, start, end, t.value);
+                        this.rope.endPoint.setWorldPosition(this.tempVec3);
+                    },
+                    onComplete: () => {
+                        lineMesh.lineWidth = 0;
+                        this.syncWoolsView();
+                        if (item.wool) {
+                            item.wool.node.active = false;
+                            item.wool = null;
+                        }
+                        this.rope.getComponent(CustomLineMesh).lineWidth = 0
+                        // this.count = Math.min(this.capacity, this.count + 1);
+                        resolve();
+                    }
+                })
+                .start();
+        });
+    }
+
 
     public syncWoolsView() {
         if (!this.node || !this.woolsView.length || this.capacity <= 0) return;
@@ -277,6 +299,15 @@ export class Spool extends Clickable {
                 mat.setProperty('lineWidth', 0);
             }
         });
+    }
+
+    public insertSorted(raySlot: RaySlot) {
+        const index = this.queue.findIndex(q => q.index > raySlot.index);
+        if (index === -1) {
+            this.queue.push(raySlot);
+        } else {
+            this.queue.splice(index, 0, raySlot);
+        }
     }
 
     private isBlocked(): boolean {

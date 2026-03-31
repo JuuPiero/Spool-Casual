@@ -15,21 +15,26 @@ export class MatchZone extends Component {
 
     private collider: BoxCollider;
 
+    public itemsInMatchZone: Set<RaySlot> = new Set<RaySlot>
+
+
+    public onNewItemEnter: Function = null;
+
+
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
         this.woolManager = ServiceLocator.get(WoolManager);
+
     }
 
     protected onLoad(): void {
         ServiceLocator.register(MatchZone, this)
         this.collider = this.getComponent(BoxCollider);
         this.collider?.on('onTriggerEnter', this.onTriggerEnter, this);
-        this.collider?.on('onTriggerStay', this.onTriggerStay, this);
         this.collider?.on('onTriggerExit', this.onTriggerExit, this);
     }
     protected onDestroy(): void {
         this.collider?.off('onTriggerEnter', this.onTriggerEnter, this);
-        this.collider?.off('onTriggerStay', this.onTriggerStay, this);
         this.collider?.off('onTriggerExit', this.onTriggerExit, this);
     }
     onTriggerExit(event: ITriggerEvent) {
@@ -37,28 +42,33 @@ export class MatchZone extends Component {
         if (!raySlot) return
         if (!raySlot.wool) return
         raySlot.canCollect = false;
+        this.itemsInMatchZone.delete(raySlot)
+    }
 
-    }
-    onTriggerStay(event: ITriggerEvent) {
-        const raySlot = event.otherCollider.getComponent(RaySlot)
-        if (!raySlot) return
-        if (!raySlot.wool) return
-        raySlot.canCollect = true;
-        // this.onTriggerEnter(event)
-    }
     onTriggerEnter(event: ITriggerEvent) {
-        const raySlot = event.otherCollider.getComponent(RaySlot)
-        if (!raySlot || !raySlot.wool ) return
-        if(raySlot.isCollecting) return;
+        const raySlot = event.otherCollider.getComponent(RaySlot);
+        if (!raySlot || !raySlot.wool) return;
+        if (raySlot.isCollecting) return;
+
         raySlot.canCollect = true;
 
-        const slots = this.slotManager.slots
+        const slots = this.slotManager.slots;
+
         for (const slot of slots) {
-            if (slot.spool && !slot.spool.isFull() && slot.spool.color.equals(raySlot.wool.color)) {
-                if (slot.spool.isFlying || slot.spool.isCollecting) continue;
-                slot.spool.collectWool(raySlot);
-                return;
+            const spool = slot.spool;
+
+            if (!spool || spool.isFull()) continue;
+            if (!spool.color.equals(raySlot.wool.color)) continue;
+
+            if (spool.queue.indexOf(raySlot) === -1) {
+                spool.insertSorted(raySlot); // dùng hàm insert sorted
+                spool.collects(); // trigger nếu chưa chạy
             }
+
+            return;
         }
+
+        // nếu chưa có spool phù hợp → giữ lại
+        this.itemsInMatchZone.add(raySlot);
     }
 }

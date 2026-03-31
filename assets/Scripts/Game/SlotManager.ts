@@ -17,6 +17,9 @@ export class SlotManager extends Component {
     @property({ type: Slot })
     public slots: Slot[] = []
 
+
+    public onNewSpoolToSlot;
+
     onLoad() {
         ServiceLocator.register(SlotManager, this)
     }
@@ -56,6 +59,9 @@ export class SlotManager extends Component {
         }
         return null
     }
+
+
+
    
 }
 

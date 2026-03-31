@@ -90,7 +90,6 @@ export class WoolManager extends Component {
                 spoolManager.spools[i].capacity = count;
                 const fragment = new FragmentData();
                 fragment.color = spoolManager.spools[i].color;
-
                 for (let j = 0; j < count; j++) {
                     const raySlot = allItems[index].getComponent(RaySlot);
                     raySlot?.wool?.setColor(spoolManager.spools[i].color);
@@ -98,6 +97,7 @@ export class WoolManager extends Component {
                     raySlot.fragmentIndex = fragment.raySlots.length - 1;
                     index++;
                 }
+                
                 this.fragments.push(fragment);
             }
 
@@ -110,8 +110,6 @@ export class WoolManager extends Component {
             }
 
         }, 0);
-
-
     }
 
     protected update(dt: number): void {
@@ -145,7 +143,8 @@ export class WoolManager extends Component {
                     }
                 }
             }
-        } else {
+        } 
+        else {
             for (const item of items) {
                 if (item && item.isValid && item.isMovingNow()) {
                     const currentDist = item.getDistance();
@@ -155,7 +154,6 @@ export class WoolManager extends Component {
                     if (newDist >= totalLength) {
                         newDist -= totalLength;
                     }
-
                     item.setDistance(newDist);
                 }
             }
