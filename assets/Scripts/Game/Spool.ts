@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Color, Component, game, Game, instantiate, Label, Line, log, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
 import { SlotManager } from './SlotManager';
@@ -11,7 +11,6 @@ import { GameConfig } from './GameConfigSA';
 import { SoundManager } from '../SoundManager';
 import { TutorialController } from './UI/TutorialController';
 import { GameManager } from './GameManager';
-import { CustomLineMesh } from '../../Deps/iKame/scripts/rope/CustomLineMesh';
 import { MatchZone } from './MatchZone';
 const { ccclass, property } = _decorator;
 
@@ -64,12 +63,10 @@ export class Spool extends Clickable {
         this.rope = this.getComponentInChildren(RopeBezierWave3D)!;
         this.rope?.setColor(this.color);
 
-                this.baseRotation = new Vec3(-90, 90, 90)
-
+        this.baseRotation = new Vec3(-90, 90, 90)
 
         const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0)
         mat.setProperty('fill', 0)
-        // this.rope.endPoint.setPosition(Vec3.ZERO)
         this.open();
 
         if (this.isBlocked()) {
@@ -142,13 +139,13 @@ export class Spool extends Clickable {
     static delay = false
 
     public onClick() {
-        if(Spool.delay) return
+        if (Spool.delay) return
         if (this.isFlying || this.isInSlot) return;
         if (this.isBlocked()) {
             SoundManager.instance.playOneShot('Failed');
             return;
         }
-        
+
 
         const tut = ServiceLocator.get(TutorialController)
         if (tut && tut.node.active) {

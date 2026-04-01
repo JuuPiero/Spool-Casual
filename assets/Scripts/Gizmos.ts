@@ -5,18 +5,13 @@ const { ccclass, property } = _decorator;
 export class Gizmos extends Component {
 
     // public static instance: Gizmos;
-
-
+    @property
     private line: Line
 
 
     protected onLoad(): void {
-        // Gizmos.instance = this
         this.line = this.node.getComponent(Line)
-        // this.line.positions. 
     }
-
-
 
     public DrawPath(points: Vec3[], color: Color | null = null) {
         if (!this.line) return;
@@ -29,7 +24,6 @@ export class Gizmos extends Component {
         if (color ) {
             this.line.color.color = color
         }
-
 
         this.line.positions = localPoints;
     }
