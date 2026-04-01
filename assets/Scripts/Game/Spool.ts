@@ -228,19 +228,19 @@ export class Spool extends Clickable {
 
             const item = this.queue.shift();
             if (!item || !item.wool) continue;
-
-            item.isCollecting = true;
-
             this.count++;
             this.syncWoolsView();
 
+            item.isCollecting = true;
+
+           
             // animation wool
             tween(item.wool.node)
                 .to(0.2, { eulerAngles: new Vec3(0, 50, 0) })
                 .start();
 
             tween(item.wool.node)
-                .to(0.3, { scale: Vec3.ZERO })
+                .to(0.2, { scale: Vec3.ZERO })
                 .start();
 
             // rope anim
@@ -250,7 +250,7 @@ export class Spool extends Clickable {
             let t = { value: 0 };
 
             tween(t)
-                .to(0.3, { value: 1 }, {
+                .to(0.25, { value: 1 }, {
                     easing: "quadOut",
                     onUpdate: () => {
                         Vec3.lerp(this.tempVec3, start, end, t.value);
@@ -259,7 +259,8 @@ export class Spool extends Clickable {
                 })
                 .start();
 
-            await this.delay(0.2);
+            await this.delay(0.1);
+           
 
             if (item.wool) {
                 item.wool.node.active = false;

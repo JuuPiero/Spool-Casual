@@ -4,6 +4,7 @@ import { ServiceLocator } from '../ServiceLocator';
 import { LevelData } from './LevelData';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
+import super_html_playable from '../super_html_playable';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -19,12 +20,14 @@ export class GameManager extends Component {
             ServiceLocator.register(GameConfig, this.gameConfig)
             ServiceLocator.register(GameManager, this)
         }
+        super_html_playable.set_google_play_url(this.gameConfig.storeUrl)
 
         EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
     }
 
     installGame = () => {
-        sys.openURL(this.gameConfig.storeUrl)
+        super_html_playable.download()
+        // sys.openURL(this.gameConfig.storeUrl)
         // ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
     }
 }

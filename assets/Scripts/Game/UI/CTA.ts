@@ -2,7 +2,6 @@ import { _decorator, Button, Component, Node, tween, Vec3 } from 'cc';
 import { ServiceLocator } from '../../ServiceLocator';
 import { GameManager } from '../GameManager';
 const { ccclass, property } = _decorator;
-
 @ccclass('CTA')
 export class CTA extends Component {
      @property({type: Button})
@@ -18,6 +17,7 @@ export class CTA extends Component {
         //     .union()
         //     .repeatForever()
         //     .start();
+         
         tween(this.installBtn.node)
             .to(0.5, { scale: new Vec3(0.55, 0.55, 1) }) 
             .to(0.5, { scale: new Vec3(0.5, 0.5, 1) }) 

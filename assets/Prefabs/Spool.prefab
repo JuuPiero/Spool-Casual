@@ -658,6 +658,7 @@
       "__id__": 53
     },
     "slot": null,
+    "rope": null,
     "queue": [],
     "_id": ""
   },
@@ -1831,6 +1832,9 @@
       },
       {
         "__id__": 118
+      },
+      {
+        "__id__": 120
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -2161,6 +2165,28 @@
     "__type__": "cc.TargetInfo",
     "localID": [
       "11Brctk8Fe9rA7cngAe15s"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 43
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "rope"
+    ],
+    "target": {
+      "__id__": 33
+    },
+    "targetInfo": {
+      "__id__": 121
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "734jNCq6pOSY5TVu3IB1oH"
     ]
   }
 ]

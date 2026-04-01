@@ -10,6 +10,7 @@ import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { TutorialController } from './UI/TutorialController';
 import { SoundManager } from '../SoundManager';
 import { WoolManager } from './WoolManager';
+import super_html_playable from '../super_html_playable';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -123,6 +124,7 @@ export class SpoolManager extends Component {
             confetiEffect.setParent(scene)
             ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
+            super_html_playable.game_end()
         }
        
     }
