@@ -89,7 +89,7 @@ export class SpoolManager extends Component {
                 }
                 else {
                     console.log(`set empty at ${row}_${col}`);
-                    node.active = false
+                    // node.active = false
                 }
             }
 
