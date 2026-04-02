@@ -1,4 +1,4 @@
-import { _decorator, CCFloat, CCInteger, Component, director, instantiate, Node, Prefab, Vec3 } from 'cc';
+import { _decorator, CCFloat, CCInteger, Component, director, instantiate, macro, Node, Prefab, Vec3 } from 'cc';
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
@@ -11,6 +11,7 @@ import { TutorialController } from './UI/TutorialController';
 import { SoundManager } from '../SoundManager';
 import { WoolManager } from './WoolManager';
 import super_html_playable from '../super_html_playable';
+import { SOUNDS } from './Sounds';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -78,14 +79,21 @@ export class SpoolManager extends Component {
             if (spool) {
                 spool.row = row;
                 spool.col = col;
+                node.name = `Spool_(${row}, ${col})`
+                node.setParent(this.node);
 
                 const data = spoolDatas[i];
                 spool.data = data;
-                spool.color = gameConfig.colors[data.colorIndex];
+                if(data.colorIndex >= 0) {
+                    spool.color = gameConfig.colors[data.colorIndex];
+                }
+                else {
+                    console.log(`set empty at ${row}_${col}`);
+                    node.active = false
+                }
             }
 
-            node.name = `Spool_(${row}, ${col})`
-            node.setParent(this.node);
+        
 
             const x = startX + col * this.spacing;
             const z = startZ - row * this.spacing;
@@ -94,23 +102,10 @@ export class SpoolManager extends Component {
 
             if (spool) {
                 this.spools.push(spool);
-                // const rope = ropeNode.getComponent(RopeBezierWave3D)
-                // this.ropes.push(rope);
-                // rope.startPoint.setPosition(Vec3.ZERO)
-                // rope.endPoint.setPosition(Vec3.ZERO)
-                // rope.initIfNeeded(true);
-                // rope.node.active = false
-                // spool.rope = rope
                 this.spoolsMap.set(`${row}_${col}`, spool)
             }
         }
-
-
-        
-
-
     }
-
 
     public remove(spool: Spool) {
         const index = this.spools.indexOf(spool)
@@ -121,7 +116,7 @@ export class SpoolManager extends Component {
     public checkWin() {
         if(this.spools.length == 0) {
             console.log('win');
-            SoundManager.instance.playOneShot('Win')
+            SoundManager.instance.playOneShot(SOUNDS.WIN)
             const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
             const scene = director.getScene();
             confetiEffect.setParent(scene)

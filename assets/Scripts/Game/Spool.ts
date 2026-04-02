@@ -12,6 +12,7 @@ import { SoundManager } from '../SoundManager';
 import { TutorialController } from './UI/TutorialController';
 import { GameManager } from './GameManager';
 import { MatchZone } from './MatchZone';
+import { SOUNDS } from './Sounds';
 const { ccclass, property } = _decorator;
 
 
@@ -142,7 +143,7 @@ export class Spool extends Clickable {
         if (Spool.delay) return
         if (this.isFlying || this.isInSlot) return;
         if (this.isBlocked()) {
-            SoundManager.instance.playOneShot('Failed');
+            SoundManager.instance.playOneShot(SOUNDS.FAILED);
             return;
         }
 
@@ -162,7 +163,7 @@ export class Spool extends Clickable {
         Spool.delay = true
 
         this.activateNextSpools();
-        SoundManager.instance.playOneShot('Click');
+        SoundManager.instance.playOneShot(SOUNDS.CLICK);
         this.moveToSlot(slot);
     }
 
@@ -197,13 +198,11 @@ export class Spool extends Clickable {
                 slot.setSpool(this)
                 const itemsInMatchZone = ServiceLocator.get(MatchZone).itemsInMatchZone
                 for (const raySlot of itemsInMatchZone) {
-                    // if (!raySlot.wool || !raySlot.wool.color) continue;
                     if (raySlot.wool.color.equals(this.color) && !this.isFull()) {
                         this.queue.push(raySlot)
                         itemsInMatchZone.delete(raySlot)
                     }
                 }
-                // this.queue.sort((a, b) => a.index - b.index)
                 this.collects()
                 Spool.delay = false
 

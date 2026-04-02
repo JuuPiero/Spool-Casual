@@ -10,7 +10,6 @@ export class SpoolData {
 }
 
 
-
 @bh.createAssetMenu('LevelData', 'Config/LevelData')
 @bh.scriptable('LevelData')
 export class LevelData extends bh.ScriptableAsset {
@@ -27,11 +26,10 @@ export class LevelData extends bh.ScriptableAsset {
     @property({type: SpoolData})
     public spools: SpoolData[] = []
 
-    @property(CCInteger)
-    public maxWoolsInMain: number = 8
+    // @property(CCInteger)
+    // public maxWoolsInMain: number = 8
 
     @property(CCInteger)
     public maxSubRay: number = 2
-
 
 } 

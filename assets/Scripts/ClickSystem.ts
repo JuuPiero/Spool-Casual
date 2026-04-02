@@ -1,4 +1,4 @@
-import { _decorator, Component, input, Input, EventMouse, PhysicsSystem, Camera, geometry, EventTouch } from 'cc';
+import { _decorator, Component, input, Input, EventMouse, PhysicsSystem, Camera, geometry, EventTouch, sys } from 'cc';
 import { Clickable } from './Clickable';
 
 const { ccclass } = _decorator;
@@ -13,13 +13,24 @@ export class ClickSystem extends Component {
     }
 
     onEnable() {
-        input.on(Input.EventType.MOUSE_DOWN, this.onPointerDown, this);
-        input.on(Input.EventType.TOUCH_START, this.onPointerDown, this);
+        if(sys.isMobile) {
+            input.on(Input.EventType.TOUCH_START, this.onPointerDown, this);
+
+        }
+        else {
+            input.on(Input.EventType.MOUSE_DOWN, this.onPointerDown, this);
+
+        }
     }
 
     onDisable() {
-        input.off(Input.EventType.MOUSE_DOWN, this.onPointerDown, this);
-        input.off(Input.EventType.TOUCH_START, this.onPointerDown, this);
+        if(sys.isMobile) {
+            input.off(Input.EventType.TOUCH_START, this.onPointerDown, this);
+
+        }
+        else {
+            input.off(Input.EventType.MOUSE_DOWN, this.onPointerDown, this);
+        }
     }
 
     onPointerDown(event: EventMouse | EventTouch) {

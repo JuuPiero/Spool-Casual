@@ -68,7 +68,7 @@ export class MatchZone extends Component {
             return;
         }
 
-        // nếu chưa có spool phù hợp → giữ lại
+        // nếu chưa có spool phù hợp => giữ lại
         this.itemsInMatchZone.add(raySlot);
     }
 }
