@@ -13,6 +13,7 @@ import { TutorialController } from './UI/TutorialController';
 import { GameManager } from './GameManager';
 import { MatchZone } from './MatchZone';
 import { SOUNDS } from './Sounds';
+import { WoolManager } from './WoolManager';
 const { ccclass, property } = _decorator;
 
 
@@ -205,22 +206,48 @@ export class Spool extends Clickable {
                 }
                 this.collects()
                 Spool.delay = false
-
+                
+                console.log('move done, check lose');
+                this.checkLose()
             })
             .start();
     }
+    public checkLose() {
+        const slotManager = ServiceLocator.get(SlotManager);
+        const woolManager = ServiceLocator.get(WoolManager);
+        
+        // Kiểm tra nếu còn slot trống
+        const availableSlot = slotManager.getAvailableSlot();
+        if (availableSlot) {
+            return; // Còn slot trống, chưa thua
+        }
+        
+        // Nếu không còn slot trống, kiểm tra xem có RaySlot nào trùng màu với spool trong slot
+        for (const raySlot of woolManager.slots) {
+            if (!raySlot.wool) continue;
+            for (const slot of slotManager.slots) {
+                if (slot.spool && raySlot.wool.color.equals(slot.spool.color)) {
+                    return; // Có RaySlot trùng màu, chưa thua
+                }
+            }
+        }
+        
+        // Không có RaySlot trùng màu, thua
+        console.log('Lose');
+        // Thêm logic thua : gọi game over
+    }
+
+
     @property(RaySlot)
     public queue: RaySlot[] = [];
 
     public async collects() {
         if (this.isCollecting) return;
         this.isCollecting = true;
-
         this.rope.node.active = true;
         const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0);
         mat.setProperty('fill', 1);
         this.startWiggle();
-
 
         while (this.queue.length > 0) {
             this.queue.sort((a, b) => a.index - b.index);
@@ -272,7 +299,6 @@ export class Spool extends Clickable {
         this.stopWiggle();
 
         mat.setProperty('fill', 0);
-
 
         this.isCollecting = false;
     }

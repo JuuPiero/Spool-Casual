@@ -222,7 +222,6 @@ export class WoolManager extends Component {
         this.calculateRelativeDistances();
     }
 
-
     public startMoving(): void {
         if (!this.splineInstantiate) return;
 
@@ -242,9 +241,6 @@ export class WoolManager extends Component {
         }
     }
 
-    /**
-     * Dừng di chuyển
-     */
     public stopMoving(): void {
         if (!this.splineInstantiate) return;
 
@@ -274,20 +270,13 @@ export class WoolManager extends Component {
                 item.setDistance(originalDistance);
             }
         }
-
         this.calculateRelativeDistances();
     }
 
-    /**
-     * Set tốc độ di chuyển
-     */
     public setSpeed(speed: number): void {
         this.speed = speed;
     }
 
-    /**
-     * Lấy tốc độ hiện tại
-     */
     public getSpeed(): number {
         return this.speed;
     }
@@ -303,9 +292,6 @@ export class WoolManager extends Component {
         }
     }
 
-    /**
-     * Kiểm tra có đang di chuyển không
-     */
     public isMovingNow(): boolean {
         return this.isMoving;
     }
