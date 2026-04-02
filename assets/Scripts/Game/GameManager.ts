@@ -15,6 +15,12 @@ export class GameManager extends Component {
     @property(LevelData)
     public currentLevelData: LevelData
 
+
+    @property(Node) tutorial: Node = null
+
+    @property tutIndex: number = 0
+
+
     protected onLoad(): void {
         if(this.gameConfig) {
             ServiceLocator.register(GameConfig, this.gameConfig)
@@ -23,6 +29,10 @@ export class GameManager extends Component {
         super_html_playable.set_google_play_url(this.gameConfig.storeUrl)
 
         EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
+    }
+
+    protected start(): void {
+        
     }
 
     installGame = () => {
