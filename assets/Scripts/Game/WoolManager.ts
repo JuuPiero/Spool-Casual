@@ -7,13 +7,13 @@ import { RaySlot } from './RaySlot';
 import { SplineAnimate } from '../SplineAnimate';
 const { ccclass, property } = _decorator;
 
-@ccclass('FragmentData')
-export class FragmentData {
-    @property({ type: Color })
-    public color!: Color;
-    @property(RaySlot)
-    public raySlots: RaySlot[] = [];
-}
+// @ccclass('FragmentData')
+// export class FragmentData {
+//     @property({ type: Color })
+//     public color!: Color;
+//     @property(RaySlot)
+//     public raySlots: RaySlot[] = [];
+// }
 
 
 
@@ -40,8 +40,7 @@ export class WoolManager extends Component {
     @property({ type: RaySlot })
     public slots: RaySlot[] = []
 
-    @property({ type: FragmentData })
-    public fragments: FragmentData[] = [];
+
 
     protected onLoad(): void {
         ServiceLocator.register(WoolManager, this)
@@ -52,7 +51,7 @@ export class WoolManager extends Component {
         if (!this.splineInstantiate) {
             this.splineInstantiate = this.node.getComponent(SplineInstantiate);
         }
-        const spoolManager = ServiceLocator.get(SpoolManager)
+        // const spoolManager = ServiceLocator.get(SpoolManager)
 
         this.scheduleOnce(() => {
             this.splineInstantiate.items.forEach(item => {
@@ -88,17 +87,17 @@ export class WoolManager extends Component {
             for (let i = 0; i < spoolManager.spools.length; i++) {
                 const count = base + (i < extra ? 1 : 0);
                 spoolManager.spools[i].capacity = count;
-                const fragment = new FragmentData();
-                fragment.color = spoolManager.spools[i].color;
+                // const fragment = new FragmentData();
+                // fragment.color = spoolManager.spools[i].color;
                 for (let j = 0; j < count; j++) {
                     const raySlot = allItems[index].getComponent(RaySlot);
                     raySlot?.wool?.setColor(spoolManager.spools[i].color);
-                    fragment.raySlots.push(raySlot!);
-                    raySlot.fragmentIndex = fragment.raySlots.length - 1;
+                    // fragment.raySlots.push(raySlot!);
+                    // raySlot.fragmentIndex = fragment.raySlots.length - 1;
                     index++;
                 }
                 
-                this.fragments.push(fragment);
+                // this.fragments.push(fragment);
             }
 
             if (this.splineInstantiate && allItems.length > 0) {
@@ -123,11 +122,11 @@ export class WoolManager extends Component {
             const leadItem = items[0];
             if (leadItem && leadItem.isValid) {
                 const currentDist = leadItem.getDistance();
-                let newDist = currentDist + this.speed * dt;
+                let newDist = currentDist - this.speed * dt;
 
                 const totalLength = leadItem.getTotalLength();
-                if (newDist >= totalLength) {
-                    newDist -= totalLength;
+                if (newDist < 0) {
+                    newDist += totalLength;
                 }
 
                 leadItem.setDistance(newDist);
@@ -148,11 +147,11 @@ export class WoolManager extends Component {
             for (const item of items) {
                 if (item && item.isValid && item.isMovingNow()) {
                     const currentDist = item.getDistance();
-                    let newDist = currentDist + this.speed * dt;
+                    let newDist = currentDist - this.speed * dt;
 
                     const totalLength = item.getTotalLength();
-                    if (newDist >= totalLength) {
-                        newDist -= totalLength;
+                    if (newDist < 0) {
+                        newDist += totalLength;
                     }
                     item.setDistance(newDist);
                 }

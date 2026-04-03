@@ -1,4 +1,4 @@
-import { _decorator, CCFloat, CCInteger, Component, director, instantiate, macro, Node, Prefab, Vec3 } from 'cc';
+import { _decorator, CCFloat, CCInteger, Color, Component, director, instantiate, macro, Node, Prefab, Vec3 } from 'cc';
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
@@ -12,6 +12,7 @@ import { SoundManager } from '../SoundManager';
 import { WoolManager } from './WoolManager';
 import super_html_playable from '../super_html_playable';
 import { SOUNDS } from './Sounds';
+import { VehicleData } from './NewLevelDataSA';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -32,11 +33,14 @@ export class SpoolManager extends Component {
     public ropes: RopeBezierWave3D[] = []
 
 
+    protected gameManager: GameManager = null
+
     protected onLoad(): void {
         ServiceLocator.register(SpoolManager, this)
     }
 
     protected start(): void {
+        this.gameManager = ServiceLocator.get(GameManager);
         this.spawnGrid();
     }
 
@@ -48,69 +52,77 @@ export class SpoolManager extends Component {
     private spawnGrid() {
         this.spools = [];
 
-        const gameConfig = ServiceLocator.get(GameConfig)
-        
+        const gameConfig = ServiceLocator.get(GameConfig);
+        const newLevelData = this.gameManager.newLevelData;
 
-        const levelData = ServiceLocator.get(GameManager).currentLevelData
+        // Create color map from colorHexCodes
+        const colorMap = new Map<number, Color>();
+        for (const colorHex of newLevelData.colorHexCodes) {
+            const color: Color = new Color();
+            Color.fromHEX(color, colorHex.Item2)
+            colorMap.set(colorHex.Item1, color);
+        }
 
-        const spoolDatas = levelData.spools
-        
-        const total = spoolDatas.length;
+        // Create vehicle map for quick lookup
+        const vehicleMap = new Map<string, VehicleData>();
+        for (const vehicle of newLevelData.vehiclesData) {
+            vehicleMap.set(`${vehicle.coordinateX}_${vehicle.coordinateY}`, vehicle);
+        }
 
-        const columns = levelData.columns;
-        const rows = Math.ceil(total / columns);
+        const columns = newLevelData.gridWidth;
+        const rows = newLevelData.gridHeight;
 
         const totalWidth = (columns - 1) * this.spacing;
-        const totalDepth = (rows - 1) * this.spacing; // Z
+        const totalDepth = (rows - 1) * this.spacing;
 
         const startX = -totalWidth / 2;
-        const startZ = totalDepth / 2; // bắt đầu từ dưới (z lớn)
+        const startZ = totalDepth / 2;
 
-        for (let i = 0; i < total; i++) {
-
-            const row = Math.floor(i / columns); 
-            const col = i % columns;
-
-            const node = instantiate(gameConfig.spoolPrefab);
-           
-           
-            const spool = node.getComponent(Spool)
-
-            if (spool) {
-                spool.row = row;
-                spool.col = col;
-                node.name = `Spool_(${row}, ${col})`
-                node.setParent(this.node);
-
-                const data = spoolDatas[i];
-                spool.data = data;
-                if(data.colorIndex >= 0) {
-                    spool.color = gameConfig.colors[data.colorIndex];
-                }
-                else {
-                    console.log(`set empty at ${row}_${col}`);
-                    // node.active = false
-                }
+        for (const gridSlot of newLevelData.gridSlotsData) {
+            if (gridSlot.gridSlotType !== 1) {
+                continue; // Only spawn on gridSlotType 1 thi
             }
 
-        
+            const col = gridSlot.coordinateX;
+            const row = gridSlot.coordinateY;
+
+            const vehicle = vehicleMap.get(`${col}_${row}`);
+            if (!vehicle) {
+                continue; // No vehicle at this position
+            }
+
+            const node = instantiate(gameConfig.spoolPrefab);
+            const spool = node.getComponent(Spool);
+
+            if (!spool) {
+                node.removeFromParent();
+                continue;
+            }
+
+            spool.row = row;
+            spool.col = col;
+            node.name = `Spool_(${row}, ${col})`;
+            node.setParent(this.node);
+
+            // Set color from colorMap
+            spool.color = colorMap.get(vehicle.entityColorType) || Color.WHITE;
 
             const x = startX + col * this.spacing;
             const z = startZ - row * this.spacing;
 
-            node.setPosition(new Vec3(x, 0, z))
+            node.setPosition(new Vec3(x, 0, z));
 
-            if (spool) {
-                this.spools.push(spool);
-                this.spoolsMap.set(`${row}_${col}`, spool)
-            }
+            this.spools.push(spool);
+            this.spoolsMap.set(`${row}_${col}`, spool);
         }
     }
 
     public remove(spool: Spool) {
         const index = this.spools.indexOf(spool)
-        this.spools.splice(index, 1)
-        this.spoolsMap.delete(`Spool_(${spool.row}, ${spool.col})`)
+        if (index >= 0) {
+            this.spools.splice(index, 1)
+        }
+        this.spoolsMap.delete(`${spool.row}_${spool.col}`)
     }
 
     public checkWin() {

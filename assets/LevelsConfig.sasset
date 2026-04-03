@@ -4,19 +4,5 @@
   "_objFlags": 0,
   "__editorExtras__": {},
   "_native": "",
-  "levels": [
-    {
-      "__uuid__": "1a0b4933-b4ce-4d9f-b888-b37a47376910",
-      "__expectedType__": "6c57a9YCFRC7YThajS08tDA"
-    },
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-  ]
+  "levels": []
 }

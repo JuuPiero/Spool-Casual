@@ -60,6 +60,8 @@ export class Spool extends Clickable {
     @property(RopeBezierWave3D)
     public rope: RopeBezierWave3D;
 
+    public isOpen: boolean = false;
+
     protected start(): void {
         this.spoolManager = ServiceLocator.get(SpoolManager);
         this.rope = this.getComponentInChildren(RopeBezierWave3D)!;
@@ -69,9 +71,11 @@ export class Spool extends Clickable {
 
         const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0)
         mat.setProperty('fill', 0)
-        this.open();
 
-        if (this.isBlocked()) {
+        this.isOpen = !this.isBlocked();
+        if (this.isOpen) {
+            this.open();
+        } else {
             this.close();
         }
     }
@@ -143,7 +147,7 @@ export class Spool extends Clickable {
     public onClick() {
         if (Spool.delay) return
         if (this.isFlying || this.isInSlot) return;
-        if (this.isBlocked()) {
+        if (!this.isOpen) {
             SoundManager.instance.playOneShot(SOUNDS.FAILED);
             return;
         }
@@ -170,11 +174,20 @@ export class Spool extends Clickable {
 
     private activateNextSpools() {
         const right = this.spoolManager.getSpool(this.row, this.col + 1);
-        if (right) right.open();
+        if (right && !right.isOpen) {
+            right.isOpen = true;
+            right.open();
+        }
         const left = this.spoolManager.getSpool(this.row, this.col - 1);
-        if (left) left.open();
+        if (left && !left.isOpen) {
+            left.isOpen = true;
+            left.open();
+        }
         const down = this.spoolManager.getSpool(this.row - 1, this.col);
-        if (down) down.open();
+        if (down && !down.isOpen) {
+            down.isOpen = true;
+            down.open();
+        }
     }
 
     private moveToSlot(slot: Slot) {
@@ -212,6 +225,7 @@ export class Spool extends Clickable {
             })
             .start();
     }
+
     public checkLose() {
         const slotManager = ServiceLocator.get(SlotManager);
         const woolManager = ServiceLocator.get(WoolManager);
@@ -250,7 +264,7 @@ export class Spool extends Clickable {
         this.startWiggle();
 
         while (this.queue.length > 0) {
-            this.queue.sort((a, b) => a.index - b.index);
+            this.queue.sort((a, b) => b.index - a.index);
 
             const item = this.queue.shift();
             if (!item || !item.wool) continue;
@@ -352,8 +366,9 @@ export class Spool extends Clickable {
 
             const mat = renderer.getMaterialInstance(0);
 
+            mat.setProperty("color", this.color);
+
             if (active) {
-                mat.setProperty("color", this.color);
                 mat.setProperty('lineWidth', 70);
             } else {
                 mat.setProperty('lineWidth', 0);
@@ -371,17 +386,8 @@ export class Spool extends Clickable {
     }
 
     private isBlocked(): boolean {
-        const level = ServiceLocator.get(GameManager).currentLevelData;
-        const maxRow = level.rows - 1;
-        const maxCol = level.columns - 1;
-        const right = this.spoolManager.getSpool(this.row, this.col + 1);
-        const left = this.spoolManager.getSpool(this.row, this.col - 1);
-        const down = this.spoolManager.getSpool(this.row - 1, this.col);
-        const top = this.spoolManager.getSpool(this.row + 1, this.col);
-        const blockRight = this.col === maxCol || (right && !right.isInSlot);
-        const blockLeft = this.col === 0 || (left && !left.isInSlot);
-        const blockDown = this.row === 0 || (down && !down.isInSlot);
-        const blockTop = this.row === maxRow ? false : (top && !top.isInSlot);
-        return blockRight && blockLeft && blockDown && blockTop;
+        const newLevelData = ServiceLocator.get(GameManager).newLevelData;
+        const maxRow = newLevelData.gridHeight - 1;
+        return this.row !== maxRow;
     }
 }

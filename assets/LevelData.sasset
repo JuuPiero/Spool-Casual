@@ -50,7 +50,7 @@
   },
   {
     "__type__": "SpoolData",
-    "colorIndex": 0
+    "colorIndex": -1
   },
   {
     "__type__": "SpoolData",
