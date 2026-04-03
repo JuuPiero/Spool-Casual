@@ -17,9 +17,14 @@ function darkenColor(color, percent) {
 
     return new Color(r, g, b, color.a);
 }
+function print(...data: any[]) {
+    console.log(data);
+}
+
 
 export {
     getRandomColor,
     darkenColor,
+    print
 }
 

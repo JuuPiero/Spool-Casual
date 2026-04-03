@@ -20,7 +20,7 @@ const { ccclass, property } = _decorator;
 @ccclass('Spool')
 export class Spool extends Clickable {
 
-    public data: SpoolData;
+    // public data: SpoolData;
 
     @property(CCInteger)
     public capacity: number = 0;
@@ -28,7 +28,7 @@ export class Spool extends Clickable {
     @property(CCInteger)
     public count: number = 0;
 
-    public currentCapacity: number;
+    // public currentCapacity: number;
 
     @property(CCBoolean)
     public isFlying: boolean = false;

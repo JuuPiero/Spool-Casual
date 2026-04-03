@@ -1,4 +1,4 @@
-import { _decorator, Component, JsonAsset, Node, sys } from 'cc';
+import { _decorator, Color, Component, JsonAsset, Node, sys } from 'cc';
 import { GameConfig } from './GameConfigSA';
 import { ServiceLocator } from '../ServiceLocator';
 import { LevelData } from './LevelData';
@@ -28,6 +28,9 @@ export class GameManager extends Component {
     @property(NewLevelData)
     public newLevelData: NewLevelData = null
 
+
+    public colorMap: Map<number, Color> = new Map<number, Color>();
+
     // @property(Node) tutorial: Node = null
 
 
@@ -35,12 +38,12 @@ export class GameManager extends Component {
         const rawData = this.levelJson.json; // object thường
         const levelData = Object.assign(new NewLevelData(), rawData); // chuyển thành instance của LevelData
         this.newLevelData = levelData
-
+        for (const colorHex of this.newLevelData.colorHexCodes) {
+            const color: Color = new Color();
+            Color.fromHEX(color, colorHex.Item2)
+            this.colorMap.set(colorHex.Item1, color);
+        }
         console.log(this.newLevelData);
-        // this.levelConfig.addLevel(levelData);
-        // this.levelConfig.saveAsset()
-        // return levelData
-
     }
 
     protected onLoad(): void {
@@ -55,11 +58,16 @@ export class GameManager extends Component {
 
     protected start(): void {
         this.loadLevel()
+
     }
 
     installGame = () => {
         super_html_playable.download()
         // sys.openURL(this.gameConfig.storeUrl)
         // ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
+    }
+
+    public getLevelColor(colorNum: number): Color {
+        return this.colorMap.get(colorNum)
     }
 }

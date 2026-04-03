@@ -33,7 +33,7 @@ export class SlotManager extends Component {
         const gameConfig = ServiceLocator.get(GameConfig)
         const levelData = ServiceLocator.get(GameManager).currentLevelData
         
-        this.slotCount = levelData.maxSlots
+        // this.slotCount = levelData.maxSlots
         const totalWidth = (this.slotCount - 1) * this.spacing
 
         const startX = -totalWidth / 2;

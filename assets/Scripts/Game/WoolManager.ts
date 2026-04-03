@@ -5,6 +5,8 @@ import { SplineInstantiate } from '../SplineInstantiate';
 import { SubRay } from './SubRay';
 import { RaySlot } from './RaySlot';
 import { SplineAnimate } from '../SplineAnimate';
+import { GameManager } from './GameManager';
+import { print } from '../ultils';
 const { ccclass, property } = _decorator;
 
 // @ccclass('FragmentData')
@@ -44,16 +46,19 @@ export class WoolManager extends Component {
 
     protected onLoad(): void {
         ServiceLocator.register(WoolManager, this)
+        if (!this.splineInstantiate) {
+            this.splineInstantiate = this.node.getComponent(SplineInstantiate);
+        }
     }
 
 
     protected start(): void {
-        if (!this.splineInstantiate) {
-            this.splineInstantiate = this.node.getComponent(SplineInstantiate);
-        }
-        // const spoolManager = ServiceLocator.get(SpoolManager)
+
+        const spoolManager = ServiceLocator.get(SpoolManager)
 
         this.scheduleOnce(() => {
+            const newLevelData = ServiceLocator.get(GameManager).newLevelData
+
             this.splineInstantiate.items.forEach(item => {
                 this.slots.push(item.getComponent(RaySlot))
             });
@@ -82,23 +87,43 @@ export class WoolManager extends Component {
             const base = Math.floor(total / spoolManager.spools.length);
             const extra = total % spoolManager.spools.length;
 
-            let index = 0;
+            const passengersQueues = newLevelData.passengersQueuesData
+            let itemInMainRay: number[] = []
+            const subRayList = []
 
+            // const capacityMap = new Map<Color, number>()
+
+
+            for (const subRay of passengersQueues) {
+                const temp = [...subRay.colorTypesQueue]
+                const half = temp.splice(0, Math.floor(temp.length / 2));
+                itemInMainRay = [...itemInMainRay, ...half]
+                subRayList.push(temp)
+            }
+            console.log(itemInMainRay);
+            console.log(subRayList);
+            
+
+            let index = 0;
+            // print(spoolManager.spools.length + " spools")
+            // print(allItems.length + " rayslots")
+            
             for (let i = 0; i < spoolManager.spools.length; i++) {
                 const count = base + (i < extra ? 1 : 0);
                 spoolManager.spools[i].capacity = count;
-                // const fragment = new FragmentData();
-                // fragment.color = spoolManager.spools[i].color;
+                console.log(`${i}: ${spoolManager.spools[i].row}_${spoolManager.spools[i].col}: ${spoolManager.spools[i].capacity}`);
+                // capacityMap.set(spoolManager.spools[i].color, spoolManager.spools[i].capacity)
                 for (let j = 0; j < count; j++) {
                     const raySlot = allItems[index].getComponent(RaySlot);
                     raySlot?.wool?.setColor(spoolManager.spools[i].color);
-                    // fragment.raySlots.push(raySlot!);
-                    // raySlot.fragmentIndex = fragment.raySlots.length - 1;
+
                     index++;
                 }
-                
-                // this.fragments.push(fragment);
             }
+
+            // capacityMap.forEach((k, v) => {
+            //     print(`${k}_${v}`)
+            // })
 
             if (this.splineInstantiate && allItems.length > 0) {
                 this.calculateRelativeDistances();
@@ -142,7 +167,7 @@ export class WoolManager extends Component {
                     }
                 }
             }
-        } 
+        }
         else {
             for (const item of items) {
                 if (item && item.isValid && item.isMovingNow()) {

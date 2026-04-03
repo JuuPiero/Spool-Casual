@@ -14,8 +14,6 @@ export class SubRay extends Component {
     @property(BoxCollider)
     public rayTrigger: BoxCollider
 
-    // public woolManager: WoolManager
-
     @property({
         type: RaySlot
     })
@@ -33,7 +31,6 @@ export class SubRay extends Component {
         })
 
     }
-
 
     protected onDestroy(): void {
         this.rayTrigger?.off('onTriggerStay', this.onTriggerEnter, this);

@@ -18,9 +18,9 @@ export class Spline extends Component {
 
     protected start(): void {
         // this.points = this.pointContainer.children
-        const samples = this.getSamples(80);
-        this.gizmos = this.node.getComponent(Gizmos)
-        this.gizmos?.DrawPath(samples);
+        // const samples = this.getSamples(80);
+        // this.gizmos = this.node.getComponent(Gizmos)
+        // this.gizmos?.DrawPath(samples);
     }
 
     // =========================

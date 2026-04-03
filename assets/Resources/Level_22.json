@@ -2,47 +2,52 @@
   "colorHexCodes": [
     {
       "Item1": 2,
-      "Item2": "#10B741FF"
+      "Item2": "#FF0808FF"
     },
     {
       "Item1": 8,
-      "Item2": "#D9C7E5FF"
+      "Item2": "#FF00D5FF"
     },
     {
       "Item1": 5,
-      "Item2": "#737373FF"
+      "Item2": "#ce5600FF"
+
     },
     {
       "Item1": 4,
-      "Item2": "#FA6801FF"
+      "Item2": "#003FC3FF"
+
     },
     {
       "Item1": 9,
-      "Item2": "#386573FF"
+      "Item2": "#FFB8ABFF"
+
     },
     {
       "Item1": 3,
-      "Item2": "#F17CD5FF"
+      "Item2": "#df5fc1FF"
     },
     {
       "Item1": 10,
-      "Item2": "#E53B48FF"
+      "Item2": "#00BE00FF"
+
     },
     {
       "Item1": 1,
-      "Item2": "#ECC930FF"
+      "Item2": "#004932FF"
+
     },
     {
       "Item1": 7,
-      "Item2": "#A12A8EFF"
+      "Item2": "#00DFE7FF"
     },
     {
       "Item1": 6,
-      "Item2": "#B0E526FF"
+      "Item2": "#e4a300FF"
     },
     {
       "Item1": 0,
-      "Item2": "#8653ECFF"
+      "Item2": "#5f2ac9FF"
     }
   ],
   "levelIndex": 22,

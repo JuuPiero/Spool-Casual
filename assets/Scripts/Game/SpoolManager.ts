@@ -42,6 +42,7 @@ export class SpoolManager extends Component {
     protected start(): void {
         this.gameManager = ServiceLocator.get(GameManager);
         this.spawnGrid();
+        // ServiceLocator.get(WoolManager).onNewGame()
     }
 
     
@@ -55,19 +56,6 @@ export class SpoolManager extends Component {
         const gameConfig = ServiceLocator.get(GameConfig);
         const newLevelData = this.gameManager.newLevelData;
 
-        // Create color map from colorHexCodes
-        const colorMap = new Map<number, Color>();
-        for (const colorHex of newLevelData.colorHexCodes) {
-            const color: Color = new Color();
-            Color.fromHEX(color, colorHex.Item2)
-            colorMap.set(colorHex.Item1, color);
-        }
-
-        // Create vehicle map for quick lookup
-        const vehicleMap = new Map<string, VehicleData>();
-        for (const vehicle of newLevelData.vehiclesData) {
-            vehicleMap.set(`${vehicle.coordinateX}_${vehicle.coordinateY}`, vehicle);
-        }
 
         const columns = newLevelData.gridWidth;
         const rows = newLevelData.gridHeight;
@@ -78,18 +66,10 @@ export class SpoolManager extends Component {
         const startX = -totalWidth / 2;
         const startZ = totalDepth / 2;
 
-        for (const gridSlot of newLevelData.gridSlotsData) {
-            if (gridSlot.gridSlotType !== 1) {
-                continue; // Only spawn on gridSlotType 1 thi
-            }
+        for (const vehicle of newLevelData.vehiclesData) {
 
-            const col = gridSlot.coordinateX;
-            const row = gridSlot.coordinateY;
-
-            const vehicle = vehicleMap.get(`${col}_${row}`);
-            if (!vehicle) {
-                continue; // No vehicle at this position
-            }
+            const col = vehicle.coordinateX;
+            const row = vehicle.coordinateY;
 
             const node = instantiate(gameConfig.spoolPrefab);
             const spool = node.getComponent(Spool);
@@ -105,7 +85,7 @@ export class SpoolManager extends Component {
             node.setParent(this.node);
 
             // Set color from colorMap
-            spool.color = colorMap.get(vehicle.entityColorType) || Color.WHITE;
+            spool.color = this.gameManager.getLevelColor(vehicle.entityColorType) || Color.WHITE;
 
             const x = startX + col * this.spacing;
             const z = startZ - row * this.spacing;
@@ -136,7 +116,6 @@ export class SpoolManager extends Component {
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
             super_html_playable.game_end()
         }
-       
     }
 
 }
