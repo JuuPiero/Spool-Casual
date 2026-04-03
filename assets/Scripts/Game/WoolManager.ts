@@ -51,13 +51,81 @@ export class WoolManager extends Component {
         }
     }
 
+    private shuffleArray<T>(array: T[]): void {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+//     protected start(): void {
+
+//     const spoolManager = ServiceLocator.get(SpoolManager)
+
+//     this.scheduleOnce(() => {
+//         const newLevelData = ServiceLocator.get(GameManager).newLevelData
+
+//         this.splineInstantiate.items.forEach(item => {
+//             this.slots.push(item.getComponent(RaySlot))
+//         });
+
+//         const allItems: SplineAnimate[] = [...this.splineInstantiate.items];
+
+//         for (let i = 0; i < this.subRays.length; i++) {
+//             const sub = this.subRays[i];
+//             if (!sub.splineInstantiate) continue;
+//             const items = sub.splineInstantiate.items;
+//             for (let j = 0; j < items.length; j++) {
+//                 allItems.push(items[j]);
+//             }
+//         }
+//         for (let i = 0; i < allItems.length; i++) {
+//             const raySlot = allItems[i].getComponent(RaySlot);
+//             if (raySlot) {
+//                 raySlot.index = i;
+//             }
+//         }
+
+//         const total = allItems.length;
+
+//         const base = Math.floor(total / spoolManager.spools.length);
+//         const extra = total % spoolManager.spools.length;
+
+//         // Tạo mảng các spool index và shuffle nó
+//         const spoolIndices = Array.from(spoolManager.spools.keys());
+//         this.shuffleArray(spoolIndices);
+
+//         let index = 0;
+        
+//         // Duyệt theo spoolIndices đã bị shuffle
+//         for (let i = 0; i < spoolIndices.length; i++) {
+//             const spoolIdx = spoolIndices[i];
+//             const count = base + (i < extra ? 1 : 0); // Vẫn giữ logic count dựa trên vị trí shuffle
+//             spoolManager.spools[spoolIdx].capacity = count;
+            
+//             for (let j = 0; j < count; j++) {
+//                 const raySlot = allItems[index].getComponent(RaySlot);
+//                 raySlot?.wool?.setColor(spoolManager.spools[spoolIdx].color);
+//                 index++;
+//             }
+//         }
+
+//         if (this.splineInstantiate && allItems.length > 0) {
+//             this.calculateRelativeDistances();
+
+//             if (this.autoMove) {
+//                 this.startMoving();
+//             }
+//         }
+
+//     }, 0);
+// }
+
+
 
     protected start(): void {
 
-        const spoolManager = ServiceLocator.get(SpoolManager)
-
         this.scheduleOnce(() => {
-            const newLevelData = ServiceLocator.get(GameManager).newLevelData
 
             this.splineInstantiate.items.forEach(item => {
                 this.slots.push(item.getComponent(RaySlot))
@@ -87,32 +155,11 @@ export class WoolManager extends Component {
             const base = Math.floor(total / spoolManager.spools.length);
             const extra = total % spoolManager.spools.length;
 
-            const passengersQueues = newLevelData.passengersQueuesData
-            let itemInMainRay: number[] = []
-            const subRayList = []
-
-            // const capacityMap = new Map<Color, number>()
-
-
-            for (const subRay of passengersQueues) {
-                const temp = [...subRay.colorTypesQueue]
-                const half = temp.splice(0, Math.floor(temp.length / 2));
-                itemInMainRay = [...itemInMainRay, ...half]
-                subRayList.push(temp)
-            }
-            console.log(itemInMainRay);
-            console.log(subRayList);
-            
-
             let index = 0;
-            // print(spoolManager.spools.length + " spools")
-            // print(allItems.length + " rayslots")
-            
+
             for (let i = 0; i < spoolManager.spools.length; i++) {
                 const count = base + (i < extra ? 1 : 0);
                 spoolManager.spools[i].capacity = count;
-                console.log(`${i}: ${spoolManager.spools[i].row}_${spoolManager.spools[i].col}: ${spoolManager.spools[i].capacity}`);
-                // capacityMap.set(spoolManager.spools[i].color, spoolManager.spools[i].capacity)
                 for (let j = 0; j < count; j++) {
                     const raySlot = allItems[index].getComponent(RaySlot);
                     raySlot?.wool?.setColor(spoolManager.spools[i].color);
@@ -120,10 +167,6 @@ export class WoolManager extends Component {
                     index++;
                 }
             }
-
-            // capacityMap.forEach((k, v) => {
-            //     print(`${k}_${v}`)
-            // })
 
             if (this.splineInstantiate && allItems.length > 0) {
                 this.calculateRelativeDistances();

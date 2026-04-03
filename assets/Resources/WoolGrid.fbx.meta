@@ -1032,6 +1032,21 @@
       "scenes": [
         "46dc794f-2839-4e33-8867-36da53e5b484@64bee"
       ]
+    },
+    "meshSimplify": {
+      "enable": true,
+      "targetRatio": 1,
+      "errorRate": 1
+    },
+    "meshOptimize": {
+      "enable": true,
+      "vertexCache": true,
+      "vertexFetch": true
+    },
+    "disableMeshSplit": false,
+    "meshCompress": {
+      "enable": true,
+      "compress": true
     }
   }
 }

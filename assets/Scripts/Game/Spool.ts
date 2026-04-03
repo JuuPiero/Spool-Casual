@@ -183,7 +183,7 @@ export class Spool extends Clickable {
             left.isOpen = true;
             left.open();
         }
-        const down = this.spoolManager.getSpool(this.row - 1, this.col);
+        const down = this.spoolManager.getSpool(this.row + 1, this.col);
         if (down && !down.isOpen) {
             down.isOpen = true;
             down.open();
@@ -211,12 +211,20 @@ export class Spool extends Clickable {
                 this.slot = slot
                 slot.setSpool(this)
                 const itemsInMatchZone = ServiceLocator.get(MatchZone).itemsInMatchZone
+                
+                // Lấy danh sách wool cần add trước khi xóa khỏi itemsInMatchZone
+                const itemsToAdd: RaySlot[] = [];
                 for (const raySlot of itemsInMatchZone) {
-                    if (raySlot.wool.color.equals(this.color) && !this.isFull()) {
-                        this.queue.push(raySlot)
-                        itemsInMatchZone.delete(raySlot)
+                    if (raySlot.wool && raySlot.wool.color.equals(this.color) && !this.isFull()) {
+                        itemsToAdd.push(raySlot);
                     }
                 }
+                // Thêm vào queue và xóa khỏi set
+                for (const raySlot of itemsToAdd) {
+                    this.queue.push(raySlot);
+                    itemsInMatchZone.delete(raySlot);
+                }
+                
                 this.collects()
                 Spool.delay = false
                 
@@ -386,8 +394,6 @@ export class Spool extends Clickable {
     }
 
     private isBlocked(): boolean {
-        const newLevelData = ServiceLocator.get(GameManager).newLevelData;
-        const maxRow = newLevelData.gridHeight - 1;
-        return this.row !== maxRow;
+        return this.row !== 0;
     }
 }

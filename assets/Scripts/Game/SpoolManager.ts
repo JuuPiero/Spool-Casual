@@ -64,7 +64,7 @@ export class SpoolManager extends Component {
         const totalDepth = (rows - 1) * this.spacing;
 
         const startX = -totalWidth / 2;
-        const startZ = totalDepth / 2;
+        const startZ = -totalDepth / 2;
 
         for (const vehicle of newLevelData.vehiclesData) {
 
@@ -88,7 +88,7 @@ export class SpoolManager extends Component {
             spool.color = this.gameManager.getLevelColor(vehicle.entityColorType) || Color.WHITE;
 
             const x = startX + col * this.spacing;
-            const z = startZ - row * this.spacing;
+            const z = startZ + row * this.spacing;
 
             node.setPosition(new Vec3(x, 0, z));
 
