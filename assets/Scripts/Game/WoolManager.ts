@@ -9,16 +9,6 @@ import { GameManager } from './GameManager';
 import { print } from '../ultils';
 const { ccclass, property } = _decorator;
 
-// @ccclass('FragmentData')
-// export class FragmentData {
-//     @property({ type: Color })
-//     public color!: Color;
-//     @property(RaySlot)
-//     public raySlots: RaySlot[] = [];
-// }
-
-
-
 @ccclass('WoolManager')
 export class WoolManager extends Component {
 
@@ -79,26 +69,9 @@ export class WoolManager extends Component {
             const total = allItems.length;
 
             const spoolManager = ServiceLocator.get(SpoolManager);
-
             const base = Math.floor(total / spoolManager.spools.length);
             const extra = total % spoolManager.spools.length;
-
-            // const newLevelData = ServiceLocator.get(GameManager).newLevelData
-            // const passengerQueues = newLevelData.passengersQueuesData
-            // const mainRayColor = []
-            // const subRayListColor = [] // mảng 2 chiều
-            // passengerQueues.forEach(item => {
-            //     subRayListColor.push(item.colorTypesQueue)
-            // })
-            // subRayListColor.forEach(queue => {
-            //     const halfLength = Math.ceil(queue.length / 2) // Lấy nửa trên (làm tròn lên)
-            //     const halfElements = queue.splice(0, halfLength) // splice sẽ xóa và trả về phần tử đã xóa
-            //     mainRayColor.push(...halfElements)
-            // })
-            // console.log(mainRayColor);
-            // console.log(subRayListColor);
-
-
+            
             let index = 0;
             for (let i = 0; i < spoolManager.spools.length; i++) {
                 const count = base + (i < extra ? 1 : 0);
@@ -109,8 +82,6 @@ export class WoolManager extends Component {
                     index++;
                 }
             }
-
-
             if (this.splineInstantiate && allItems.length > 0) {
                 this.calculateRelativeDistances();
                 if (this.autoMove) {
@@ -120,6 +91,80 @@ export class WoolManager extends Component {
 
         }, 0);
     }
+
+    // protected start(): void {
+
+    //     this.scheduleOnce(() => {
+
+    //         this.splineInstantiate.items.forEach(item => {
+    //             this.slots.push(item.getComponent(RaySlot))
+    //         });
+
+    //         const allItems: SplineAnimate[] = [...this.splineInstantiate.items];
+
+    //         for (let i = 0; i < this.subRays.length; i++) {
+    //             const sub = this.subRays[i];
+    //             if (!sub.splineInstantiate) continue;
+    //             const items = sub.splineInstantiate.items;
+    //             for (let j = 0; j < items.length; j++) {
+    //                 allItems.push(items[j]);
+    //             }
+    //         }
+    //         for (let i = 0; i < allItems.length; i++) {
+    //             const raySlot = allItems[i].getComponent(RaySlot);
+    //             if (raySlot) {
+    //                 raySlot.index = i;
+    //             }
+    //         }
+
+    //         const total = allItems.length;
+
+    //         const spoolManager = ServiceLocator.get(SpoolManager);
+    //         const base = Math.floor(total / spoolManager.spools.length);
+    //         const extra = total % spoolManager.spools.length;
+            
+
+    //         const newLevelData = ServiceLocator.get(GameManager).newLevelData
+    //         const passengerQueues = newLevelData.passengersQueuesData
+    //         const mainRayColor = []
+    //         const subRayListColor = [] // mảng 2 chiều
+    //         passengerQueues.forEach(item => {
+    //             subRayListColor.push(item.colorTypesQueue)
+    //         })
+    //         subRayListColor.forEach(queue => {
+    //             const halfLength = Math.ceil(queue.length / 2) // Lấy nửa trên (làm tròn lên)
+    //             const halfElements = queue.splice(0, halfLength) // splice sẽ xóa và trả về phần tử đã xóa
+    //             mainRayColor.push(...halfElements)
+    //         })
+    //         subRayListColor.forEach(queue => {
+    //             mainRayColor.push(...queue)
+    //         })
+    //         print(mainRayColor.length)
+          
+    //         let a = 0
+    //         for (let i = 0; i < mainRayColor.length; i++) {
+    //             const color = ServiceLocator.get(GameManager).colorMap.get(mainRayColor[i]);
+    //             for (let j = 0; j < 5; j++) {
+    //                 const raySlot = allItems[a]?.getComponent(RaySlot);
+    //                 raySlot?.wool?.setColor(color);
+    //                 a++
+    //             }
+    //         }
+    //         print(a)
+
+    //         for (let i = 0; i < spoolManager.spools.length; i++) {
+    //             const count = base + (i < extra ? 1 : 0);
+    //             spoolManager.spools[i].capacity = count;
+    //         }
+    //         if (this.splineInstantiate && allItems.length > 0) {
+    //             this.calculateRelativeDistances();
+    //             if (this.autoMove) {
+    //                 this.startMoving();
+    //             }
+    //         }
+
+    //     }, 0);
+    // }
 
     
 
