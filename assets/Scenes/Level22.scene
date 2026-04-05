@@ -3487,7 +3487,7 @@
       "__uuid__": "7428aa80-6900-4244-8acc-d7deb17f0486",
       "__expectedType__": "cc.Prefab"
     },
-    "count": 20,
+    "count": 30,
     "startOffset": 0,
     "useUniformSpacing": true,
     "sampleCount": 100,
@@ -4084,7 +4084,7 @@
       "__uuid__": "7428aa80-6900-4244-8acc-d7deb17f0486",
       "__expectedType__": "cc.Prefab"
     },
-    "count": 20,
+    "count": 30,
     "startOffset": 0,
     "useUniformSpacing": true,
     "sampleCount": 100,

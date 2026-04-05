@@ -5,8 +5,6 @@ import { LevelData } from './LevelData';
 import { NewLevelData } from './NewLevelDataSA';
 
 
-
-
 @bh.createAssetMenu('LevelsConfig', 'Config/LevelsConfig')
 @bh.scriptable('LevelsConfig')
 export class LevelsConfig extends bh.ScriptableAsset {
