@@ -7,6 +7,7 @@ import { GameEvent } from '../GameEvent';
 import super_html_playable from '../super_html_playable';
 import { LevelsConfig } from './LevelsConfig';
 import { NewLevelData } from './NewLevelDataSA';
+import { NavigationContainer } from '../Navigation/NavigationContainer';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -62,8 +63,10 @@ export class GameManager extends Component {
     }
 
     installGame = () => {
+        ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
+        super_html_playable.game_end()
         super_html_playable.download()
-        // sys.openURL(this.gameConfig.storeUrl)
+
         // ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
     }
 

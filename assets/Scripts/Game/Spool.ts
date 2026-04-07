@@ -14,6 +14,8 @@ import { GameManager } from './GameManager';
 import { MatchZone } from './MatchZone';
 import { SOUNDS } from './Sounds';
 import { WoolManager } from './WoolManager';
+import { EventBus } from '../EventBus';
+import { GameEvent } from '../GameEvent';
 const { ccclass, property } = _decorator;
 
 
@@ -256,7 +258,8 @@ export class Spool extends Clickable {
         
         // Không có RaySlot trùng màu, thua
         console.log('Lose');
-        // Thêm logic thua : gọi game over
+        // SoundManager.instance.playOneShot(SOUNDS.LOSE)
+        EventBus.emit(GameEvent.LEVEL_COMPLETED)
     }
 
 
@@ -264,67 +267,76 @@ export class Spool extends Clickable {
     public queue: RaySlot[] = [];
 
     public async collects() {
-        if (this.isCollecting) return;
-        this.isCollecting = true;
-        this.rope.node.active = true;
-        const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0);
-        mat.setProperty('fill', 1);
-        this.startWiggle();
+    if (this.isCollecting) return;
+    this.isCollecting = true;
+    this.rope.node.active = true;
+    const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0);
+    mat.setProperty('fill', 1);
+    this.startWiggle();
 
-        while (this.queue.length > 0) {
-            this.queue.sort((a, b) => b.index - a.index);
+    while (this.queue.length > 0 && !this.isFull()) { // Thêm điều kiện !this.isFull()
+        this.queue.sort((a, b) => b.index - a.index);
 
-            const item = this.queue.shift();
-            if (!item || !item.wool) continue;
-            this.count++;
-            this.syncWoolsView();
+        const item = this.queue.shift();
+        if (!item || !item.wool) continue;
+        
+        // Kiểm tra lại spool còn chỗ không
+        if (this.isFull()) {
+            // Nếu đã đầy, trả item lại queue và thoát
+            this.queue.unshift(item);
+            break;
+        }
+        
+        this.count++;
+        this.syncWoolsView();
 
-            item.isCollecting = true;
+        item.isCollecting = true;
 
-           
-            // animation wool
-            tween(item.wool.node)
-                .to(0.2, { eulerAngles: new Vec3(0, 50, 0) })
-                .start();
+        // animation wool
+        tween(item.wool.node)
+            .to(0.2, { eulerAngles: new Vec3(0, 50, 0) })
+            .start();
 
-            tween(item.wool.node)
-                .to(0.2, { scale: Vec3.ZERO })
-                .start();
+        tween(item.wool.node)
+            .to(0.2, { scale: Vec3.ZERO })
+            .start();
 
-            // rope anim
-            const start = item.wool.startPoint.worldPosition.clone();
-            const end = item.wool.endPoint.worldPosition.clone();
+        // rope anim
+        const start = item.wool.startPoint.worldPosition.clone();
+        const end = item.wool.endPoint.worldPosition.clone();
 
-            let t = { value: 0 };
+        let t = { value: 0 };
 
-            tween(t)
-                .to(0.25, { value: 1 }, {
-                    easing: "quadOut",
-                    onUpdate: () => {
-                        Vec3.lerp(this.tempVec3, start, end, t.value);
-                        this.rope.endPoint.setWorldPosition(this.tempVec3);
-                    }
-                })
-                .start();
+        tween(t)
+            .to(0.25, { value: 1 }, {
+                easing: "quadOut",
+                onUpdate: () => {
+                    Vec3.lerp(this.tempVec3, start, end, t.value);
+                    this.rope.endPoint.setWorldPosition(this.tempVec3);
+                }
+            })
+            .start();
 
-            await this.delay(0.1);
-           
+        await this.delay(0.1);
 
-            if (item.wool) {
-                item.wool.node.active = false;
-                item.wool = null;
-            }
-
-            item.isCollecting = false;
+        if (item.wool) {
+            item.wool.node.active = false;
+            item.wool = null;
         }
 
-        this.stopWiggle();
-
-        mat.setProperty('fill', 0);
-
-        this.isCollecting = false;
+        item.isCollecting = false;
     }
 
+    this.stopWiggle();
+    mat.setProperty('fill', 0);
+    this.isCollecting = false;
+    
+    // Nếu vẫn còn queue nhưng spool đã đầy, xóa queue
+    if (this.isFull() && this.queue.length > 0) {
+        console.warn(`Spool đã đầy nhưng còn ${this.queue.length} items trong queue, xóa bỏ`);
+        this.queue = [];
+    }
+}
 
 
     delay(time: number) { return new Promise(resolve => { this.scheduleOnce(resolve, time); }); }

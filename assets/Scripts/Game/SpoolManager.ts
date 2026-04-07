@@ -112,9 +112,8 @@ export class SpoolManager extends Component {
             const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
             const scene = director.getScene();
             confetiEffect.setParent(scene)
-            ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
+          
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
-            super_html_playable.game_end()
         }
     }
 

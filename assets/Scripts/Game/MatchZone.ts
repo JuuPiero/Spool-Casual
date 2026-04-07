@@ -45,30 +45,70 @@ export class MatchZone extends Component {
         this.itemsInMatchZone.delete(raySlot)
     }
 
+    // onTriggerEnter(event: ITriggerEvent) {
+    //     const raySlot = event.otherCollider.getComponent(RaySlot);
+    //     if (!raySlot || !raySlot.wool) return;
+    //     if (raySlot.isCollecting) return;
+
+    //     raySlot.canCollect = true;
+
+    //     const slots = this.slotManager.slots;
+
+    //     for (const slot of slots) {
+    //         const spool = slot.spool;
+
+    //         if (!spool || spool.isFull()) continue;
+    //         if (!spool.color.equals(raySlot.wool.color)) continue;
+
+    //         if (spool.queue.indexOf(raySlot) === -1) {
+    //             spool.insertSorted(raySlot); // dùng hàm insert sorted
+    //             spool.collects(); // trigger nếu chưa chạy
+    //         }
+
+    //         return;
+    //     }
+
+    //     // nếu chưa có spool phù hợp => giữ lại
+    //     this.itemsInMatchZone.add(raySlot);
+    // }
+
+
     onTriggerEnter(event: ITriggerEvent) {
-        const raySlot = event.otherCollider.getComponent(RaySlot);
-        if (!raySlot || !raySlot.wool) return;
-        if (raySlot.isCollecting) return;
+    const raySlot = event.otherCollider.getComponent(RaySlot);
+    if (!raySlot || !raySlot.wool) return;
+    if (raySlot.isCollecting) return;
 
-        raySlot.canCollect = true;
+    raySlot.canCollect = true;
 
-        const slots = this.slotManager.slots;
+    const slots = this.slotManager.slots;
 
-        for (const slot of slots) {
+    // Lọc và sắp xếp các slot có spool phù hợp theo count giảm dần
+    const eligibleSlots = slots
+        .filter(slot => {
             const spool = slot.spool;
+            return spool && !spool.isFull() && spool.color.equals(raySlot.wool.color);
+        })
+        .sort((a, b) => (b.spool?.count || 0) - (a.spool?.count || 0));
 
-            if (!spool || spool.isFull()) continue;
-            if (!spool.color.equals(raySlot.wool.color)) continue;
+    // Duyệt qua các slot đã được sắp xếp
+    for (const slot of eligibleSlots) {
+        const spool = slot.spool;
+        if (!spool) continue;
 
-            if (spool.queue.indexOf(raySlot) === -1) {
-                spool.insertSorted(raySlot); // dùng hàm insert sorted
-                spool.collects(); // trigger nếu chưa chạy
+        if (spool.queue.indexOf(raySlot) === -1) {
+            spool.insertSorted(raySlot);
+            // Chỉ gọi collects nếu spool không đang collect
+            if (!spool.isCollecting) {
+                spool.collects();
             }
-
-            return;
         }
 
-        // nếu chưa có spool phù hợp => giữ lại
-        this.itemsInMatchZone.add(raySlot);
+        return;
     }
+
+    // nếu chưa có spool phù hợp => giữ lại
+    this.itemsInMatchZone.add(raySlot);
+}
+
+    
 }
