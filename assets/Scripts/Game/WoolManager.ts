@@ -93,15 +93,11 @@ export class WoolManager extends Component {
     }
 
     // protected start(): void {
-
     //     this.scheduleOnce(() => {
-
     //         this.splineInstantiate.items.forEach(item => {
     //             this.slots.push(item.getComponent(RaySlot))
     //         });
-
     //         const allItems: SplineAnimate[] = [...this.splineInstantiate.items];
-
     //         for (let i = 0; i < this.subRays.length; i++) {
     //             const sub = this.subRays[i];
     //             if (!sub.splineInstantiate) continue;
@@ -116,14 +112,10 @@ export class WoolManager extends Component {
     //                 raySlot.index = i;
     //             }
     //         }
-
     //         const total = allItems.length;
-
     //         const spoolManager = ServiceLocator.get(SpoolManager);
     //         const base = Math.floor(total / spoolManager.spools.length);
     //         const extra = total % spoolManager.spools.length;
-            
-
     //         const newLevelData = ServiceLocator.get(GameManager).newLevelData
     //         const passengerQueues = newLevelData.passengersQueuesData
     //         const mainRayColor = []
@@ -140,7 +132,6 @@ export class WoolManager extends Component {
     //             mainRayColor.push(...queue)
     //         })
     //         print(mainRayColor.length)
-          
     //         let a = 0
     //         for (let i = 0; i < mainRayColor.length; i++) {
     //             const color = ServiceLocator.get(GameManager).colorMap.get(mainRayColor[i]);
@@ -150,8 +141,6 @@ export class WoolManager extends Component {
     //                 a++
     //             }
     //         }
-    //         print(a)
-
     //         for (let i = 0; i < spoolManager.spools.length; i++) {
     //             const count = base + (i < extra ? 1 : 0);
     //             spoolManager.spools[i].capacity = count;
@@ -162,10 +151,8 @@ export class WoolManager extends Component {
     //                 this.startMoving();
     //             }
     //         }
-
     //     }, 0);
     // }
-
     
 
     protected update(dt: number): void {
@@ -200,20 +187,19 @@ export class WoolManager extends Component {
                 }
             }
         }
-        else {
-            for (const item of items) {
-                if (item && item.isValid && item.isMovingNow()) {
-                    const currentDist = item.getDistance();
-                    let newDist = currentDist - this.speed * dt;
-
-                    const totalLength = item.getTotalLength();
-                    if (newDist < 0) {
-                        newDist += totalLength;
-                    }
-                    item.setDistance(newDist);
-                }
-            }
-        }
+        // else {
+        //     for (const item of items) {
+        //         if (item && item.isValid && item.isMovingNow()) {
+        //             const currentDist = item.getDistance();
+        //             let newDist = currentDist - this.speed * dt;
+        //             const totalLength = item.getTotalLength();
+        //             if (newDist < 0) {
+        //                 newDist += totalLength;
+        //             }
+        //             item.setDistance(newDist);
+        //         }
+        //     }
+        // }
     }
 
 
@@ -337,9 +323,7 @@ export class WoolManager extends Component {
         return this.speed;
     }
 
-    /**
-     * Bật/tắt chế độ giữ formation
-     */
+    
     public setMaintainFormation(enable: boolean): void {
         this.maintainFormation = enable;
 
