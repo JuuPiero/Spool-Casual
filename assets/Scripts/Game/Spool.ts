@@ -1,21 +1,14 @@
 import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
-import { SlotManager } from './SlotManager';
 import { SpoolManager } from './SpoolManager';
-import { SpoolData } from './LevelData';
 import { Slot } from './Slot';
 import { RaySlot } from './RaySlot';
 import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
 import { GameConfig } from './GameConfigSA';
 import { SoundManager } from '../SoundManager';
-import { TutorialController } from './UI/TutorialController';
-import { GameManager } from './GameManager';
 import { MatchZone } from './MatchZone';
-import { SOUNDS } from './Sounds';
-import { WoolManager } from './WoolManager';
-import { EventBus } from '../EventBus';
-import { GameEvent } from '../GameEvent';
+
 const { ccclass, property } = _decorator;
 
 
@@ -23,6 +16,8 @@ const { ccclass, property } = _decorator;
 export class Spool extends Clickable {
 
     // public data: SpoolData;
+
+    public clickFunc: Function
 
     @property(CCInteger)
     public capacity: number = 0;
@@ -44,7 +39,7 @@ export class Spool extends Clickable {
     @property({ type: MeshRenderer })
     public renderers: MeshRenderer[] = [];
 
-    private isInSlot: boolean = false;
+    public isInSlot: boolean = false;
 
     @property({ type: Node })
     public woolsView: Node[] = [];
@@ -147,34 +142,11 @@ export class Spool extends Clickable {
     static delay = false
 
     public onClick() {
-        if (Spool.delay) return
-        if (this.isFlying || this.isInSlot) return;
-        if (!this.isOpen) {
-            SoundManager.instance.playOneShot(SOUNDS.FAILED);
-            return;
-        }
+        this.clickFunc?.()
 
-
-        const tut = ServiceLocator.get(TutorialController)
-        if (tut && tut.node.active) {
-            tut.node.active = false
-        }
-
-        const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
-
-        if (!slot) {
-            SoundManager.instance.playOneShot('Failed');
-            console.log('out of slot');
-            return;
-        }
-        Spool.delay = true
-
-        this.activateNextSpools();
-        SoundManager.instance.playOneShot(SOUNDS.CLICK);
-        this.moveToSlot(slot);
     }
 
-    private activateNextSpools() {
+    public activateNextSpools() {
         const right = this.spoolManager.getSpool(this.row, this.col + 1);
         if (right && !right.isOpen) {
             right.isOpen = true;
@@ -192,7 +164,7 @@ export class Spool extends Clickable {
         }
     }
 
-    private moveToSlot(slot: Slot) {
+    public moveToSlot(slot: Slot, onDone?: Function) {
         this.isFlying = true;
         this.isInSlot = true;
         slot.setProcess(0);
@@ -213,7 +185,6 @@ export class Spool extends Clickable {
                 this.slot = slot
                 slot.setSpool(this)
                 const itemsInMatchZone = ServiceLocator.get(MatchZone).itemsInMatchZone
-                
                 // Lấy danh sách wool cần add trước khi xóa khỏi itemsInMatchZone
                 const itemsToAdd: RaySlot[] = [];
                 for (const raySlot of itemsInMatchZone) {
@@ -226,118 +197,90 @@ export class Spool extends Clickable {
                     this.queue.push(raySlot);
                     itemsInMatchZone.delete(raySlot);
                 }
-                
+
                 this.collects()
                 Spool.delay = false
-                
-                console.log('move done, check lose');
-                this.checkLose()
+                onDone?.()
             })
             .start();
     }
 
-    public checkLose() {
-        const slotManager = ServiceLocator.get(SlotManager);
-        const woolManager = ServiceLocator.get(WoolManager);
-        
-        // Kiểm tra nếu còn slot trống
-        const availableSlot = slotManager.getAvailableSlot();
-        if (availableSlot) {
-            return; // Còn slot trống, chưa thua
-        }
-        
-        // Nếu không còn slot trống, kiểm tra xem có RaySlot nào trùng màu với spool trong slot
-        for (const raySlot of woolManager.slots) {
-            if (!raySlot.wool) continue;
-            for (const slot of slotManager.slots) {
-                if (slot.spool && raySlot.wool.color.equals(slot.spool.color)) {
-                    return; // Có RaySlot trùng màu, chưa thua
-                }
-            }
-        }
-        
-        // Không có RaySlot trùng màu, thua
-        console.log('Lose');
-        // SoundManager.instance.playOneShot(SOUNDS.LOSE)
-        EventBus.emit(GameEvent.LEVEL_COMPLETED)
-    }
 
 
     @property(RaySlot)
     public queue: RaySlot[] = [];
 
     public async collects() {
-    if (this.isCollecting) return;
-    this.isCollecting = true;
-    this.rope.node.active = true;
-    const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0);
-    mat.setProperty('fill', 1);
-    this.startWiggle();
+        if (this.isCollecting) return;
+        this.isCollecting = true;
+        this.rope.node.active = true;
+        const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0);
+        mat.setProperty('fill', 1);
+        this.startWiggle();
 
-    while (this.queue.length > 0 && !this.isFull()) { // Thêm điều kiện !this.isFull()
-        this.queue.sort((a, b) => b.index - a.index);
+        while (this.queue.length > 0 && !this.isFull()) { // Thêm điều kiện !this.isFull()
+            this.queue.sort((a, b) => b.index - a.index);
 
-        const item = this.queue.shift();
-        if (!item || !item.wool) continue;
-        
-        // Kiểm tra lại spool còn chỗ không
-        if (this.isFull()) {
-            // Nếu đã đầy, trả item lại queue và thoát
-            this.queue.unshift(item);
-            break;
+            const item = this.queue.shift();
+            if (!item || !item.wool) continue;
+
+            // Kiểm tra lại spool còn chỗ không
+            if (this.isFull()) {
+                // Nếu đã đầy, trả item lại queue và thoát
+                this.queue.unshift(item);
+                break;
+            }
+
+            this.count++;
+            this.syncWoolsView();
+
+            item.isCollecting = true;
+
+            // animation wool
+            tween(item.wool.node)
+                .to(0.2, { eulerAngles: new Vec3(0, 50, 0) })
+                .start();
+
+            tween(item.wool.node)
+                .to(0.2, { scale: Vec3.ZERO })
+                .start();
+
+            // rope anim
+            const start = item.wool.startPoint.worldPosition.clone();
+            const end = item.wool.endPoint.worldPosition.clone();
+
+            let t = { value: 0 };
+
+            tween(t)
+                .to(0.25, { value: 1 }, {
+                    easing: "quadOut",
+                    onUpdate: () => {
+                        Vec3.lerp(this.tempVec3, start, end, t.value);
+                        this.rope.endPoint.setWorldPosition(this.tempVec3);
+                    }
+                })
+                .start();
+
+            await this.delay(0.1);
+
+            if (item.wool) {
+                item.wool.node.active = false;
+                item.wool = null;
+            }
+
+            item.isCollecting = false;
         }
-        
-        this.count++;
-        this.syncWoolsView();
 
-        item.isCollecting = true;
+        this.stopWiggle();
+        mat.setProperty('fill', 0);
+        this.isCollecting = false;
 
-        // animation wool
-        tween(item.wool.node)
-            .to(0.2, { eulerAngles: new Vec3(0, 50, 0) })
-            .start();
-
-        tween(item.wool.node)
-            .to(0.2, { scale: Vec3.ZERO })
-            .start();
-
-        // rope anim
-        const start = item.wool.startPoint.worldPosition.clone();
-        const end = item.wool.endPoint.worldPosition.clone();
-
-        let t = { value: 0 };
-
-        tween(t)
-            .to(0.25, { value: 1 }, {
-                easing: "quadOut",
-                onUpdate: () => {
-                    Vec3.lerp(this.tempVec3, start, end, t.value);
-                    this.rope.endPoint.setWorldPosition(this.tempVec3);
-                }
-            })
-            .start();
-
-        await this.delay(0.1);
-
-        if (item.wool) {
-            item.wool.node.active = false;
-            item.wool = null;
+        // Nếu vẫn còn queue nhưng spool đã đầy, xóa queue
+        if (this.isFull() && this.queue.length > 0) {
+            console.warn(`Spool is full but still have ${this.queue.length} items in queue, delete queue`);
+            this.queue = [];
         }
-
-        item.isCollecting = false;
     }
-
-    this.stopWiggle();
-    mat.setProperty('fill', 0);
-    this.isCollecting = false;
-    
-    // Nếu vẫn còn queue nhưng spool đã đầy, xóa queue
-    if (this.isFull() && this.queue.length > 0) {
-        console.warn(`Spool đã đầy nhưng còn ${this.queue.length} items trong queue, xóa bỏ`);
-        this.queue = [];
-    }
-}
-
 
     delay(time: number) { return new Promise(resolve => { this.scheduleOnce(resolve, time); }); }
 

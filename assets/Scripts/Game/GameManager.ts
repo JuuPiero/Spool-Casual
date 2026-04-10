@@ -8,6 +8,7 @@ import super_html_playable from '../super_html_playable';
 import { LevelsConfig } from './LevelsConfig';
 import { NewLevelData } from './NewLevelDataSA';
 import { NavigationContainer } from '../Navigation/NavigationContainer';
+import { Spool } from './Spool';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameManager')
@@ -67,7 +68,6 @@ export class GameManager extends Component {
         super_html_playable.game_end()
         super_html_playable.download()
 
-        // ServiceLocator.get(NavigationContainer).stack.navigate('EndgameScreen')
     }
 
     public getLevelColor(colorNum: number): Color {

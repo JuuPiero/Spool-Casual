@@ -13,6 +13,8 @@ import { WoolManager } from './WoolManager';
 import super_html_playable from '../super_html_playable';
 import { SOUNDS } from './Sounds';
 import { VehicleData } from './NewLevelDataSA';
+import { SlotManager } from './SlotManager';
+import { print } from '../ultils';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -45,7 +47,7 @@ export class SpoolManager extends Component {
         // ServiceLocator.get(WoolManager).onNewGame()
     }
 
-    
+
     public getSpool(row: number, col: number): Spool | undefined {
         return this.spoolsMap.get(`${row}_${col}`)
     }
@@ -78,7 +80,6 @@ export class SpoolManager extends Component {
                 node.removeFromParent();
                 continue;
             }
-
             spool.row = row;
             spool.col = col;
             node.name = `Spool_(${row}, ${col})`;
@@ -92,8 +93,13 @@ export class SpoolManager extends Component {
 
             node.setPosition(new Vec3(x, 0, z));
 
+            spool.clickFunc = () => {
+                this.onSpoolSelected(spool)
+            }
+
             this.spools.push(spool);
             this.spoolsMap.set(`${row}_${col}`, spool);
+
         }
     }
 
@@ -106,15 +112,75 @@ export class SpoolManager extends Component {
     }
 
     public checkWin() {
-        if(this.spools.length == 0) {
+        if (this.spools.length == 0) {
             console.log('win');
             SoundManager.instance.playOneShot(SOUNDS.WIN)
             const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
             const scene = director.getScene();
             confetiEffect.setParent(scene)
-          
+
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
+    }
+
+    public onSpoolSelected(spool: Spool) {
+
+        if (Spool.delay) return
+        if (spool.isFlying || spool.isInSlot) return;
+        if (!spool.isOpen) {
+            SoundManager.instance.playOneShot(SOUNDS.FAILED);
+            return;
+        }
+
+
+        const tut = ServiceLocator.get(TutorialController)
+        if (tut && tut.node.active) {
+            tut.node.active = false
+        }
+
+        const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
+
+        if (!slot) {
+            SoundManager.instance.playOneShot('Failed');
+            console.log('out of slot');
+            return;
+        }
+        Spool.delay = true
+
+        spool.activateNextSpools();
+        SoundManager.instance.playOneShot(SOUNDS.CLICK);
+        spool.moveToSlot(slot, () => {
+            print("Move DONE")
+
+            this.checkLose();
+        });
+    }
+
+
+    public checkLose() {
+        const slotManager = ServiceLocator.get(SlotManager);
+        const woolManager = ServiceLocator.get(WoolManager);
+
+        // Kiểm tra nếu còn slot trống
+        const availableSlot = slotManager.getAvailableSlot();
+        if (availableSlot) {
+            return; // Còn slot trống, chưa thua
+        }
+
+        // Nếu không còn slot trống, kiểm tra xem có RaySlot nào trùng màu với spool trong slot
+        for (const raySlot of woolManager.slots) {
+            if (!raySlot.wool) continue;
+            for (const slot of slotManager.slots) {
+                if (slot.spool && raySlot.wool.color.equals(slot.spool.color)) {
+                    return; // Có RaySlot trùng màu, chưa thua
+                }
+            }
+        }
+
+        // Không có RaySlot trùng màu, thua
+        console.log('Lose');
+        // SoundManager.instance.playOneShot(SOUNDS.LOSE)
+        EventBus.emit(GameEvent.LEVEL_COMPLETED)
     }
 
 }

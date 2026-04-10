@@ -4,10 +4,10 @@ import { GameManager } from '../GameManager';
 const { ccclass, property } = _decorator;
 @ccclass('CTA')
 export class CTA extends Component {
-     @property({type: Button})
+    @property({ type: Button })
     public installBtn: Button = null;
 
-    @property({type: Node})
+    @property({ type: Node })
     public logo: Node = null;
 
     protected start(): void {
@@ -17,25 +17,25 @@ export class CTA extends Component {
         //     .union()
         //     .repeatForever()
         //     .start();
-         
+
         tween(this.installBtn.node)
-            .to(0.5, { scale: new Vec3(0.55, 0.55, 1) }) 
-            .to(0.5, { scale: new Vec3(0.5, 0.5, 1) }) 
+            .to(0.5, { scale: new Vec3(0.55, 0.55, 1) })
+            .to(0.5, { scale: new Vec3(0.5, 0.5, 1) })
             .union()
             .repeatForever()
             .start();
     }
 
     protected onLoad(): void {
-            this.installBtn?.node.on(Button.EventType.CLICK, this.install, this);
-        }
-        protected onDestroy(): void {
-            this.installBtn?.node.off(Button.EventType.CLICK, this.install, this);
-        }
-    
-        install() { 
-            ServiceLocator.get(GameManager).installGame()
-        }
+        this.installBtn?.node.on(Button.EventType.CLICK, this.install, this);
+    }
+    protected onDestroy(): void {
+        this.installBtn?.node.off(Button.EventType.CLICK, this.install, this);
+    }
+
+    install() {
+        ServiceLocator.get(GameManager).installGame()
+    }
 
 }
 

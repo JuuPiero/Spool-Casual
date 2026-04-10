@@ -1,12 +1,10 @@
-import { _decorator, CCFloat, CCInteger, Color, Component, instantiate, Node, tween, Vec3 } from 'cc';
+import { _decorator, Component } from 'cc';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
 import { SubRay } from './SubRay';
 import { RaySlot } from './RaySlot';
 import { SplineAnimate } from '../SplineAnimate';
-import { GameManager } from './GameManager';
-import { print } from '../ultils';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -92,69 +90,6 @@ export class WoolManager extends Component {
         }, 0);
     }
 
-    // protected start(): void {
-    //     this.scheduleOnce(() => {
-    //         this.splineInstantiate.items.forEach(item => {
-    //             this.slots.push(item.getComponent(RaySlot))
-    //         });
-    //         const allItems: SplineAnimate[] = [...this.splineInstantiate.items];
-    //         for (let i = 0; i < this.subRays.length; i++) {
-    //             const sub = this.subRays[i];
-    //             if (!sub.splineInstantiate) continue;
-    //             const items = sub.splineInstantiate.items;
-    //             for (let j = 0; j < items.length; j++) {
-    //                 allItems.push(items[j]);
-    //             }
-    //         }
-    //         for (let i = 0; i < allItems.length; i++) {
-    //             const raySlot = allItems[i].getComponent(RaySlot);
-    //             if (raySlot) {
-    //                 raySlot.index = i;
-    //             }
-    //         }
-    //         const total = allItems.length;
-    //         const spoolManager = ServiceLocator.get(SpoolManager);
-    //         const base = Math.floor(total / spoolManager.spools.length);
-    //         const extra = total % spoolManager.spools.length;
-    //         const newLevelData = ServiceLocator.get(GameManager).newLevelData
-    //         const passengerQueues = newLevelData.passengersQueuesData
-    //         const mainRayColor = []
-    //         const subRayListColor = [] // mảng 2 chiều
-    //         passengerQueues.forEach(item => {
-    //             subRayListColor.push(item.colorTypesQueue)
-    //         })
-    //         subRayListColor.forEach(queue => {
-    //             const halfLength = Math.ceil(queue.length / 2) // Lấy nửa trên (làm tròn lên)
-    //             const halfElements = queue.splice(0, halfLength) // splice sẽ xóa và trả về phần tử đã xóa
-    //             mainRayColor.push(...halfElements)
-    //         })
-    //         subRayListColor.forEach(queue => {
-    //             mainRayColor.push(...queue)
-    //         })
-    //         print(mainRayColor.length)
-    //         let a = 0
-    //         for (let i = 0; i < mainRayColor.length; i++) {
-    //             const color = ServiceLocator.get(GameManager).colorMap.get(mainRayColor[i]);
-    //             for (let j = 0; j < 5; j++) {
-    //                 const raySlot = allItems[a]?.getComponent(RaySlot);
-    //                 raySlot?.wool?.setColor(color);
-    //                 a++
-    //             }
-    //         }
-    //         for (let i = 0; i < spoolManager.spools.length; i++) {
-    //             const count = base + (i < extra ? 1 : 0);
-    //             spoolManager.spools[i].capacity = count;
-    //         }
-    //         if (this.splineInstantiate && allItems.length > 0) {
-    //             this.calculateRelativeDistances();
-    //             if (this.autoMove) {
-    //                 this.startMoving();
-    //             }
-    //         }
-    //     }, 0);
-    // }
-    
-
     protected update(dt: number): void {
         if (!this.isMoving) return;
         if (!this.splineInstantiate) return;
@@ -187,21 +122,7 @@ export class WoolManager extends Component {
                 }
             }
         }
-        // else {
-        //     for (const item of items) {
-        //         if (item && item.isValid && item.isMovingNow()) {
-        //             const currentDist = item.getDistance();
-        //             let newDist = currentDist - this.speed * dt;
-        //             const totalLength = item.getTotalLength();
-        //             if (newDist < 0) {
-        //                 newDist += totalLength;
-        //             }
-        //             item.setDistance(newDist);
-        //         }
-        //     }
-        // }
     }
-
 
     private calculateRelativeDistances(): void {
         if (!this.splineInstantiate) return;
@@ -234,30 +155,6 @@ export class WoolManager extends Component {
                 }
             }
         }
-    }
-    public getAllRaySlots(): RaySlot[] {
-        const result: RaySlot[] = [];
-
-        // main spline trước
-        for (let i = 0; i < this.splineInstantiate.items.length; i++) {
-            const slot = this.splineInstantiate.items[i].getComponent(RaySlot);
-            if (slot) result.push(slot);
-        }
-
-        // sub rays nối tiếp
-        for (let i = 0; i < this.subRays.length; i++) {
-            const sub = this.subRays[i];
-            if (!sub.splineInstantiate) continue;
-
-            const items = sub.splineInstantiate.items;
-
-            for (let j = 0; j < items.length; j++) {
-                const slot = items[j].getComponent(RaySlot);
-                if (slot) result.push(slot);
-            }
-        }
-
-        return result;
     }
 
     public recalculateDistances(): void {
@@ -315,24 +212,4 @@ export class WoolManager extends Component {
         this.calculateRelativeDistances();
     }
 
-    public setSpeed(speed: number): void {
-        this.speed = speed;
-    }
-
-    public getSpeed(): number {
-        return this.speed;
-    }
-
-    
-    public setMaintainFormation(enable: boolean): void {
-        this.maintainFormation = enable;
-
-        if (enable) {
-            this.calculateRelativeDistances();
-        }
-    }
-
-    public isMovingNow(): boolean {
-        return this.isMoving;
-    }
 }

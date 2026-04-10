@@ -2,5 +2,6 @@ export const SOUNDS = {
     WIN: "Win",
     CLICK: "Click",
     FAILED: "Failed",
-    SUCCESS: "Success"
+    SUCCESS: "Success",
+    BACKGROUND_MUSIC: "BGM"
 }
