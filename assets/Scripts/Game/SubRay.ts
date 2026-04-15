@@ -3,6 +3,7 @@ import { Spline } from '../Spline';
 import { SplineInstantiate } from '../SplineInstantiate';
 import { SplineAnimate } from '../SplineAnimate';
 import { RaySlot } from './RaySlot';
+import { print } from '../ultils';
 const { ccclass, property } = _decorator;
 
 @ccclass('SubRay')
@@ -28,7 +29,7 @@ export class SubRay extends Component {
     protected start(): void {
 
         this.splineInstantiate.items.forEach(item => {
-            this.raySlots.push(item.node.getComponent(RaySlot))
+            this.raySlots.push(item.getComponent(RaySlot))
         })
 
     }
@@ -143,9 +144,9 @@ export class SubRay extends Component {
             wool.node.setWorldRotation(startWorldRot);
 
             // 2. TÍNH TOÁN KHOẢNG CÁCH (DISTANCE)
-            const startDistance = sourceAnim.getDistance();
-            let endDistance = targetAnim.getDistance();
-            const totalLength = sourceAnim.getTotalLength();
+            const startDistance = sourceAnim.getComponent(SplineAnimate).getDistance();
+            let endDistance = targetAnim.getComponent(SplineAnimate).getDistance();
+            const totalLength = sourceAnim.getComponent(SplineAnimate).getTotalLength();
 
             if (Math.abs(startDistance - endDistance) > totalLength / 2) {
                 if (startDistance > endDistance) endDistance += totalLength;

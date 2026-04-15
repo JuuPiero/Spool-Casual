@@ -1,16 +1,31 @@
 import { _decorator, Color, Component, Gradient, GradientRange, Line, Node, Vec3 } from 'cc';
-const { ccclass, property } = _decorator;
+import { Spline } from './Spline';
+const { ccclass, property, requireComponent, executeInEditMode } = _decorator;
 
 @ccclass('Gizmos')
+@requireComponent(Line)
 export class Gizmos extends Component {
 
     // public static instance: Gizmos;
     @property
     private line: Line
 
+    @property(Spline) public spline: Spline
+
 
     protected onLoad(): void {
         this.line = this.node.getComponent(Line)
+    }
+
+    protected start(): void {
+        this.spline = this.getComponent(Spline)
+        this.line = this.getComponent(Line)
+
+        
+    }
+    protected update(dt: number): void {
+        const samples = this.spline.getSamples(50)
+        this.DrawPath(samples)
     }
 
     public DrawPath(points: Vec3[], color: Color | null = null) {

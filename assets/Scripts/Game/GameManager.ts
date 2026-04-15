@@ -45,7 +45,7 @@ export class GameManager extends Component {
             Color.fromHEX(color, colorHex.Item2)
             this.colorMap.set(colorHex.Item1, color);
         }
-        console.log(this.newLevelData);
+        // console.log(this.newLevelData);
     }
 
     protected onLoad(): void {
