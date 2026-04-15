@@ -123,6 +123,7 @@ export class Spool extends Clickable {
             .to(0.2, { scale: Vec3.ZERO }, { easing: "backIn" })
             .call(() => this.finishSpool())
             .start();
+        
     }
 
     private finishSpool() {
@@ -170,8 +171,8 @@ export class Spool extends Clickable {
         slot.setProcess(0);
         slot.labelProcess.node.active = true;
 
-        const targetPos = slot.node.worldPosition.clone();
-        targetPos.y = this.node.y;
+        const targetPos = slot.placePos.worldPosition.clone();
+        // targetPos.y = this.node.y;
         const localTarget = new Vec3();
         this.node.parent!.inverseTransformPoint(localTarget, targetPos);
         tween(this.node)
@@ -275,11 +276,20 @@ export class Spool extends Clickable {
         mat.setProperty('fill', 0);
         this.isCollecting = false;
 
-        // Nếu vẫn còn queue nhưng spool đã đầy, xóa queue
-        if (this.isFull() && this.queue.length > 0) {
-            console.warn(`Spool is full but still have ${this.queue.length} items in queue, delete queue`);
-            this.queue = [];
+        // SỬA TẠI ĐÂY: Trả lại các item dư thừa cho MatchZone
+    if (this.queue.length > 0) {
+        const matchZone = ServiceLocator.get(MatchZone);
+        while (this.queue.length > 0) {
+            const item = this.queue.pop(); // Lấy từ queue ra
+            if (item) {
+                item.isCollecting = false; 
+                // Thêm lại vào tập hợp chờ của MatchZone
+                matchZone.itemsInMatchZone.add(item);
+            }
         }
+        // Sau khi trả lại, chúng ta kích hoạt một đợt kiểm tra mới trên MatchZone
+        matchZone.checkExistingItems(); 
+    }
     }
 
     delay(time: number) { return new Promise(resolve => { this.scheduleOnce(resolve, time); }); }

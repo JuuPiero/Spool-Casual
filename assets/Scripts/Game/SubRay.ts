@@ -80,43 +80,9 @@ export class SubRay extends Component {
             }
         }
     }
-    // private shiftWools(startIndex: number) {
-    //     const moveDuration = 0.4;
-    //     const delayStep = 0.1;
-
-    //     for (let i = startIndex; i < this.raySlots.length - 1; i++) {
-    //         const current = this.raySlots[i];
-    //         const next = this.raySlots[i + 1];
-
-    //         if (!next.wool) break;
-
-    //         const wool = next.wool;
-    //         next.wool = null;
-    //         current.wool = wool;
-
-    //         const worldPos = wool.node.worldPosition.clone();
-
-    //         wool.node.setParent(current.node);
-
-    //         const localPos = new Vec3();
-    //         current.node.inverseTransformPoint(localPos, worldPos);
-
-    //         wool.node.setPosition(localPos);
-
-    //         tween(wool.node)
-    //             .delay((i - startIndex) * delayStep)
-    //             .to(moveDuration, {
-    //                 position: Vec3.ZERO
-    //             }, {
-    //                 easing: "quadOut"
-    //             })
-    //             .start();
-    //     }
-    // }
-
-    private shiftWools(startIndex: number) {
+   private shiftWools(startIndex: number) {
         const moveDuration = 0.4;
-        const delayStep = 0.1;
+        // Đã xóa delayStep vì tất cả sẽ chạy cùng lúc
 
         for (let i = startIndex; i < this.raySlots.length - 1; i++) {
             const current = this.raySlots[i];
@@ -134,8 +100,6 @@ export class SubRay extends Component {
             if (!sourceAnim || !targetAnim) continue;
 
             // 1. LƯU & GIỮ NGUYÊN WORLD TRANSFORM
-            // Chuyển parent ngay lập tức sang slot đích, nhưng ép giữ toạ độ world cũ 
-            // để cuộn len không bị giật hình trong khoảng thời gian chờ (delay)
             const startWorldPos = wool.node.worldPosition.clone();
             const startWorldRot = wool.node.worldRotation.clone();
 
@@ -143,10 +107,10 @@ export class SubRay extends Component {
             wool.node.setWorldPosition(startWorldPos);
             wool.node.setWorldRotation(startWorldRot);
 
-            // 2. TÍNH TOÁN KHOẢNG CÁCH (DISTANCE)
-            const startDistance = sourceAnim.getComponent(SplineAnimate).getDistance();
-            let endDistance = targetAnim.getComponent(SplineAnimate).getDistance();
-            const totalLength = sourceAnim.getComponent(SplineAnimate).getTotalLength();
+            // 2. TÍNH TOÁN KHOẢNG CÁCH (DISTANCE) - Đã sửa cho gọn
+            const startDistance = sourceAnim.getDistance();
+            let endDistance = targetAnim.getDistance();
+            const totalLength = sourceAnim.getTotalLength();
 
             if (Math.abs(startDistance - endDistance) > totalLength / 2) {
                 if (startDistance > endDistance) endDistance += totalLength;
@@ -158,21 +122,21 @@ export class SubRay extends Component {
 
             const proxy = { distance: startDistance };
 
+            // Bắt đầu tween ngay lập tức, không có delay
             tween(proxy)
-                .delay((i - startIndex) * delayStep)
                 .to(moveDuration, { distance: endDistance }, {
-                    easing: "quadOut",
+                    easing: "quadOut", // Bạn có thể đổi thành "cubicOut" nếu muốn nó trượt gắt hơn
                     onUpdate: (target: any) => {
                         let d = target.distance;
 
                         if (d >= totalLength) d -= totalLength;
                         if (d < 0) d += totalLength;
 
-                        // Cập nhật vị trí bằng hàm của CC3 thay vì gán property
+                        // Cập nhật vị trí
                         const pos = spline.getPointAtDistance(samples, d);
                         wool.node.setWorldPosition(pos);
 
-                        // Cập nhật góc quay y hệt logic SplineAnimate
+                        // Cập nhật góc quay
                         let nextDist = d + 0.1;
                         if (nextDist >= totalLength) {
                             nextDist -= totalLength;
@@ -190,7 +154,7 @@ export class SubRay extends Component {
                         }
                     },
                     onComplete: () => {
-                        // Về đến đích thì ép chuẩn 100% vào tâm của rãnh đích
+                        // Ép chuẩn 100% vào tâm khi tới đích
                         wool.node.setPosition(Vec3.ZERO);
                         wool.node.setRotationFromEuler(Vec3.ZERO);
                     }

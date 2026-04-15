@@ -73,4 +73,7 @@ export class GameManager extends Component {
     public getLevelColor(colorNum: number): Color {
         return this.colorMap.get(colorNum)
     }
+
+   
+
 }

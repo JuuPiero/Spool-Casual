@@ -9,6 +9,9 @@ export class Slot extends Component {
     public spool?: Spool = null
 
 
+    @property(Node) public placePos: Node = null
+
+
     @property(Label)
     public labelProcess!: Label
     public isAvailable(): boolean {

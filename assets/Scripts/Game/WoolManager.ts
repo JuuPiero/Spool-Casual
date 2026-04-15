@@ -5,6 +5,8 @@ import { SplineInstantiate } from '../SplineInstantiate';
 import { SubRay } from './SubRay';
 import { RaySlot } from './RaySlot';
 import { SplineAnimate } from '../SplineAnimate';
+import { GameManager } from './GameManager';
+import { Spool } from './Spool';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -30,6 +32,32 @@ export class WoolManager extends Component {
     @property({ type: RaySlot })
     public slots: RaySlot[] = []
 
+    @property({ 
+        
+        tooltip: 'Curve mau do kho (0: de, 1: kho), lay mau theo ti le tu dau den cuoi hang wool' })
+    public difficultyCurveSamples: number[] = [0.1, 0.25, 0.5, 0.75, 0.9];
+
+    @property({ tooltip: 'Do dai cum mau o muc de (cum dai hon = de hon)' })
+    public easyRunLength: number = 6;
+
+    @property({ tooltip: 'Do dai cum mau o muc kho (cum ngan hon = kho hon)' })
+    public hardRunLength: number = 1;
+
+    @property({ tooltip: 'Do ngau nhien bo sung vao run length (0 = co dinh)' })
+    public runLengthJitter: number = 1;
+
+    @property({ tooltip: 'Xac suat tranh lap lai mau o muc de' })
+    public easyAvoidRepeatChance: number = 0.1;
+
+    @property({ tooltip: 'Xac suat tranh lap lai mau o muc kho' })
+    public hardAvoidRepeatChance: number = 0.9;
+
+    @property({ tooltip: 'Lay them do kho tu level difficultyType' })
+    public useLevelDifficultyType: boolean = true;
+
+    @property({ tooltip: 'He so cong them vao difficulty theo difficultyType cua level' })
+    public levelDifficultyScale: number = 0.15;
+
 
 
     protected onLoad(): void {
@@ -40,9 +68,7 @@ export class WoolManager extends Component {
     }
 
     // protected start(): void {
-
     //     this.scheduleOnce(() => {
-
     //         this.splineInstantiate.items.forEach(item => {
     //             this.slots.push(item.getComponent(RaySlot))
     //         });
@@ -69,7 +95,7 @@ export class WoolManager extends Component {
     //         const spoolManager = ServiceLocator.get(SpoolManager);
     //         const base = Math.floor(total / spoolManager.spools.length);
     //         const extra = total % spoolManager.spools.length;
-            
+
     //         let index = 0;
     //         for (let i = 0; i < spoolManager.spools.length; i++) {
     //             const count = base + (i < extra ? 1 : 0);
@@ -89,14 +115,143 @@ export class WoolManager extends Component {
 
     //     }, 0);
     // }
-private shuffleArray(array: any[]) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+    private shuffleArray(array: any[]) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
     }
-}
 
-     protected start(): void {
+    private clamp01(value: number): number {
+        return Math.min(1, Math.max(0, value));
+    }
+
+    private lerp(a: number, b: number, t: number): number {
+        return a + (b - a) * this.clamp01(t);
+    }
+
+    private evaluateDifficulty(normalizedPos: number): number {
+        const samples = this.difficultyCurveSamples;
+        if (!samples || samples.length === 0) {
+            return 0.5;
+        }
+
+        if (samples.length === 1) {
+            return this.clamp01(samples[0]);
+        }
+
+        const t = this.clamp01(normalizedPos);
+        const scaled = t * (samples.length - 1);
+        const left = Math.floor(scaled);
+        const right = Math.min(samples.length - 1, left + 1);
+        const localT = scaled - left;
+
+        const curveValue = this.lerp(samples[left], samples[right], localT);
+
+        if (!this.useLevelDifficultyType) {
+            return this.clamp01(curveValue);
+        }
+
+        const gameManager = ServiceLocator.get(GameManager);
+        const levelDifficulty = gameManager?.newLevelData?.difficultyType ?? 0;
+        return this.clamp01(curveValue + levelDifficulty * this.levelDifficultyScale);
+    }
+
+    private buildSpoolCounts(total: number, spoolManager: SpoolManager): Map<Spool, number> {
+        const countMap = new Map<Spool, number>();
+        const shuffledSpools = [...spoolManager.spools];
+        this.shuffleArray(shuffledSpools);
+
+        const base = Math.floor(total / shuffledSpools.length);
+        const extra = total % shuffledSpools.length;
+
+        for (let i = 0; i < shuffledSpools.length; i++) {
+            const spool = shuffledSpools[i];
+            const count = base + (i < extra ? 1 : 0);
+            spool.capacity = count;
+            countMap.set(spool, count);
+        }
+
+        return countMap;
+    }
+
+    private pickWeightedSpool(spoolCounts: Map<Spool, number>, previousSpool: Spool | null, difficulty: number): Spool | null {
+        const available = Array.from(spoolCounts.entries()).filter(([, count]) => count > 0);
+        if (available.length === 0) return null;
+        if (available.length === 1) return available[0][0];
+
+        const avoidRepeatChance = this.lerp(this.easyAvoidRepeatChance, this.hardAvoidRepeatChance, difficulty);
+        let candidates = available;
+
+        if (previousSpool && Math.random() < avoidRepeatChance) {
+            const nonRepeat = available.filter(([spool]) => spool !== previousSpool);
+            if (nonRepeat.length > 0) {
+                candidates = nonRepeat;
+            }
+        }
+
+        let totalWeight = 0;
+        for (const [, remaining] of candidates) {
+            totalWeight += remaining;
+        }
+
+        let roll = Math.random() * totalWeight;
+        for (const [spool, remaining] of candidates) {
+            roll -= remaining;
+            if (roll <= 0) {
+                return spool;
+            }
+        }
+
+        return candidates[candidates.length - 1][0];
+    }
+
+    private buildCurveDistribution(total: number, spoolCounts: Map<Spool, number>): Spool[] {
+        const sequence: Spool[] = [];
+        let previousSpool: Spool | null = null;
+
+        while (sequence.length < total) {
+            const normalizedPos = total <= 1 ? 1 : sequence.length / (total - 1);
+            const difficulty = this.evaluateDifficulty(normalizedPos);
+            const runCenter = this.lerp(this.easyRunLength, this.hardRunLength, difficulty);
+
+            const jitter = this.runLengthJitter > 0
+                ? Math.floor((Math.random() * (this.runLengthJitter * 2 + 1)) - this.runLengthJitter)
+                : 0;
+
+            const desiredRun = Math.max(1, Math.round(runCenter + jitter));
+            const spool = this.pickWeightedSpool(spoolCounts, previousSpool, difficulty);
+            if (!spool) break;
+
+            const remaining = spoolCounts.get(spool) ?? 0;
+            const runCount = Math.min(desiredRun, remaining, total - sequence.length);
+
+            for (let i = 0; i < runCount; i++) {
+                sequence.push(spool);
+            }
+
+            const left = remaining - runCount;
+            if (left > 0) {
+                spoolCounts.set(spool, left);
+            } else {
+                spoolCounts.delete(spool);
+            }
+
+            previousSpool = spool;
+        }
+
+        if (sequence.length < total) {
+            for (const [spool, remaining] of spoolCounts.entries()) {
+                for (let i = 0; i < remaining; i++) {
+                    sequence.push(spool);
+                }
+            }
+        }
+
+        return sequence;
+    }
+
+    protected start(): void {
 
         this.scheduleOnce(() => {
 
@@ -121,37 +276,20 @@ private shuffleArray(array: any[]) {
                 }
             }
 
-           const total = allItems.length;
-const spoolManager = ServiceLocator.get(SpoolManager);
+            const total = allItems.length;
+            const spoolManager = ServiceLocator.get(SpoolManager);
+            if (!spoolManager || spoolManager.spools.length === 0) {
+                return;
+            }
 
-// 1. Tạo một danh sách chỉ số hoặc bản sao của spools để xáo trộn
-let shuffledSpools = [...spoolManager.spools];
-this.shuffleArray(shuffledSpools); 
+            const spoolCounts = this.buildSpoolCounts(total, spoolManager);
+            const colorSequence = this.buildCurveDistribution(total, spoolCounts);
 
-const base = Math.floor(total / shuffledSpools.length);
-const extra = total % shuffledSpools.length;
-
-let index = 0;
-
-// 2. Duyệt qua danh sách đã được xáo trộn
-for (let i = 0; i < shuffledSpools.length; i++) {
-    // Lưu ý: extra vẫn tính dựa trên vị trí i ban đầu hoặc i hiện tại đều được
-    // Ở đây ta tính theo i hiện tại để phân bổ số lượng item vào các cụm màu đã xáo trộn
-    const count = base + (i < extra ? 1 : 0);
-    
-    // Cập nhật capacity cho spool tương ứng (nếu cần thiết cho logic khác của bạn)
-    shuffledSpools[i].capacity = count;
-
-    // 3. Gán màu: Vì index tăng dần nhưng màu lấy từ shuffledSpools
-    // nên các item đứng cạnh nhau sẽ cùng một màu, tạo thành các dải màu ngẫu nhiên.
-    for (let j = 0; j < count; j++) {
-        if (index < allItems.length) {
-            const raySlot = allItems[index].getComponent(RaySlot);
-            raySlot?.wool?.setColor(shuffledSpools[i].color);
-            index++;
-        }
-    }
-}
+            for (let i = 0; i < allItems.length; i++) {
+                const raySlot = allItems[i].getComponent(RaySlot);
+                const spool = colorSequence[i];
+                raySlot?.wool?.setColor(spool?.color);
+            }
             if (this.splineInstantiate && allItems.length > 0) {
                 this.calculateRelativeDistances();
                 if (this.autoMove) {

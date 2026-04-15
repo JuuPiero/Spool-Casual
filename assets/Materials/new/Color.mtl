@@ -15,7 +15,8 @@
     },
     {
       "USE_OUTLINE_PASS": true,
-      "USE_INSTANCING": true
+      "USE_INSTANCING": true,
+      "USE_POSITION_SCALING": true
     }
   ],
   "_states": [
@@ -55,7 +56,7 @@
       "shadowDarkness": 1
     },
     {
-      "lineWidth": 65
+      "lineWidth": 70
     }
   ]
 }

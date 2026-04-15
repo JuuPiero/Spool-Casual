@@ -2,7 +2,8 @@
   "colorHexCodes": [
     {
       "Item1": 2,
-      "Item2": "#df5fc1FF"
+      "Item2": "#e4a300FF"
+
 
     },
     {
@@ -12,7 +13,9 @@
     },
     {
       "Item1": 5,
-      "Item2": "#00BE00FF"
+      "Item2": "#5f2ac9FF"
+
+
     },
     {
       "Item1": 4,
@@ -24,11 +27,13 @@
     },
     {
       "Item1": 3,
-      "Item2": "#FF00D5FF"
+      "Item2": "#00BE00FF"
+
     },
     {
       "Item1": 10,
-      "Item2": "#5f2ac9FF"
+      "Item2": "#FF00D5FF"
+
     },
     {
       "Item1": 1,
@@ -40,7 +45,8 @@
     },
     {
       "Item1": 6,
-      "Item2": "#e4a300FF"
+      "Item2": "#df5fc1FF"
+
 
     },
     {

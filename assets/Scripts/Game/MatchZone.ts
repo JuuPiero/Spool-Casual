@@ -45,32 +45,6 @@ export class MatchZone extends Component {
         this.itemsInMatchZone.delete(raySlot)
     }
 
-    // onTriggerEnter(event: ITriggerEvent) {
-    //     const raySlot = event.otherCollider.getComponent(RaySlot);
-    //     if (!raySlot || !raySlot.wool) return;
-    //     if (raySlot.isCollecting) return;
-
-    //     raySlot.canCollect = true;
-
-    //     const slots = this.slotManager.slots;
-
-    //     for (const slot of slots) {
-    //         const spool = slot.spool;
-
-    //         if (!spool || spool.isFull()) continue;
-    //         if (!spool.color.equals(raySlot.wool.color)) continue;
-
-    //         if (spool.queue.indexOf(raySlot) === -1) {
-    //             spool.insertSorted(raySlot); // dùng hàm insert sorted
-    //             spool.collects(); // trigger nếu chưa chạy
-    //         }
-
-    //         return;
-    //     }
-
-    //     // nếu chưa có spool phù hợp => giữ lại
-    //     this.itemsInMatchZone.add(raySlot);
-    // }
 
 
     onTriggerEnter(event: ITriggerEvent) {
@@ -109,6 +83,40 @@ export class MatchZone extends Component {
         // nếu chưa có spool phù hợp => giữ lại
         this.itemsInMatchZone.add(raySlot);
     }
+// Hàm mới để quét lại các item đang kẹt trong zone
+public checkExistingItems() {
+    if (this.itemsInMatchZone.size === 0) return;
 
+    // Chuyển Set thành Array để duyệt và xử lý
+    const currentItems = Array.from(this.itemsInMatchZone);
+
+    for (const raySlot of currentItems) {
+        if (!raySlot || !raySlot.wool || raySlot.isCollecting) continue;
+
+        const slots = this.slotManager.slots;
+        const eligibleSlots = slots
+            .filter(slot => {
+                const spool = slot.spool;
+                return spool && !spool.isFull() && spool.color.equals(raySlot.wool.color);
+            })
+            .sort((a, b) => (b.spool?.count || 0) - (a.spool?.count || 0));
+
+        for (const slot of eligibleSlots) {
+            const spool = slot.spool;
+            if (!spool) continue;
+
+            if (spool.queue.indexOf(raySlot) === -1) {
+                // Xóa khỏi danh sách chờ của MatchZone trước khi add vào Spool
+                this.itemsInMatchZone.delete(raySlot); 
+                spool.insertSorted(raySlot);
+                
+                if (!spool.isCollecting) {
+                    spool.collects();
+                }
+                break; // Tìm được spool rồi thì chuyển sang raySlot tiếp theo
+            }
+        }
+    }
+}
 
 }
