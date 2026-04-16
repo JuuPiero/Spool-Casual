@@ -11,6 +11,11 @@ import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { Spool } from './Spool';
 const { ccclass, property } = _decorator;
 
+export enum GameState {
+    WIN,
+    LOSE,
+    PLAY
+}
 @ccclass('GameManager')
 export class GameManager extends Component {
     @property(GameConfig)
@@ -34,6 +39,8 @@ export class GameManager extends Component {
     public colorMap: Map<number, Color> = new Map<number, Color>();
 
     // @property(Node) tutorial: Node = null
+
+    public state: GameState = GameState.PLAY
 
 
     public loadLevel() {

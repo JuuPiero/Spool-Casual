@@ -196,6 +196,10 @@
       "scenes": [
         "3eb837ce-6a6a-498a-a2bd-d98bdaa60dfb@9971d"
       ]
+    },
+    "meshCompress": {
+      "enable": true,
+      "compress": true
     }
   }
 }
