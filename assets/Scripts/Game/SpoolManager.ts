@@ -2,7 +2,7 @@ import { _decorator, CCFloat, CCInteger, Color, Component, director, instantiate
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
-import { GameManager } from './GameManager';
+import { GameManager, GameState } from './GameManager';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
@@ -42,7 +42,6 @@ export class SpoolManager extends Component {
     protected start(): void {
         this.gameManager = ServiceLocator.get(GameManager);
         this.spawnGrid();
-        // ServiceLocator.get(WoolManager).onNewGame()
     }
 
 
@@ -110,8 +109,10 @@ export class SpoolManager extends Component {
     }
 
     public checkWin() {
+        if(this.gameManager.state !== GameState.PLAY) return
         if (this.spools.length == 0) {
             console.log('win');
+            this.gameManager.state = GameState.WIN
             SoundManager.instance.playOneShot(SOUNDS.WIN)
             const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
             const scene = director.getScene();
@@ -120,7 +121,7 @@ export class SpoolManager extends Component {
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
         else {
-            const speedMultiplier: number = 1.02;
+            const speedMultiplier: number = 1.025;
         // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
         const woolManager = ServiceLocator.get(WoolManager);
         
@@ -191,6 +192,7 @@ export class SpoolManager extends Component {
 
         // Không có RaySlot trùng màu, thua
         console.log('Lose');
+        this.gameManager.state = GameState.LOSE
         // SoundManager.instance.playOneShot(SOUNDS.LOSE)
         EventBus.emit(GameEvent.LEVEL_COMPLETED)
     }

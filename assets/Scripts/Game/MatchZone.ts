@@ -5,6 +5,7 @@ import { ServiceLocator } from '../ServiceLocator';
 import { WoolManager } from './WoolManager';
 
 import { RaySlot } from './RaySlot';
+import { GameManager, GameState } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('MatchZone')
@@ -12,7 +13,7 @@ export class MatchZone extends Component {
 
     private slotManager: SlotManager;
     public woolManager: WoolManager;
-
+    public gameManager: GameManager
     private collider: BoxCollider;
 
     public itemsInMatchZone: Set<RaySlot> = new Set<RaySlot>
@@ -24,6 +25,7 @@ export class MatchZone extends Component {
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
         this.woolManager = ServiceLocator.get(WoolManager);
+        this.gameManager = ServiceLocator.get(GameManager)
 
     }
 
@@ -48,6 +50,9 @@ export class MatchZone extends Component {
 
 
     onTriggerEnter(event: ITriggerEvent) {
+        if(this.gameManager.state !== GameState.PLAY) return
+        
+
         const raySlot = event.otherCollider.getComponent(RaySlot);
         if (!raySlot || !raySlot.wool) return;
         if (raySlot.isCollecting) return;
