@@ -112,7 +112,7 @@ export class Spool extends Clickable {
 
     public collectedDone() {
         this.isFlying = true;
-        SoundManager.instance.playOneShot('Success');
+        // SoundManager.instance.playOneShot('Success');
 
         const effect = instantiate(ServiceLocator.get(GameConfig).completedEffect);
         effect.setParent(this.node);
@@ -342,7 +342,7 @@ export class Spool extends Clickable {
             mat.setProperty("color", this.color);
 
             if (active) {
-                mat.setProperty('lineWidth', 70);
+                mat.setProperty('lineWidth', 30);
             } else {
                 mat.setProperty('lineWidth', 0);
             }

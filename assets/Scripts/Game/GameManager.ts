@@ -67,13 +67,15 @@ export class GameManager extends Component {
 
     protected start(): void {
         this.loadLevel()
+        // this.playMusic("BGM", true)
+
 
     }
 
     installGame = () => {
-        ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
-        super_html_playable.game_end()
-        super_html_playable.download()
+        // ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
+        // super_html_playable.game_end()
+        // super_html_playable.download()
 
     }
 

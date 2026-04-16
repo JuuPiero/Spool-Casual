@@ -113,10 +113,10 @@ export class SpoolManager extends Component {
         if (this.spools.length == 0) {
             console.log('win');
             this.gameManager.state = GameState.WIN
-            SoundManager.instance.playOneShot(SOUNDS.WIN)
-            const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
-            const scene = director.getScene();
-            confetiEffect.setParent(scene)
+            // SoundManager.instance.playOneShot(SOUNDS.WIN)
+            // const confetiEffect = instantiate(ServiceLocator.get(GameConfig).confettiEffect)
+            // const scene = director.getScene();
+            // confetiEffect.setParent(scene)
 
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
@@ -141,27 +141,27 @@ export class SpoolManager extends Component {
         if (Spool.delay) return
         if (spool.isFlying || spool.isInSlot) return;
         if (!spool.isOpen) {
-            SoundManager.instance.playOneShot(SOUNDS.FAILED);
+            // SoundManager.instance.playOneShot(SOUNDS.FAILED);
             return;
         }
 
 
-        const tut = ServiceLocator.get(TutorialController)
-        if (tut && tut.node.active) {
-            tut.node.active = false
-        }
+        // const tut = ServiceLocator.get(TutorialController)
+        // if (tut && tut.node.active) {
+        //     tut.node.active = false
+        // }
 
         const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
 
         if (!slot) {
-            SoundManager.instance.playOneShot('Failed');
+            // SoundManager.instance.playOneShot('Failed');
             console.log('out of slot');
             return;
         }
         Spool.delay = true
 
         spool.activateNextSpools();
-        SoundManager.instance.playOneShot(SOUNDS.CLICK);
+        // SoundManager.instance.playOneShot(SOUNDS.CLICK);
         spool.moveToSlot(slot, () => {
             print("Move DONE")
 
