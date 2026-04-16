@@ -112,7 +112,7 @@ export class Spool extends Clickable {
 
     public collectedDone() {
         this.isFlying = true;
-        // SoundManager.instance.playOneShot('Success');
+        SoundManager.instance.playOneShot('Success');
 
         const effect = instantiate(ServiceLocator.get(GameConfig).completedEffect);
         effect.setParent(this.node);
