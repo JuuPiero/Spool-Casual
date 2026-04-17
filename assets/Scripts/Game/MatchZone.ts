@@ -39,13 +39,25 @@ export class MatchZone extends Component {
         this.collider?.off('onTriggerEnter', this.onTriggerEnter, this);
         this.collider?.off('onTriggerExit', this.onTriggerExit, this);
     }
-    onTriggerExit(event: ITriggerEvent) {
-        const raySlot = event.otherCollider.getComponent(RaySlot)
-        if (!raySlot) return
-        if (!raySlot.wool) return
-        raySlot.canCollect = false;
-        this.itemsInMatchZone.delete(raySlot)
+onTriggerExit(event: ITriggerEvent) {
+    const raySlot = event.otherCollider.getComponent(RaySlot);
+    if (!raySlot) return;
+
+    raySlot.canCollect = false;
+    raySlot.isCollecting = false;
+    this.itemsInMatchZone.delete(raySlot);
+
+    // BỔ SUNG: Tìm xem có Spool nào đang chứa raySlot này trong queue không và xóa nó đi
+    const allSlots = this.slotManager.slots;
+    for (const slot of allSlots) {
+        if (slot.spool && slot.spool.queue.length > 0) {
+            const index = slot.spool.queue.indexOf(raySlot);
+            if (index !== -1) {
+                slot.spool.queue.splice(index, 1);
+            }
+        }
     }
+}
 
 
 
@@ -88,18 +100,18 @@ export class MatchZone extends Component {
         // nếu chưa có spool phù hợp => giữ lại
         this.itemsInMatchZone.add(raySlot);
     }
-// Hàm mới để quét lại các item đang kẹt trong zone
 public checkExistingItems() {
     if (this.itemsInMatchZone.size === 0) return;
 
-    // Chuyển Set thành Array để duyệt và xử lý
-    const currentItems = Array.from(this.itemsInMatchZone);
+    // QUAN TRỌNG: Sort giảm dần theo index để ưu tiên item đứng đầu hàng
+    const sortedItems = Array.from(this.itemsInMatchZone)
+        .sort((a, b) => b.index - a.index);
 
-    for (const raySlot of currentItems) {
-        if (!raySlot || !raySlot.wool || raySlot.isCollecting) continue;
+    for (const raySlot of sortedItems) {
+        if (!raySlot || !raySlot.wool || raySlot.isCollecting || !raySlot.canCollect) continue;
 
-        const slots = this.slotManager.slots;
-        const eligibleSlots = slots
+        // Tìm Spool phù hợp nhất
+        const eligibleSlots = this.slotManager.slots
             .filter(slot => {
                 const spool = slot.spool;
                 return spool && !spool.isFull() && spool.color.equals(raySlot.wool.color);
@@ -108,20 +120,16 @@ public checkExistingItems() {
 
         for (const slot of eligibleSlots) {
             const spool = slot.spool;
-            if (!spool) continue;
-
-            if (spool.queue.indexOf(raySlot) === -1) {
-                // Xóa khỏi danh sách chờ của MatchZone trước khi add vào Spool
+            if (spool && spool.queue.indexOf(raySlot) === -1) {
                 this.itemsInMatchZone.delete(raySlot); 
-                spool.insertSorted(raySlot);
+                spool.insertSorted(raySlot); // Hàm này của bạn đã có sort rồi
                 
                 if (!spool.isCollecting) {
                     spool.collects();
                 }
-                break; // Tìm được spool rồi thì chuyển sang raySlot tiếp theo
+                break; 
             }
         }
     }
 }
-
 }

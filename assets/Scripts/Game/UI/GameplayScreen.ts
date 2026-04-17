@@ -13,12 +13,12 @@ export class GameplayScreen extends ScreenBase {
     protected start(): void {
 
         
-        tween(this.headLine)
-            .to(0.5, { scale: new Vec3(1.1, 1.1, 1.1) })
-            .to(0.5, { scale: new Vec3(1, 1, 1) }) 
-            .union()
-            .repeatForever()
-            .start();
+        // tween(this.headLine)
+        //     .to(0.5, { scale: new Vec3(1.1, 1.1, 1.1) })
+        //     .to(0.5, { scale: new Vec3(1, 1, 1) }) 
+        //     .union()
+        //     .repeatForever()
+        //     .start();
       
     }
 

@@ -111,6 +111,7 @@ export class Spool extends Clickable {
     }
 
     public collectedDone() {
+        this.queue = []
         this.isFlying = true;
         SoundManager.instance.playOneShot('Success');
 
@@ -127,11 +128,19 @@ export class Spool extends Clickable {
     }
 
     private finishSpool() {
+          this.queue.forEach(item => {
+                item.canCollect = true
+                item.isCollecting = false
+
+            })
+            this.queue = []
+
         this.node.active = false;
         this.slot.labelProcess.node.active = false;
         this.slot.setProcess(0);
         this.spoolManager.remove(this);
         this.slot.spool = null;
+        // this.node.destroy()
         this.spoolManager.checkWin();
     }
 
@@ -266,6 +275,8 @@ export class Spool extends Clickable {
 
             if (item.wool) {
                 item.wool.node.active = false;
+                item.wool.node.destroy()
+
                 item.wool = null;
             }
 
@@ -277,19 +288,23 @@ export class Spool extends Clickable {
         this.isCollecting = false;
 
         // SỬA TẠI ĐÂY: Trả lại các item dư thừa cho MatchZone
-    if (this.queue.length > 0) {
-        const matchZone = ServiceLocator.get(MatchZone);
-        while (this.queue.length > 0) {
-            const item = this.queue.pop(); // Lấy từ queue ra
-            if (item) {
-                item.isCollecting = false; 
-                // Thêm lại vào tập hợp chờ của MatchZone
-                matchZone.itemsInMatchZone.add(item);
-            }
+if (this.queue.length > 0) {
+    const matchZone = ServiceLocator.get(MatchZone);
+    
+    // Sort queue để nhả theo thứ tự hợp lý
+    this.queue.sort((a, b) => b.index - a.index);
+
+    while (this.queue.length > 0) {
+        const item = this.queue.shift(); // Lấy từ đầu queue (index cao nhất)
+        if (item) {
+            item.isCollecting = false; // BẮT BUỘC
+            item.canCollect = true;    // BẮT BUỘC
+            matchZone.itemsInMatchZone.add(item);
         }
-        // Sau khi trả lại, chúng ta kích hoạt một đợt kiểm tra mới trên MatchZone
-        matchZone.checkExistingItems(); 
     }
+    this.queue = [];
+    matchZone.checkExistingItems(); 
+}
     }
 
     delay(time: number) { return new Promise(resolve => { this.scheduleOnce(resolve, time); }); }
@@ -317,10 +332,35 @@ export class Spool extends Clickable {
         if (this.slot) {
             this.slot.setProcess(Math.round(this.count / this.capacity * 100));
         }
-        if (this.isFull()) {
-            this.collectedDone()
+       if (this.isFull()) {
+        // 1. Giải phóng các item còn dư trong queue ngay lập tức
+        this.releaseRemainingQueue();
+        
+        // 2. Chạy animation biến mất
+        this.collectedDone();
+    }
+    }
+
+    private releaseRemainingQueue() {
+    if (this.queue.length === 0) return;
+
+    const matchZone = ServiceLocator.get(MatchZone);
+    // Quan trọng: Sắp xếp để nhả thằng có index lớn nhất ra trước
+    this.queue.sort((a, b) => b.index - a.index);
+
+    while (this.queue.length > 0) {
+        const item = this.queue.shift();
+        if (item) {
+            item.isCollecting = false;
+            item.canCollect = true;
+            matchZone.itemsInMatchZone.add(item);
         }
     }
+    this.queue = [];
+    
+    // Sau khi nhả xong, yêu cầu MatchZone kiểm tra để các Spool khác "hút" tiếp
+    matchZone.checkExistingItems();
+}
 
     public open() {
         if (this.isInSlot) return;
@@ -342,21 +382,23 @@ export class Spool extends Clickable {
             mat.setProperty("color", this.color);
 
             if (active) {
-                mat.setProperty('lineWidth', 70);
+                mat.setProperty('lineWidth', 50);
             } else {
                 mat.setProperty('lineWidth', 0);
             }
         });
     }
 
-    public insertSorted(raySlot: RaySlot) {
-        const index = this.queue.findIndex(q => q.index > raySlot.index);
-        if (index === -1) {
-            this.queue.push(raySlot);
-        } else {
-            this.queue.splice(index, 0, raySlot);
-        }
+public insertSorted(raySlot: RaySlot) {
+    // Chèn vào sao cho mảng luôn giảm dần theo index
+    // Thằng index to nhất nằm ở [0]
+    const index = this.queue.findIndex(q => raySlot.index > q.index);
+    if (index === -1) {
+        this.queue.push(raySlot);
+    } else {
+        this.queue.splice(index, 0, raySlot);
     }
+}
 
     private isBlocked(): boolean {
         return this.row !== 0;
