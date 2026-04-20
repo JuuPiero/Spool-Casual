@@ -88,9 +88,6 @@ export class GameManager extends Component {
     
     }
 
-    protected start(): void {
-    }
-
     installGame = () => {
         ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
         super_html_playable.game_end()

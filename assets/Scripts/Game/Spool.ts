@@ -18,8 +18,6 @@ const { ccclass, property } = _decorator;
 @ccclass('Spool')
 export class Spool extends Clickable {
 
-    // public data: SpoolData;
-
     public clickFunc: Function
 
     @property(CCInteger)
@@ -27,8 +25,6 @@ export class Spool extends Clickable {
 
     @property(CCInteger)
     public count: number = 0;
-
-    // public currentCapacity: number;
 
     @property(CCBoolean)
     public isFlying: boolean = false;
@@ -143,7 +139,6 @@ export class Spool extends Clickable {
         this.slot.setProcess(0);
         this.spoolManager.remove(this);
         this.slot.spool = null;
-        // this.node.destroy()
         this.spoolManager.checkWin();
 
         EventBus.emit(GameEvent.COLLECT_DONE)
@@ -153,8 +148,6 @@ export class Spool extends Clickable {
         this.rope.node.active = false;
     }
 
-
-    // static delay = false
 
     public onClick() {
         this.clickFunc?.()
@@ -219,8 +212,6 @@ export class Spool extends Clickable {
             })
             .start();
     }
-
-
 
     @property(RaySlot)
     public queue: RaySlot[] = [];

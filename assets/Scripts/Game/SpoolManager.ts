@@ -173,20 +173,6 @@ export class SpoolManager extends Component {
 
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
-        // else {
-        //     const speedMultiplier: number = 1.015;
-        //     // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
-        //     const woolManager = ServiceLocator.get(WoolManager);
-
-        //     // Công thức: Tốc độ mới = Tốc độ cũ * 1.1 (hoặc tùy biến)
-        //     const newSpeed = woolManager.speed * speedMultiplier;
-
-        //     // Bạn nên giới hạn tốc độ tối đa để tránh lỗi vật lý hoặc giật lag
-        //     const MAX_SPEED = 12;
-        //     woolManager.speed = Math.min(newSpeed, MAX_SPEED);
-
-        //     console.log(`Speed increased to: ${woolManager.speed.toFixed(2)}`);
-        // }
     }
 
     public onSpoolSelected(spool: Spool) {
