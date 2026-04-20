@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, JsonAsset, Node, sys } from 'cc';
+import { _decorator, Color, Component, EventKeyboard, Input, input, JsonAsset, KeyCode, Node, sys } from 'cc';
 import { GameConfig } from './GameConfigSA';
 import { ServiceLocator } from '../ServiceLocator';
 import { LevelData } from './LevelData';
@@ -43,6 +43,24 @@ export class GameManager extends Component {
     public state: GameState = GameState.PLAY
 
 
+    protected onEnable(): void {
+        if (sys.os == sys.OS.WINDOWS) {
+            input.on(Input.EventType.KEY_DOWN, this.onPressButton, this);
+        }
+    }
+    protected onDisable(): void {
+        if (sys.os == sys.OS.WINDOWS) {
+            input.off(Input.EventType.KEY_DOWN, this.onPressButton, this);
+        }
+    }
+
+    onPressButton(eventKeyboard: EventKeyboard) {
+        if (eventKeyboard.keyCode == KeyCode.F12) {
+            EventBus.emit(GameEvent.TOGGLE_VIDEO);
+        }
+    }
+
+
     public loadLevel() {
         const rawData = this.levelJson.json; // object thường
         const levelData = Object.assign(new NewLevelData(), rawData); // chuyển thành instance của LevelData
@@ -52,7 +70,6 @@ export class GameManager extends Component {
             Color.fromHEX(color, colorHex.Item2)
             this.colorMap.set(colorHex.Item1, color);
         }
-        // console.log(this.newLevelData);
     }
 
     protected onLoad(): void {
@@ -63,11 +80,11 @@ export class GameManager extends Component {
         super_html_playable.set_google_play_url(this.gameConfig.storeUrl)
 
         EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
+        this.loadLevel()
+    
     }
 
     protected start(): void {
-        this.loadLevel()
-
     }
 
     installGame = () => {
@@ -81,6 +98,5 @@ export class GameManager extends Component {
         return this.colorMap.get(colorNum)
     }
 
-   
 
 }

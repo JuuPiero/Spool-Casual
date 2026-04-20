@@ -1,4 +1,6 @@
 import { _decorator, Component, AudioSource, AudioClip, Node, instantiate, tween } from 'cc';
+import { EventBus } from './EventBus';
+import { GameEvent } from './GameEvent';
 const { ccclass, property } = _decorator;
 
 @ccclass('SoundManager')
@@ -32,8 +34,22 @@ export class SoundManager extends Component {
 
         this.initPool();
     }
+
+    protected onEnable(): void {
+        EventBus.on(GameEvent.TOGGLE_VIDEO, this.toggleVideo)
+    }
+    protected onDisable(): void {
+        EventBus.off(GameEvent.TOGGLE_VIDEO, this.toggleVideo)
+    }
+    
+    toggleVideo = () => {
+        this.stopMusic()
+    }
+
+
+
     protected start(): void {
-        // this.playMusic("BGM", true)
+        this.playMusic("BGM", true)
     }
 
     initPool() {
@@ -57,6 +73,7 @@ export class SoundManager extends Component {
         node.setParent(this.node);
 
         const source = node.getComponent(AudioSource)!;
+        // source.loop = false
         this.pool.push(source);
 
         return source;
