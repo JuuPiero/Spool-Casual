@@ -36,4 +36,6 @@ export class GameConfig extends bh.ScriptableAsset {
     public colors: Color[] = []
 
     @property public collectTime = 0.1
+
+    
 } 

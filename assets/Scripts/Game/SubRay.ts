@@ -1,9 +1,8 @@
-import { _decorator, BoxCollider, Color, Component, ITriggerEvent, log, Node, tween, Vec3, Quat } from 'cc';
+import { _decorator, BoxCollider, Color, Component, ITriggerEvent, log, Node, tween, Vec3, Quat, Collider } from 'cc';
 import { Spline } from '../Spline';
 import { SplineInstantiate } from '../SplineInstantiate';
 import { SplineAnimate } from '../SplineAnimate';
 import { RaySlot } from './RaySlot';
-import { print } from '../ultils';
 const { ccclass, property } = _decorator;
 
 @ccclass('SubRay')
@@ -30,6 +29,7 @@ export class SubRay extends Component {
 
         this.splineInstantiate.items.forEach(item => {
             this.raySlots.push(item.getComponent(RaySlot))
+            item.getComponent(Collider).destroy()
         })
 
     }
@@ -82,7 +82,6 @@ export class SubRay extends Component {
     }
    private shiftWools(startIndex: number) {
         const moveDuration = 0.4;
-        // Đã xóa delayStep vì tất cả sẽ chạy cùng lúc
 
         for (let i = startIndex; i < this.raySlots.length - 1; i++) {
             const current = this.raySlots[i];

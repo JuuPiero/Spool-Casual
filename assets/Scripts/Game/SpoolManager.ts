@@ -6,13 +6,13 @@ import { GameManager, GameState } from './GameManager';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D';
-import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { TutorialController } from './UI/TutorialController';
 import { SoundManager } from '../SoundManager';
 import { WoolManager } from './WoolManager';
 import { SOUNDS } from './Sounds';
 import { SlotManager } from './SlotManager';
 import { print } from '../ultils';
+import { NewLevelData } from './NewLevelDataSA';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -41,8 +41,58 @@ export class SpoolManager extends Component {
 
     protected start(): void {
         this.gameManager = ServiceLocator.get(GameManager);
+        
         this.spawnGrid();
     }
+
+
+    public init(levelData: NewLevelData) {
+        const gameConfig = ServiceLocator.get(GameConfig);
+        const columns = levelData.gridWidth;
+        const rows = levelData.gridHeight;
+
+        const totalWidth = (columns - 1) * this.spacing;
+        const totalDepth = (rows - 1) * this.spacing;
+
+        const startX = -totalWidth / 2;
+        const startZ = -totalDepth / 2;
+
+        for (const vehicle of levelData.vehiclesData) {
+
+            const col = vehicle.coordinateX;
+            const row = vehicle.coordinateY;
+
+            const node = instantiate(gameConfig.spoolPrefab);
+            const spool = node.getComponent(Spool);
+
+            if (!spool) {
+                node.removeFromParent();
+                continue;
+            }
+            spool.row = row;
+            spool.col = col;
+            node.name = `Spool_(${row}, ${col})`;
+            node.setParent(this.node);
+
+            // Set color from colorMap
+            spool.color = this.gameManager.getLevelColor(vehicle.entityColorType) || Color.WHITE;
+
+            const x = startX + col * this.spacing;
+            const z = startZ + row * this.spacing;
+
+            node.setPosition(new Vec3(x, 0, z));
+
+            spool.clickFunc = () => {
+                this.onSpoolSelected(spool)
+            }
+
+            this.spools.push(spool);
+            this.spoolsMap.set(`${row}_${col}`, spool);
+
+        }
+    }
+
+
 
 
 
@@ -123,25 +173,25 @@ export class SpoolManager extends Component {
 
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
         }
-        else {
-            const speedMultiplier: number = 1.015;
-            // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
-            const woolManager = ServiceLocator.get(WoolManager);
+        // else {
+        //     const speedMultiplier: number = 1.015;
+        //     // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
+        //     const woolManager = ServiceLocator.get(WoolManager);
 
-            // Công thức: Tốc độ mới = Tốc độ cũ * 1.1 (hoặc tùy biến)
-            const newSpeed = woolManager.speed * speedMultiplier;
+        //     // Công thức: Tốc độ mới = Tốc độ cũ * 1.1 (hoặc tùy biến)
+        //     const newSpeed = woolManager.speed * speedMultiplier;
 
-            // Bạn nên giới hạn tốc độ tối đa để tránh lỗi vật lý hoặc giật lag
-            const MAX_SPEED = 12;
-            woolManager.speed = Math.min(newSpeed, MAX_SPEED);
+        //     // Bạn nên giới hạn tốc độ tối đa để tránh lỗi vật lý hoặc giật lag
+        //     const MAX_SPEED = 12;
+        //     woolManager.speed = Math.min(newSpeed, MAX_SPEED);
 
-            console.log(`Speed increased to: ${woolManager.speed.toFixed(2)}`);
-        }
+        //     console.log(`Speed increased to: ${woolManager.speed.toFixed(2)}`);
+        // }
     }
 
     public onSpoolSelected(spool: Spool) {
 
-        if (Spool.delay) return
+        // if (Spool.delay) return
         if (spool.isFlying || spool.isInSlot) return;
         if (!spool.isOpen) {
             SoundManager.instance.playOneShot(SOUNDS.FAILED);
@@ -161,7 +211,7 @@ export class SpoolManager extends Component {
             console.log('out of slot');
             return;
         }
-        Spool.delay = true
+        // Spool.delay = true
 
         spool.activateNextSpools();
         SoundManager.instance.playOneShot(SOUNDS.CLICK);

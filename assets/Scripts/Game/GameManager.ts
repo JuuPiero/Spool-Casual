@@ -8,7 +8,7 @@ import super_html_playable from '../super_html_playable';
 import { LevelsConfig } from './LevelsConfig';
 import { NewLevelData } from './NewLevelDataSA';
 import { NavigationContainer } from '../Navigation/NavigationContainer';
-import { Spool } from './Spool';
+import { SpoolManager } from './SpoolManager';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -43,6 +43,9 @@ export class GameManager extends Component {
     public state: GameState = GameState.PLAY
 
 
+    @property(SpoolManager) public spoolManager: SpoolManager = null
+
+
     protected onEnable(): void {
         if (sys.os == sys.OS.WINDOWS) {
             input.on(Input.EventType.KEY_DOWN, this.onPressButton, this);
@@ -62,8 +65,8 @@ export class GameManager extends Component {
 
 
     public loadLevel() {
-        const rawData = this.levelJson.json; // object thường
-        const levelData = Object.assign(new NewLevelData(), rawData); // chuyển thành instance của LevelData
+        const rawData = this.levelJson.json; 
+        const levelData = Object.assign(new NewLevelData(), rawData);
         this.newLevelData = levelData
         for (const colorHex of this.newLevelData.colorHexCodes) {
             const color: Color = new Color();
@@ -81,6 +84,7 @@ export class GameManager extends Component {
 
         EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
         this.loadLevel()
+        // this.spoolManager.init(this.newLevelData)
     
     }
 
@@ -98,5 +102,5 @@ export class GameManager extends Component {
         return this.colorMap.get(colorNum)
     }
 
-
+    
 }

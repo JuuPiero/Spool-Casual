@@ -7,6 +7,8 @@ import { RaySlot } from './RaySlot';
 import { SplineAnimate } from '../SplineAnimate';
 import { GameManager } from './GameManager';
 import { Spool } from './Spool';
+import { EventBus } from '../EventBus';
+import { GameEvent } from '../GameEvent';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -32,9 +34,10 @@ export class WoolManager extends Component {
     @property({ type: RaySlot })
     public slots: RaySlot[] = []
 
-    @property({ 
-        
-        tooltip: 'Curve mau do kho (0: de, 1: kho), lay mau theo ti le tu dau den cuoi hang wool' })
+    @property({
+
+        tooltip: 'Curve mau do kho (0: de, 1: kho), lay mau theo ti le tu dau den cuoi hang wool'
+    })
     public difficultyCurveSamples: number[] = [0.1, 0.25, 0.5, 0.75, 0.9];
 
     @property({ tooltip: 'Do dai cum mau o muc de (cum dai hon = de hon)' })
@@ -65,6 +68,28 @@ export class WoolManager extends Component {
         if (!this.splineInstantiate) {
             this.splineInstantiate = this.node.getComponent(SplineInstantiate);
         }
+    }
+
+    protected onEnable(): void {
+        EventBus.on(GameEvent.COLLECT_DONE, this.onCollectDone)
+    }
+    protected onDisable(): void {
+        EventBus.off(GameEvent.COLLECT_DONE, this.onCollectDone)
+    }
+
+
+    onCollectDone = () => {
+        const speedMultiplier: number = 1.02;
+        // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
+
+        // Công thức: Tốc độ mới = Tốc độ cũ * 1.1 (hoặc tùy biến)
+        const newSpeed = this.speed * speedMultiplier;
+
+        // giới hạn tốc độ tối đa để tránh lỗi vật lý hoặc giật lag
+        const MAX_SPEED = 12;
+        this.speed = Math.min(newSpeed, MAX_SPEED);
+
+        console.log(`Speed increased to: ${this.speed.toFixed(2)}`);
     }
 
     // protected start(): void {
@@ -299,9 +324,18 @@ export class WoolManager extends Component {
 
         }, 0);
     }
+
+    private collectingCount: number = 0;
+
+    public setCollecting(isCollecting: boolean) {
+        if (isCollecting) this.collectingCount++;
+        else this.collectingCount = Math.max(0, this.collectingCount - 1);
+    }
     protected update(dt: number): void {
         if (!this.isMoving) return;
         if (!this.splineInstantiate) return;
+
+        const currentSpeed = this.collectingCount > 0 ? this.speed * 0.8 : this.speed;
 
         const items = this.splineInstantiate.getAllItems().map(item => item.getComponent(SplineAnimate));
         if (items.length === 0) return;
@@ -312,7 +346,8 @@ export class WoolManager extends Component {
                 const splineAnimate = leadItem
 
                 const currentDist = splineAnimate.getDistance();
-                let newDist = currentDist - this.speed * dt;
+                // let newDist = currentDist - this.speed * dt;
+                let newDist = currentDist - currentSpeed * dt;
 
                 const totalLength = splineAnimate.getTotalLength();
                 if (newDist < 0) {

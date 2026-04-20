@@ -8,6 +8,9 @@ import { RopeBezierWave3D } from '../../Deps/iKame/scripts/rope/RopeBezierWave3D
 import { GameConfig } from './GameConfigSA';
 import { SoundManager } from '../SoundManager';
 import { MatchZone } from './MatchZone';
+import { WoolManager } from './WoolManager';
+import { EventBus } from '../EventBus';
+import { GameEvent } from '../GameEvent';
 
 const { ccclass, property } = _decorator;
 
@@ -124,16 +127,16 @@ export class Spool extends Clickable {
             .to(0.2, { scale: Vec3.ZERO }, { easing: "backIn" })
             .call(() => this.finishSpool())
             .start();
-        
+
     }
 
     private finishSpool() {
-          this.queue.forEach(item => {
-                item.canCollect = true
-                item.isCollecting = false
+        this.queue.forEach(item => {
+            item.canCollect = true
+            item.isCollecting = false
 
-            })
-            this.queue = []
+        })
+        this.queue = []
 
         this.node.active = false;
         this.slot.labelProcess.node.active = false;
@@ -142,6 +145,8 @@ export class Spool extends Clickable {
         this.slot.spool = null;
         // this.node.destroy()
         this.spoolManager.checkWin();
+
+        EventBus.emit(GameEvent.COLLECT_DONE)
     }
 
     protected onDestroy(): void {
@@ -149,7 +154,7 @@ export class Spool extends Clickable {
     }
 
 
-    static delay = false
+    // static delay = false
 
     public onClick() {
         this.clickFunc?.()
@@ -209,7 +214,7 @@ export class Spool extends Clickable {
                 }
 
                 this.collects()
-                Spool.delay = false
+                // Spool.delay = false
                 onDone?.()
             })
             .start();
@@ -228,7 +233,10 @@ export class Spool extends Clickable {
         mat.setProperty('fill', 1);
         this.startWiggle();
 
-        while (this.queue.length > 0 && !this.isFull()) { // Thêm điều kiện !this.isFull()
+        const woolManager = ServiceLocator.get(WoolManager);
+        woolManager.setCollecting(true);
+
+        while (this.queue.length > 0 && !this.isFull()) { 
             this.queue.sort((a, b) => b.index - a.index);
 
             const item = this.queue.shift();
@@ -286,25 +294,28 @@ export class Spool extends Clickable {
         this.stopWiggle();
         mat.setProperty('fill', 0);
         this.isCollecting = false;
+        woolManager.setCollecting(false); // Thông báo kết thúc thu dây
 
         // SỬA TẠI ĐÂY: Trả lại các item dư thừa cho MatchZone
-if (this.queue.length > 0) {
-    const matchZone = ServiceLocator.get(MatchZone);
-    
-    // Sort queue để nhả theo thứ tự hợp lý
-    this.queue.sort((a, b) => b.index - a.index);
+        if (this.queue.length > 0) {
+            const matchZone = ServiceLocator.get(MatchZone);
+            Array.from(matchZone.itemsInMatchZone)
+            .sort((a, b) => b.index - a.index);
+            // Sort queue để nhả theo thứ tự hợp lý
+            this.queue.sort((a, b) => b.index - a.index);
 
-    while (this.queue.length > 0) {
-        const item = this.queue.shift(); // Lấy từ đầu queue (index cao nhất)
-        if (item) {
-            item.isCollecting = false; // BẮT BUỘC
-            item.canCollect = true;    // BẮT BUỘC
-            matchZone.itemsInMatchZone.add(item);
+
+            while (this.queue.length > 0) {
+                const item = this.queue.shift(); // Lấy từ đầu queue (index cao nhất)
+                if (item) {
+                    item.isCollecting = false; // BẮT BUỘC
+                    item.canCollect = true;    // BẮT BUỘC
+                    matchZone.itemsInMatchZone.add(item);
+                }
+            }
+            this.queue = [];
+            matchZone.checkExistingItems();
         }
-    }
-    this.queue = [];
-    matchZone.checkExistingItems(); 
-}
     }
 
     delay(time: number) { return new Promise(resolve => { this.scheduleOnce(resolve, time); }); }
@@ -332,35 +343,35 @@ if (this.queue.length > 0) {
         if (this.slot) {
             this.slot.setProcess(Math.round(this.count / this.capacity * 100));
         }
-       if (this.isFull()) {
-        // 1. Giải phóng các item còn dư trong queue ngay lập tức
-        this.releaseRemainingQueue();
-        
-        // 2. Chạy animation biến mất
-        this.collectedDone();
-    }
+        if (this.isFull()) {
+            // 1. Giải phóng các item còn dư trong queue ngay lập tức
+            this.releaseRemainingQueue();
+
+            // 2. Chạy animation biến mất
+            this.collectedDone();
+        }
     }
 
     private releaseRemainingQueue() {
-    if (this.queue.length === 0) return;
+        if (this.queue.length === 0) return;
 
-    const matchZone = ServiceLocator.get(MatchZone);
-    // Quan trọng: Sắp xếp để nhả thằng có index lớn nhất ra trước
-    this.queue.sort((a, b) => b.index - a.index);
+        const matchZone = ServiceLocator.get(MatchZone);
+        // Quan trọng: Sắp xếp để nhả thằng có index lớn nhất ra trước
+        this.queue.sort((a, b) => b.index - a.index);
 
-    while (this.queue.length > 0) {
-        const item = this.queue.shift();
-        if (item) {
-            item.isCollecting = false;
-            item.canCollect = true;
-            matchZone.itemsInMatchZone.add(item);
+        while (this.queue.length > 0) {
+            const item = this.queue.shift();
+            if (item) {
+                item.isCollecting = false;
+                item.canCollect = true;
+                matchZone.itemsInMatchZone.add(item);
+            }
         }
+        this.queue = [];
+
+        // Sau khi nhả xong, yêu cầu MatchZone kiểm tra để các Spool khác "hút" tiếp
+        matchZone.checkExistingItems();
     }
-    this.queue = [];
-    
-    // Sau khi nhả xong, yêu cầu MatchZone kiểm tra để các Spool khác "hút" tiếp
-    matchZone.checkExistingItems();
-}
 
     public open() {
         if (this.isInSlot) return;
@@ -389,16 +400,17 @@ if (this.queue.length > 0) {
         });
     }
 
-public insertSorted(raySlot: RaySlot) {
-    // Chèn vào sao cho mảng luôn giảm dần theo index
-    // Thằng index to nhất nằm ở [0]
-    const index = this.queue.findIndex(q => raySlot.index > q.index);
-    if (index === -1) {
-        this.queue.push(raySlot);
-    } else {
-        this.queue.splice(index, 0, raySlot);
+    public insertSorted(raySlot: RaySlot) {
+        // Chèn vào sao cho mảng luôn giảm dần theo index
+        // Thằng index to nhất nằm ở [0]
+        raySlot.isCollecting = true;
+        const index = this.queue.findIndex(q => raySlot.index > q.index);
+        if (index === -1) {
+            this.queue.push(raySlot);
+        } else {
+            this.queue.splice(index, 0, raySlot);
+        }
     }
-}
 
     private isBlocked(): boolean {
         return this.row !== 0;

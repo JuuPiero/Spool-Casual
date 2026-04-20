@@ -1,12 +1,12 @@
 import { _decorator, Component, input, Input, EventMouse, PhysicsSystem, Camera, geometry, EventTouch, sys } from 'cc';
 import { Clickable } from './Clickable';
 
-const { ccclass } = _decorator;
+const { ccclass, property } = _decorator;
 
 @ccclass('ClickSystem')
 export class ClickSystem extends Component {
 
-    camera!: Camera;
+    @property(Camera) public camera!: Camera;
 
     start() {
         this.camera = this.getComponent(Camera)!;
@@ -47,6 +47,5 @@ export class ClickSystem extends Component {
 
         const item = node.getComponent(Clickable);
         item?.onClick();
-       
     }
 }

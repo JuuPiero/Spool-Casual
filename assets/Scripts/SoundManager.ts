@@ -47,7 +47,6 @@ export class SoundManager extends Component {
     }
 
 
-
     protected start(): void {
         this.playMusic("BGM", true)
     }

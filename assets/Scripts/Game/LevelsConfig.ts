@@ -21,28 +21,4 @@ export class LevelsConfig extends bh.ScriptableAsset {
         }
         return null;
     }
-
-    // Method to get level count
-    public getLevelCount(): number {
-        return this.levels.length;
-    }
-
-    // Method to add a new level
-    public addLevel(levelData: NewLevelData): void {
-        if (!this.levels) {
-            this.levels = [];
-        }
-        this.levels.push(levelData);
-    }
-
-    // Method to remove a level
-    public removeLevel(index: number): boolean {
-        if (index >= 0 && index < this.levels.length) {
-            this.levels.splice(index, 1);
-            return true;
-        }
-        return false;
-    }
-
-
 } 

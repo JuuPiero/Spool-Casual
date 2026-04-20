@@ -23,5 +23,7 @@ export class EventBus {
         if (!arr) return;
 
         arr.forEach(cb => cb(data));
+        console.log("Raise event: " + event);
+        
     }
 }
