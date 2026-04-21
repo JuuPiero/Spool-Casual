@@ -1,8 +1,37 @@
-{
-  "__type__": "21fefwRVnRB2IXfJqn2KeDV",
-  "_name": "LevelsConfig",
-  "_objFlags": 0,
-  "__editorExtras__": {},
-  "_native": "",
-  "levels": []
-}
+[
+  {
+    "__type__": "21fefwRVnRB2IXfJqn2KeDV",
+    "_name": "LevelsConfig",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "_native": "",
+    "levels": [
+      {
+        "__id__": 1
+      }
+    ]
+  },
+  {
+    "__type__": "NewLevelData",
+    "colorHexCodes": [],
+    "levelIndex": 0,
+    "gridWidth": 5,
+    "gridHeight": 5,
+    "passengerQueuesCount": 2,
+    "hasCurtainCovered": false,
+    "difficultyType": 0,
+    "gridSlotsData": [],
+    "vehiclesData": [],
+    "garagesData": [],
+    "vehicleConnectionsData": [],
+    "lockAndKeysData": [],
+    "multipleLockAndKeysData": [],
+    "barriersData": [],
+    "cratesData": [],
+    "colorSwitchersData": [],
+    "wickersData": [],
+    "conveyorsData": [],
+    "doubledBottlesData": [],
+    "passengersQueuesData": []
+  }
+]

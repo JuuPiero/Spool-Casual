@@ -80,7 +80,7 @@ export class WoolManager extends Component {
 
 
     onCollectDone = () => {
-        const speedMultiplier: number = 1.02;
+        const speedMultiplier: number = 1.025;
         // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
 
         // Công thức: Tốc độ mới = Tốc độ cũ * 1.1 (hoặc tùy biến)
@@ -93,54 +93,7 @@ export class WoolManager extends Component {
         console.log(`Speed increased to: ${this.speed.toFixed(2)}`);
     }
 
-    // protected start(): void {
-    //     this.scheduleOnce(() => {
-    //         this.splineInstantiate.items.forEach(item => {
-    //             this.slots.push(item.getComponent(RaySlot))
-    //         });
-
-    //         const allItems: any[] = [...this.splineInstantiate.items];
-
-    //         for (let i = 0; i < this.subRays.length; i++) {
-    //             const sub = this.subRays[i];
-    //             if (!sub.splineInstantiate) continue;
-    //             const items = sub.splineInstantiate.items;
-    //             for (let j = 0; j < items.length; j++) {
-    //                 allItems.push(items[j]);
-    //             }
-    //         }
-    //         for (let i = 0; i < allItems.length; i++) {
-    //             const raySlot = allItems[i].getComponent(RaySlot);
-    //             if (raySlot) {
-    //                 raySlot.index = i;
-    //             }
-    //         }
-
-    //         const total = allItems.length;
-
-    //         const spoolManager = ServiceLocator.get(SpoolManager);
-    //         const base = Math.floor(total / spoolManager.spools.length);
-    //         const extra = total % spoolManager.spools.length;
-
-    //         let index = 0;
-    //         for (let i = 0; i < spoolManager.spools.length; i++) {
-    //             const count = base + (i < extra ? 1 : 0);
-    //             spoolManager.spools[i].capacity = count;
-    //             for (let j = 0; j < count; j++) {
-    //                 const raySlot = allItems[index].getComponent(RaySlot);
-    //                 raySlot?.wool?.setColor(spoolManager.spools[i].color);
-    //                 index++;
-    //             }
-    //         }
-    //         if (this.splineInstantiate && allItems.length > 0) {
-    //             this.calculateRelativeDistances();
-    //             if (this.autoMove) {
-    //                 this.startMoving();
-    //             }
-    //         }
-
-    //     }, 0);
-    // }
+   
     private shuffleArray(array: any[]) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -277,99 +230,9 @@ export class WoolManager extends Component {
         return sequence;
     }
 
-    // protected start(): void {
-
-    //     this.scheduleOnce(() => {
-
-    //         this.splineInstantiate.items.forEach(item => {
-    //             this.slots.push(item.getComponent(RaySlot))
-    //         });
-
-    //         const allItems: any[] = [...this.splineInstantiate.items];
-
-    //         for (let i = 0; i < this.subRays.length; i++) {
-    //             const sub = this.subRays[i];
-    //             if (!sub.splineInstantiate) continue;
-    //             const items = sub.splineInstantiate.items;
-    //             for (let j = 0; j < items.length; j++) {
-    //                 allItems.push(items[j]);
-    //             }
-    //         }
-    //         for (let i = 0; i < allItems.length; i++) {
-    //             const raySlot = allItems[i].getComponent(RaySlot);
-    //             if (raySlot) {
-    //                 raySlot.index = i;
-    //             }
-    //         }
-
-    //         const total = allItems.length;
-    //         const spoolManager = ServiceLocator.get(SpoolManager);
-    //         if (!spoolManager || spoolManager.spools.length === 0) {
-    //             return;
-    //         }
-
-    //         const spoolCounts = this.buildSpoolCounts(total, spoolManager);
-    //         const colorSequence = this.buildCurveDistribution(total, spoolCounts);
-
-    //         for (let i = 0; i < allItems.length; i++) {
-    //             const raySlot = allItems[i].getComponent(RaySlot);
-    //             const spool = colorSequence[i];
-    //             raySlot?.wool?.setColor(spool?.color);
-    //         }
-    //         if (this.splineInstantiate && allItems.length > 0) {
-    //             this.calculateRelativeDistances();
-    //             if (this.autoMove) {
-    //                 this.startMoving();
-    //             }
-    //         }
-
-    //     }, 0);
-    // }
-
+   
 
     public init(levelData: NewLevelData) {
-        // this.splineInstantiate.items.forEach(item => {
-        //     this.slots.push(item.getComponent(RaySlot))
-        // });
-
-        // const allItems: any[] = [...this.splineInstantiate.items];
-
-        // for (let i = 0; i < this.subRays.length; i++) {
-        //     const sub = this.subRays[i];
-        //     if (!sub.splineInstantiate) continue;
-        //     const items = sub.splineInstantiate.items;
-        //     for (let j = 0; j < items.length; j++) {
-        //         allItems.push(items[j]);
-        //     }
-        // }
-        // for (let i = 0; i < allItems.length; i++) {
-        //     const raySlot = allItems[i].getComponent(RaySlot);
-        //     if (raySlot) {
-        //         raySlot.index = i;
-        //     }
-        // }
-
-        // const total = allItems.length;
-        // const spoolManager = ServiceLocator.get(SpoolManager);
-        // if (!spoolManager || spoolManager.spools.length === 0) {
-        //     return;
-        // }
-
-        // const spoolCounts = this.buildSpoolCounts(total, spoolManager);
-        // const colorSequence = this.buildCurveDistribution(total, spoolCounts);
-
-        // for (let i = 0; i < allItems.length; i++) {
-        //     const raySlot = allItems[i].getComponent(RaySlot);
-        //     const spool = colorSequence[i];
-        //     raySlot?.wool?.setColor(spool?.color);
-        // }
-        // if (this.splineInstantiate && allItems.length > 0) {
-        //     this.calculateRelativeDistances();
-        //     if (this.autoMove) {
-        //         this.startMoving();
-        //     }
-        // }
-
         this.splineInstantiate.items.forEach(item => {
             this.slots.push(item.getComponent(RaySlot))
         });
@@ -392,20 +255,18 @@ export class WoolManager extends Component {
         }
 
         const total = allItems.length;
-
         const spoolManager = ServiceLocator.get(SpoolManager);
-        const base = Math.floor(total / spoolManager.spools.length);
-        const extra = total % spoolManager.spools.length;
+        if (!spoolManager || spoolManager.spools.length === 0) {
+            return;
+        }
 
-        let index = 0;
-        for (let i = 0; i < spoolManager.spools.length; i++) {
-            const count = base + (i < extra ? 1 : 0);
-            spoolManager.spools[i].capacity = count;
-            for (let j = 0; j < count; j++) {
-                const raySlot = allItems[index].getComponent(RaySlot);
-                raySlot?.wool?.setColor(spoolManager.spools[i].color);
-                index++;
-            }
+        const spoolCounts = this.buildSpoolCounts(total, spoolManager);
+        const colorSequence = this.buildCurveDistribution(total, spoolCounts);
+
+        for (let i = 0; i < allItems.length; i++) {
+            const raySlot = allItems[i].getComponent(RaySlot);
+            const spool = colorSequence[i];
+            raySlot?.wool?.setColor(spool?.color);
         }
         if (this.splineInstantiate && allItems.length > 0) {
             this.calculateRelativeDistances();
@@ -413,6 +274,50 @@ export class WoolManager extends Component {
                 this.startMoving();
             }
         }
+
+        // this.splineInstantiate.items.forEach(item => {
+        //     this.slots.push(item.getComponent(RaySlot))
+        // });
+
+        // const allItems: any[] = [...this.splineInstantiate.items];
+
+        // for (let i = 0; i < this.subRays.length; i++) {
+        //     const sub = this.subRays[i];
+        //     if (!sub.splineInstantiate) continue;
+        //     const items = sub.splineInstantiate.items;
+        //     for (let j = 0; j < items.length; j++) {
+        //         allItems.push(items[j]);
+        //     }
+        // }
+        // for (let i = 0; i < allItems.length; i++) {
+        //     const raySlot = allItems[i].getComponent(RaySlot);
+        //     if (raySlot) {
+        //         raySlot.index = i;
+        //     }
+        // }
+
+        // const total = allItems.length;
+
+        // const spoolManager = ServiceLocator.get(SpoolManager);
+        // const base = Math.floor(total / spoolManager.spools.length);
+        // const extra = total % spoolManager.spools.length;
+
+        // let index = 0;
+        // for (let i = 0; i < spoolManager.spools.length; i++) {
+        //     const count = base + (i < extra ? 1 : 0);
+        //     spoolManager.spools[i].capacity = count;
+        //     for (let j = 0; j < count; j++) {
+        //         const raySlot = allItems[index].getComponent(RaySlot);
+        //         raySlot?.wool?.setColor(spoolManager.spools[i].color);
+        //         index++;
+        //     }
+        // }
+        // if (this.splineInstantiate && allItems.length > 0) {
+        //     this.calculateRelativeDistances();
+        //     if (this.autoMove) {
+        //         this.startMoving();
+        //     }
+        // }
 
     }
 
@@ -426,7 +331,7 @@ export class WoolManager extends Component {
         if (!this.isMoving) return;
         if (!this.splineInstantiate) return;
 
-        const currentSpeed = this.collectingCount > 0 ? this.speed * 0.8 : this.speed;
+        const currentSpeed = this.collectingCount > 0 ? this.speed * 0.6 : this.speed;
 
         const items = this.splineInstantiate.getAllItems().map(item => item.getComponent(SplineAnimate));
         if (items.length === 0) return;

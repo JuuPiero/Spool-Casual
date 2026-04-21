@@ -147,7 +147,7 @@ export class Spool extends Clickable {
     protected onDestroy(): void {
         this.rope.node.active = false;
     }
-
+    static delay = false
 
     public onClick() {
         this.clickFunc?.()
@@ -207,7 +207,7 @@ export class Spool extends Clickable {
                 }
 
                 this.collects()
-                // Spool.delay = false
+                Spool.delay = false
                 onDone?.()
             })
             .start();
@@ -215,7 +215,7 @@ export class Spool extends Clickable {
 
     @property(RaySlot)
     public queue: RaySlot[] = [];
-
+    private flipScaleDirection: boolean = false;
     public async collects() {
         if (this.isCollecting) return;
         this.isCollecting = true;
@@ -227,55 +227,60 @@ export class Spool extends Clickable {
         const woolManager = ServiceLocator.get(WoolManager);
         woolManager.setCollecting(true);
 
-        while (this.queue.length > 0 && !this.isFull()) { 
+        while (this.queue.length > 0 && !this.isFull()) {
             this.queue.sort((a, b) => b.index - a.index);
-
             const item = this.queue.shift();
             if (!item || !item.wool) continue;
 
-            // Kiểm tra lại spool còn chỗ không
             if (this.isFull()) {
-                // Nếu đã đầy, trả item lại queue và thoát
                 this.queue.unshift(item);
                 break;
             }
 
             this.count++;
             this.syncWoolsView();
-
             item.isCollecting = true;
 
-            // animation wool
-            tween(item.wool.node)
-                .to(0.2, { eulerAngles: new Vec3(0, 50, 0) })
-                .start();
-
-            tween(item.wool.node)
-                .to(0.2, { scale: Vec3.ZERO })
-                .start();
-
-            // rope anim
             const start = item.wool.startPoint.worldPosition.clone();
             const end = item.wool.endPoint.worldPosition.clone();
 
-            let t = { value: 0 };
+            // --- LOGIC SO LE ---
+            // Tính toán độ lệch (offset) sang hai bên
+            this.flipScaleDirection = !this.flipScaleDirection;
+            const sideOffset = this.flipScaleDirection ? 0.5 : -0.5; // Điều chỉnh con số này để lệch nhiều hay ít
 
+            // Điểm đích ảo để Wool bay tới (hơi lệch so với End thật của dây)
+            const woolTargetPos = end.clone().add3f(sideOffset, 0, 0);
+
+            // 1. Animation cho Wool Visual (Bay so le và thu nhỏ)
+            tween(item.wool.visual)
+                .to(0.25, {
+                    worldPosition: woolTargetPos,
+                    scale: Vec3.ZERO,
+                    eulerAngles: new Vec3(0, this.flipScaleDirection ? 180 : -180, 0)
+                }, { easing: 'quadIn' })
+                .start();
+
+            // 2. Animation cho Rope (Dây cũng phải bám theo hướng so le)
+            let t = { value: 0 };
             tween(t)
                 .to(0.25, { value: 1 }, {
                     easing: "quadOut",
                     onUpdate: () => {
-                        Vec3.lerp(this.tempVec3, start, end, t.value);
+                        if (!item.wool) return;
+                        // Dây cũng lerp về điểm ảo woolTargetPos để khớp với Wool Visual
+                        Vec3.lerp(this.tempVec3, start, woolTargetPos, t.value);
                         this.rope.endPoint.setWorldPosition(this.tempVec3);
                     }
                 })
                 .start();
 
-            await this.delay(0.1);
+            // Đợi một chút để thấy hiệu ứng bay trước khi destroy
+            await this.delay(0.12);
 
             if (item.wool) {
                 item.wool.node.active = false;
-                item.wool.node.destroy()
-
+                item.wool.node.destroy();
                 item.wool = null;
             }
 
@@ -291,7 +296,7 @@ export class Spool extends Clickable {
         if (this.queue.length > 0) {
             const matchZone = ServiceLocator.get(MatchZone);
             Array.from(matchZone.itemsInMatchZone)
-            .sort((a, b) => b.index - a.index);
+                .sort((a, b) => b.index - a.index);
             // Sort queue để nhả theo thứ tự hợp lý
             this.queue.sort((a, b) => b.index - a.index);
 

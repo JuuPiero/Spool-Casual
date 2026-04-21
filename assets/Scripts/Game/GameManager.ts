@@ -11,6 +11,7 @@ import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { SpoolManager } from './SpoolManager';
 import { WoolManager } from './WoolManager';
 import { SlotManager } from './SlotManager';
+import { SCREENS } from './UI/Screens';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -23,12 +24,12 @@ export class GameManager extends Component {
     @property(GameConfig)
     public gameConfig: GameConfig;
 
-    @property(LevelData)
-    public currentLevelData: LevelData
+    // @property(LevelData)
+    // public currentLevelData: LevelData
 
 
     @property(LevelsConfig)
-    public levelConfig: LevelsConfig = null
+    public levelsConfig: LevelsConfig = null
 
     @property(JsonAsset)
     public levelJson: JsonAsset = null
@@ -40,23 +41,28 @@ export class GameManager extends Component {
 
     public state: GameState = GameState.PLAY
 
-
     @property(SpoolManager) public spoolManager: SpoolManager = null
     @property(WoolManager) public woolManager: WoolManager = null
     @property(SlotManager) public slotManager: SlotManager = null
-
-
 
 
     protected onEnable(): void {
         if (sys.os == sys.OS.WINDOWS) {
             input.on(Input.EventType.KEY_DOWN, this.onPressButton, this);
         }
+
+        EventBus.on(GameEvent.NEW_GAME, this.onNewGame)
+        EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
+
     }
     protected onDisable(): void {
         if (sys.os == sys.OS.WINDOWS) {
             input.off(Input.EventType.KEY_DOWN, this.onPressButton, this);
         }
+
+        EventBus.off(GameEvent.NEW_GAME, this.onNewGame)
+        EventBus.off(GameEvent.LEVEL_COMPLETED, this.installGame)
+
     }
 
     onPressButton(eventKeyboard: EventKeyboard) {
@@ -70,7 +76,6 @@ export class GameManager extends Component {
         const rawData = this.levelJson.json; 
         const levelData = Object.assign(new NewLevelData(), rawData);
         this.newLevelData = levelData
-        
     }
 
     protected onLoad(): void {
@@ -80,20 +85,21 @@ export class GameManager extends Component {
         }
         super_html_playable.set_google_play_url(this.gameConfig.storeUrl)
 
-        EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
         this.loadLevel()
-
     
     }
     protected start(): void {
+       EventBus.emit(GameEvent.NEW_GAME)
+    }
+
+    onNewGame = () => {
         this.spoolManager.init(this.newLevelData)
         this.woolManager.init(this.newLevelData)
         this.slotManager.init(this.newLevelData)
-        
     }
 
     installGame = () => {
-        ServiceLocator.get(NavigationContainer).stack.navigate('EndCard')
+        ServiceLocator.get(NavigationContainer).stack.navigate(SCREENS.ENDCARD)
         super_html_playable.game_end()
         super_html_playable.download()
 
