@@ -102,7 +102,6 @@ export class MatchZone extends Component {
     public checkExistingItems() {
         if (this.itemsInMatchZone.size === 0) return;
 
-        // QUAN TRỌNG: Sort giảm dần theo index để ưu tiên item đứng đầu hàng
         const sortedItems = Array.from(this.itemsInMatchZone)
             .sort((a, b) => b.index - a.index);
 
@@ -121,7 +120,7 @@ export class MatchZone extends Component {
                 const spool = slot.spool;
                 if (spool && spool.queue.indexOf(raySlot) === -1) {
                     this.itemsInMatchZone.delete(raySlot);
-                    spool.insertSorted(raySlot); // Hàm này của bạn đã có sort rồi
+                    spool.insertSorted(raySlot); 
 
                     if (!spool.isCollecting) {
                         spool.collects();

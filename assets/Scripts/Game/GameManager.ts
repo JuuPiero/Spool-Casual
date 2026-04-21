@@ -9,6 +9,8 @@ import { LevelsConfig } from './LevelsConfig';
 import { NewLevelData } from './NewLevelDataSA';
 import { NavigationContainer } from '../Navigation/NavigationContainer';
 import { SpoolManager } from './SpoolManager';
+import { WoolManager } from './WoolManager';
+import { SlotManager } from './SlotManager';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -32,18 +34,18 @@ export class GameManager extends Component {
     public levelJson: JsonAsset = null
 
 
-    @property(NewLevelData)
+    // @property(NewLevelData)
     public newLevelData: NewLevelData = null
 
-
-    public colorMap: Map<number, Color> = new Map<number, Color>();
-
-    // @property(Node) tutorial: Node = null
 
     public state: GameState = GameState.PLAY
 
 
     @property(SpoolManager) public spoolManager: SpoolManager = null
+    @property(WoolManager) public woolManager: WoolManager = null
+    @property(SlotManager) public slotManager: SlotManager = null
+
+
 
 
     protected onEnable(): void {
@@ -68,11 +70,7 @@ export class GameManager extends Component {
         const rawData = this.levelJson.json; 
         const levelData = Object.assign(new NewLevelData(), rawData);
         this.newLevelData = levelData
-        for (const colorHex of this.newLevelData.colorHexCodes) {
-            const color: Color = new Color();
-            Color.fromHEX(color, colorHex.Item2)
-            this.colorMap.set(colorHex.Item1, color);
-        }
+        
     }
 
     protected onLoad(): void {
@@ -84,8 +82,14 @@ export class GameManager extends Component {
 
         EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
         this.loadLevel()
-        // this.spoolManager.init(this.newLevelData)
+
     
+    }
+    protected start(): void {
+        this.spoolManager.init(this.newLevelData)
+        this.woolManager.init(this.newLevelData)
+        this.slotManager.init(this.newLevelData)
+        
     }
 
     installGame = () => {
@@ -94,10 +98,4 @@ export class GameManager extends Component {
         super_html_playable.download()
 
     }
-
-    public getLevelColor(colorNum: number): Color {
-        return this.colorMap.get(colorNum)
-    }
-
-    
 }

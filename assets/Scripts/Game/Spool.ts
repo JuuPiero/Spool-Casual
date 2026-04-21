@@ -347,7 +347,6 @@ export class Spool extends Clickable {
         if (this.queue.length === 0) return;
 
         const matchZone = ServiceLocator.get(MatchZone);
-        // Quan trọng: Sắp xếp để nhả thằng có index lớn nhất ra trước
         this.queue.sort((a, b) => b.index - a.index);
 
         while (this.queue.length > 0) {
@@ -360,7 +359,6 @@ export class Spool extends Clickable {
         }
         this.queue = [];
 
-        // Sau khi nhả xong, yêu cầu MatchZone kiểm tra để các Spool khác "hút" tiếp
         matchZone.checkExistingItems();
     }
 

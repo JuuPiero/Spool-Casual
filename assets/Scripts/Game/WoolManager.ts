@@ -9,6 +9,7 @@ import { GameManager } from './GameManager';
 import { Spool } from './Spool';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
+import { NewLevelData } from './NewLevelDataSA';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -276,53 +277,143 @@ export class WoolManager extends Component {
         return sequence;
     }
 
-    protected start(): void {
+    // protected start(): void {
 
-        this.scheduleOnce(() => {
+    //     this.scheduleOnce(() => {
 
-            this.splineInstantiate.items.forEach(item => {
-                this.slots.push(item.getComponent(RaySlot))
-            });
+    //         this.splineInstantiate.items.forEach(item => {
+    //             this.slots.push(item.getComponent(RaySlot))
+    //         });
 
-            const allItems: any[] = [...this.splineInstantiate.items];
+    //         const allItems: any[] = [...this.splineInstantiate.items];
 
-            for (let i = 0; i < this.subRays.length; i++) {
-                const sub = this.subRays[i];
-                if (!sub.splineInstantiate) continue;
-                const items = sub.splineInstantiate.items;
-                for (let j = 0; j < items.length; j++) {
-                    allItems.push(items[j]);
-                }
+    //         for (let i = 0; i < this.subRays.length; i++) {
+    //             const sub = this.subRays[i];
+    //             if (!sub.splineInstantiate) continue;
+    //             const items = sub.splineInstantiate.items;
+    //             for (let j = 0; j < items.length; j++) {
+    //                 allItems.push(items[j]);
+    //             }
+    //         }
+    //         for (let i = 0; i < allItems.length; i++) {
+    //             const raySlot = allItems[i].getComponent(RaySlot);
+    //             if (raySlot) {
+    //                 raySlot.index = i;
+    //             }
+    //         }
+
+    //         const total = allItems.length;
+    //         const spoolManager = ServiceLocator.get(SpoolManager);
+    //         if (!spoolManager || spoolManager.spools.length === 0) {
+    //             return;
+    //         }
+
+    //         const spoolCounts = this.buildSpoolCounts(total, spoolManager);
+    //         const colorSequence = this.buildCurveDistribution(total, spoolCounts);
+
+    //         for (let i = 0; i < allItems.length; i++) {
+    //             const raySlot = allItems[i].getComponent(RaySlot);
+    //             const spool = colorSequence[i];
+    //             raySlot?.wool?.setColor(spool?.color);
+    //         }
+    //         if (this.splineInstantiate && allItems.length > 0) {
+    //             this.calculateRelativeDistances();
+    //             if (this.autoMove) {
+    //                 this.startMoving();
+    //             }
+    //         }
+
+    //     }, 0);
+    // }
+
+
+    public init(levelData: NewLevelData) {
+        // this.splineInstantiate.items.forEach(item => {
+        //     this.slots.push(item.getComponent(RaySlot))
+        // });
+
+        // const allItems: any[] = [...this.splineInstantiate.items];
+
+        // for (let i = 0; i < this.subRays.length; i++) {
+        //     const sub = this.subRays[i];
+        //     if (!sub.splineInstantiate) continue;
+        //     const items = sub.splineInstantiate.items;
+        //     for (let j = 0; j < items.length; j++) {
+        //         allItems.push(items[j]);
+        //     }
+        // }
+        // for (let i = 0; i < allItems.length; i++) {
+        //     const raySlot = allItems[i].getComponent(RaySlot);
+        //     if (raySlot) {
+        //         raySlot.index = i;
+        //     }
+        // }
+
+        // const total = allItems.length;
+        // const spoolManager = ServiceLocator.get(SpoolManager);
+        // if (!spoolManager || spoolManager.spools.length === 0) {
+        //     return;
+        // }
+
+        // const spoolCounts = this.buildSpoolCounts(total, spoolManager);
+        // const colorSequence = this.buildCurveDistribution(total, spoolCounts);
+
+        // for (let i = 0; i < allItems.length; i++) {
+        //     const raySlot = allItems[i].getComponent(RaySlot);
+        //     const spool = colorSequence[i];
+        //     raySlot?.wool?.setColor(spool?.color);
+        // }
+        // if (this.splineInstantiate && allItems.length > 0) {
+        //     this.calculateRelativeDistances();
+        //     if (this.autoMove) {
+        //         this.startMoving();
+        //     }
+        // }
+
+        this.splineInstantiate.items.forEach(item => {
+            this.slots.push(item.getComponent(RaySlot))
+        });
+
+        const allItems: any[] = [...this.splineInstantiate.items];
+
+        for (let i = 0; i < this.subRays.length; i++) {
+            const sub = this.subRays[i];
+            if (!sub.splineInstantiate) continue;
+            const items = sub.splineInstantiate.items;
+            for (let j = 0; j < items.length; j++) {
+                allItems.push(items[j]);
             }
-            for (let i = 0; i < allItems.length; i++) {
-                const raySlot = allItems[i].getComponent(RaySlot);
-                if (raySlot) {
-                    raySlot.index = i;
-                }
+        }
+        for (let i = 0; i < allItems.length; i++) {
+            const raySlot = allItems[i].getComponent(RaySlot);
+            if (raySlot) {
+                raySlot.index = i;
             }
+        }
 
-            const total = allItems.length;
-            const spoolManager = ServiceLocator.get(SpoolManager);
-            if (!spoolManager || spoolManager.spools.length === 0) {
-                return;
+        const total = allItems.length;
+
+        const spoolManager = ServiceLocator.get(SpoolManager);
+        const base = Math.floor(total / spoolManager.spools.length);
+        const extra = total % spoolManager.spools.length;
+
+        let index = 0;
+        for (let i = 0; i < spoolManager.spools.length; i++) {
+            const count = base + (i < extra ? 1 : 0);
+            spoolManager.spools[i].capacity = count;
+            for (let j = 0; j < count; j++) {
+                const raySlot = allItems[index].getComponent(RaySlot);
+                raySlot?.wool?.setColor(spoolManager.spools[i].color);
+                index++;
             }
-
-            const spoolCounts = this.buildSpoolCounts(total, spoolManager);
-            const colorSequence = this.buildCurveDistribution(total, spoolCounts);
-
-            for (let i = 0; i < allItems.length; i++) {
-                const raySlot = allItems[i].getComponent(RaySlot);
-                const spool = colorSequence[i];
-                raySlot?.wool?.setColor(spool?.color);
+        }
+        if (this.splineInstantiate && allItems.length > 0) {
+            this.calculateRelativeDistances();
+            if (this.autoMove) {
+                this.startMoving();
             }
-            if (this.splineInstantiate && allItems.length > 0) {
-                this.calculateRelativeDistances();
-                if (this.autoMove) {
-                    this.startMoving();
-                }
-            }
+        }
 
-        }, 0);
     }
 
     private collectingCount: number = 0;

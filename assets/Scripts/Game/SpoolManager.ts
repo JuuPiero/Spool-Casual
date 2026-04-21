@@ -42,7 +42,7 @@ export class SpoolManager extends Component {
     protected start(): void {
         this.gameManager = ServiceLocator.get(GameManager);
         
-        this.spawnGrid();
+        // this.spawnGrid();
     }
 
 
@@ -75,7 +75,7 @@ export class SpoolManager extends Component {
             node.setParent(this.node);
 
             // Set color from colorMap
-            spool.color = this.gameManager.getLevelColor(vehicle.entityColorType) || Color.WHITE;
+            spool.color = levelData.getColor(vehicle.entityColorType) || Color.WHITE;
 
             const x = startX + col * this.spacing;
             const z = startZ + row * this.spacing;
@@ -91,10 +91,6 @@ export class SpoolManager extends Component {
 
         }
     }
-
-
-
-
 
 
 
@@ -136,7 +132,7 @@ export class SpoolManager extends Component {
             node.setParent(this.node);
 
             // Set color from colorMap
-            spool.color = this.gameManager.getLevelColor(vehicle.entityColorType) || Color.WHITE;
+            spool.color = newLevelData.getColor(vehicle.entityColorType) || Color.WHITE;
 
             const x = startX + col * this.spacing;
             const z = startZ + row * this.spacing;
