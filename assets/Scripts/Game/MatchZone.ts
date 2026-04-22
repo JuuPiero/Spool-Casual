@@ -6,6 +6,7 @@ import { WoolManager } from './WoolManager';
 
 import { RaySlot } from './RaySlot';
 import { GameManager, GameState } from './GameManager';
+import { SplineAnimate } from '../SplineAnimate';
 const { ccclass, property } = _decorator;
 
 @ccclass('MatchZone')
@@ -102,8 +103,14 @@ export class MatchZone extends Component {
     public checkExistingItems() {
         if (this.itemsInMatchZone.size === 0) return;
 
-        const sortedItems = Array.from(this.itemsInMatchZone)
-            .sort((a, b) => b.index - a.index);
+      const sortedItems = Array.from(this.itemsInMatchZone)
+        .sort((a, b) => {
+            // Lấy distance hiện tại từ component SplineAnimate
+            const distA = a.getComponent(SplineAnimate).getDistance();
+            const distB = b.getComponent(SplineAnimate).getDistance();
+            // Sắp xếp để thằng có distance nhỏ hơn (đi trước) được ưu tiên
+            return distA - distB; 
+        });
 
         for (const raySlot of sortedItems) {
             if (!raySlot || !raySlot.wool || raySlot.isCollecting || !raySlot.canCollect) continue;

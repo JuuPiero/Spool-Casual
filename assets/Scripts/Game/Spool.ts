@@ -11,6 +11,7 @@ import { MatchZone } from './MatchZone';
 import { WoolManager } from './WoolManager';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
+import { SplineAnimate } from '../SplineAnimate';
 
 const { ccclass, property } = _decorator;
 
@@ -291,12 +292,15 @@ export class Spool extends Clickable {
         mat.setProperty('fill', 0);
         this.isCollecting = false;
         woolManager.setCollecting(false); // Thông báo kết thúc thu dây
-
+        ServiceLocator.get(SpoolManager).checkLose();
         // SỬA TẠI ĐÂY: Trả lại các item dư thừa cho MatchZone
         if (this.queue.length > 0) {
             const matchZone = ServiceLocator.get(MatchZone);
-            Array.from(matchZone.itemsInMatchZone)
-                .sort((a, b) => b.index - a.index);
+            this.queue.sort((a, b) => {
+        const distA = a.getComponent(SplineAnimate).getDistance();
+        const distB = b.getComponent(SplineAnimate).getDistance();
+        return distA - distB;
+    });
             // Sort queue để nhả theo thứ tự hợp lý
             this.queue.sort((a, b) => b.index - a.index);
 

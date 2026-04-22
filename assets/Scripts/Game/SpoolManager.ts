@@ -12,6 +12,7 @@ import { SOUNDS } from './Sounds';
 import { SlotManager } from './SlotManager';
 import { print } from '../ultils';
 import { NewLevelData } from './NewLevelDataSA';
+import { MatchZone } from './MatchZone';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -66,7 +67,7 @@ export class SpoolManager extends Component {
             spool.row = row;
             spool.col = col;
             node.name = `Spool_(${row}, ${col})`;
-            if(this.spoolContainer) {
+            if (this.spoolContainer) {
                 node.setParent(this.spoolContainer);
             }
             else {
@@ -152,28 +153,46 @@ export class SpoolManager extends Component {
     public checkLose() {
         const slotManager = ServiceLocator.get(SlotManager);
         const woolManager = ServiceLocator.get(WoolManager);
+        const matchZone = ServiceLocator.get(MatchZone);
 
-        // Kiểm tra nếu còn slot trống
+        // 1. Nếu vẫn còn slot trống thì chưa thể thua
         const availableSlot = slotManager.getAvailableSlot();
-        if (availableSlot) {
-            return; // Còn slot trống, chưa thua
-        }
+        if (availableSlot) return;
 
-        // Nếu không còn slot trống, kiểm tra xem có RaySlot nào trùng màu với spool trong slot
-        for (const raySlot of woolManager.slots) {
-            if (!raySlot.wool) continue;
-            for (const slot of slotManager.slots) {
-                if (slot.spool && raySlot.wool.color.equals(slot.spool.color)) {
-                    return; // Có RaySlot trùng màu, chưa thua
-                }
+
+        // 2. Kiểm tra xem có bất kỳ Spool nào trong Slot đang bận hút len không
+        // Nếu có Spool đang collects(), ta phải đợi nó hút xong mới biết được có thua hay không
+        for (const slot of slotManager.slots) {
+            if (slot.spool && slot.spool.isCollecting) {
+                return;
             }
         }
 
-        // Không có RaySlot trùng màu, thua
-        console.log('Lose');
-        this.gameManager.state = GameState.LOSE
-        // SoundManager.instance.playOneShot(SOUNDS.LOSE)
-        EventBus.emit(GameEvent.LEVEL_COMPLETED)
+        // 3. Kiểm tra xem trên sân (Băng chuyền + MatchZone) còn cục len nào 
+        // có màu trùng với các Spool đang đợi trong Slot hay không
+        let hasMatchableWool = false;
+
+        // Gom tất cả len đang có trên sân
+        const allWoolsOnField = woolManager.slots.filter(s => s.wool);
+
+        for (const slot of slotManager.slots) {
+            const spool = slot.spool;
+            if (!spool) continue;
+
+            // Tìm xem còn cục len nào cùng màu với spool này không
+            const match = allWoolsOnField.find(ws => ws.wool.color.equals(spool.color));
+            if (match) {
+                hasMatchableWool = true;
+                break;
+            }
+        }
+
+        // 4. Nếu full slot VÀ không còn Spool nào đang thu dây VÀ không còn len cùng màu trên sân
+        if (!hasMatchableWool) {
+            console.log('Lose: No more wools to collect and all slots are full');
+            this.gameManager.state = GameState.LOSE;
+            EventBus.emit(GameEvent.LEVEL_COMPLETED);
+        }
     }
 
 }

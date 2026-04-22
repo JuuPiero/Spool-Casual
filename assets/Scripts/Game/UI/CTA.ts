@@ -1,6 +1,7 @@
 import { _decorator, Button, Component, Node, tween, Vec3 } from 'cc';
 import { ServiceLocator } from '../../ServiceLocator';
 import { GameManager } from '../GameManager';
+import super_html_playable from '../../super_html_playable';
 const { ccclass, property } = _decorator;
 @ccclass('CTA')
 export class CTA extends Component {
@@ -34,7 +35,8 @@ export class CTA extends Component {
     }
 
     install() {
-        ServiceLocator.get(GameManager).installGame()
+        // ServiceLocator.get(GameManager).installGame()
+        super_html_playable.download()
     }
 
 }

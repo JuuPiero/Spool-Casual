@@ -251,7 +251,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 62.986,
-      "z": 13
+      "z": 7.5
     },
     "_lrot": {
       "__type__": "cc.Quat",
@@ -8262,14 +8262,7 @@
       "__uuid__": "2d733430-eb50-4442-9c42-f7c0868abe1d",
       "__expectedType__": "032387TqvFO/aiJxh6GMenp"
     },
-    "currentLevelData": {
-      "__uuid__": "1a0b4933-b4ce-4d9f-b888-b37a47376910",
-      "__expectedType__": "6c57a9YCFRC7YThajS08tDA"
-    },
-    "levelConfig": {
-      "__uuid__": "5a8fe7f2-7886-4485-a516-258acdb2371f",
-      "__expectedType__": "21fefwRVnRB2IXfJqn2KeDV"
-    },
+    "levelsConfig": null,
     "levelJson": {
       "__uuid__": "4404aadc-1d27-49c3-8356-d76a6cba93bc",
       "__expectedType__": "cc.JsonAsset"

@@ -3,6 +3,8 @@ import { Spline } from '../Spline';
 import { SplineInstantiate } from '../SplineInstantiate';
 import { SplineAnimate } from '../SplineAnimate';
 import { RaySlot } from './RaySlot';
+import { GameManager, GameState } from './GameManager';
+import { ServiceLocator } from '../ServiceLocator';
 const { ccclass, property } = _decorator;
 
 @ccclass('SubRay')
@@ -15,6 +17,9 @@ export class SubRay extends Component {
     @property(BoxCollider)
     public rayTrigger: BoxCollider
 
+
+    public gameManager: GameManager = null
+
     @property({
         type: RaySlot
     })
@@ -26,7 +31,7 @@ export class SubRay extends Component {
 
 
     protected start(): void {
-
+        this.gameManager = ServiceLocator.get(GameManager)
         this.splineInstantiate.items.forEach(item => {
             this.raySlots.push(item.getComponent(RaySlot))
             item.getComponent(Collider).destroy()
@@ -40,10 +45,13 @@ export class SubRay extends Component {
 
 
     onTriggerEnter(event: ITriggerEvent) {
+        if( this.gameManager.state != GameState.PLAY) return
+
         const raySlotTarget = event.otherCollider.getComponent(RaySlot);
         if (!raySlotTarget) return;
         if (raySlotTarget.wool) return;
         if (!this.raySlots.length) return;
+
 
         for (let i = 0; i < this.raySlots.length; i++) {
             const slot = this.raySlots[i];
