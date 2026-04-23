@@ -83,8 +83,7 @@ export class GameManager extends Component {
             ServiceLocator.register(GameConfig, this.gameConfig)
             ServiceLocator.register(GameManager, this)
         }
-        super_html_playable.set_google_play_url(this.gameConfig.storeUrl)
-
+        this.setupLinkStore()
         this.loadLevel()
     
     }
@@ -96,6 +95,11 @@ export class GameManager extends Component {
         this.spoolManager.init(this.newLevelData)
         this.woolManager.init(this.newLevelData)
         this.slotManager.init(this.newLevelData)
+    }
+
+    setupLinkStore() {
+        super_html_playable.set_google_play_url(this.gameConfig.storeUrl)
+
     }
 
     installGame = () => {

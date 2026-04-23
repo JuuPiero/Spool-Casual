@@ -19,7 +19,6 @@ export class MatchZone extends Component {
 
     public itemsInMatchZone: Set<RaySlot> = new Set<RaySlot>
 
-
     public onNewItemEnter: Function = null;
 
 
@@ -60,8 +59,6 @@ export class MatchZone extends Component {
         }
     }
 
-
-
     onTriggerEnter(event: ITriggerEvent) {
         if (this.gameManager.state !== GameState.PLAY) return
 
@@ -97,7 +94,6 @@ export class MatchZone extends Component {
             return;
         }
 
-        // nếu chưa có spool phù hợp => giữ lại
         this.itemsInMatchZone.add(raySlot);
     }
     public checkExistingItems() {
