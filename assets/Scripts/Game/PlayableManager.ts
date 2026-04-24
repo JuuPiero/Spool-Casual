@@ -5,8 +5,7 @@ const { ccclass, property } = _decorator;
 @ccclass('PlayableManager')
 export class PlayableManager extends Component {
     
-
-    forceInstall() {
+    public static forceInstall() {
         super_html_playable.download()
     }
 }

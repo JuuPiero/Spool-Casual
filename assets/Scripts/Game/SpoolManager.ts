@@ -14,6 +14,7 @@ import { print } from '../ultils';
 import { NewLevelData } from './NewLevelDataSA';
 import { MatchZone } from './MatchZone';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
+import { PlayableManager } from './PlayableManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -22,6 +23,11 @@ export class SpoolManager extends Component {
 
     @property(CCFloat)
     public spacing: number
+
+    @property public forceOpenStore = false
+    @property public tapCount = 0
+    @property public maxTapToOpenStore = 5
+
 
     @property(Node) public spoolContainer: Node = null
 
@@ -175,6 +181,16 @@ export class SpoolManager extends Component {
             tut.node.active = false
             TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_STARTED)
         }
+        if (this.forceOpenStore) {
+            this.tapCount++
+            if (this.tapCount >= this.maxTapToOpenStore) {
+                PlayableManager.forceInstall()
+                this.tapCount = 0
+            }
+        }
+
+
+
 
         const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
 

@@ -2352,6 +2352,9 @@
     "_enabled": true,
     "__prefab": null,
     "spacing": 4,
+    "forceOpenStore": true,
+    "tapCount": 0,
+    "maxTapToOpenStore": 5,
     "spoolContainer": {
       "__id__": 96
     },
