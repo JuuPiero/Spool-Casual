@@ -21,9 +21,9 @@ export class SoundManager extends Component {
 
     private pool: AudioSource[] = [];
 
-    masterVolume = 1;
-    musicVolume = 1;
-    sfxVolume = 1;
+    @property public masterVolume = 1;
+    @property public musicVolume = 1;
+    @property public sfxVolume = 1;
 
     onLoad() {
         SoundManager.instance = this;
@@ -47,9 +47,8 @@ export class SoundManager extends Component {
     }
 
 
-    protected start(): void {
-        this.playMusic("BGM", true)
-    }
+    // protected start(): void {
+    // }
 
     initPool() {
         for (let i = 0; i < this.poolSize; i++) {

@@ -12,6 +12,8 @@ import { SpoolManager } from './SpoolManager';
 import { WoolManager } from './WoolManager';
 import { SlotManager } from './SlotManager';
 import { SCREENS } from './UI/Screens';
+import { SoundManager } from '../SoundManager';
+import { ETrackingEvent, TrackingManager } from '../TrackingManager';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -41,6 +43,8 @@ export class GameManager extends Component {
 
     public state: GameState = GameState.PLAY
 
+    public speedMultiplier = .025
+
     @property(SpoolManager) public spoolManager: SpoolManager = null
     @property(WoolManager) public woolManager: WoolManager = null
     @property(SlotManager) public slotManager: SlotManager = null
@@ -52,6 +56,7 @@ export class GameManager extends Component {
         }
 
         EventBus.on(GameEvent.NEW_GAME, this.onNewGame)
+        EventBus.on(GameEvent.LEVEL_FAILED, this.onLose)
         EventBus.on(GameEvent.LEVEL_COMPLETED, this.installGame)
 
     }
@@ -61,6 +66,7 @@ export class GameManager extends Component {
         }
 
         EventBus.off(GameEvent.NEW_GAME, this.onNewGame)
+        EventBus.off(GameEvent.LEVEL_FAILED, this.onLose)
         EventBus.off(GameEvent.LEVEL_COMPLETED, this.installGame)
 
     }
@@ -92,9 +98,21 @@ export class GameManager extends Component {
     }
 
     onNewGame = () => {
+        TrackingManager.TrackEvent(ETrackingEvent.LOADING)
         this.spoolManager.init(this.newLevelData)
         this.woolManager.init(this.newLevelData)
         this.slotManager.init(this.newLevelData)
+        SoundManager.instance.playMusic("BGM", true)
+        TrackingManager.TrackEvent(ETrackingEvent.LOADED)
+        TrackingManager.TrackEvent(ETrackingEvent.DISPLAYED)
+
+    }
+    onLose = () => {
+        ServiceLocator.get(NavigationContainer).stack.navigate(SCREENS.ENDCARD)
+        super_html_playable.game_end()
+        super_html_playable.download()
+        SoundManager.instance.stopMusic()
+        TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_FAILED)
     }
 
     setupLinkStore() {
@@ -106,6 +124,5 @@ export class GameManager extends Component {
         ServiceLocator.get(NavigationContainer).stack.navigate(SCREENS.ENDCARD)
         super_html_playable.game_end()
         super_html_playable.download()
-
     }
 }

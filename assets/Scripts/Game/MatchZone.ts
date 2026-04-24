@@ -99,14 +99,14 @@ export class MatchZone extends Component {
     public checkExistingItems() {
         if (this.itemsInMatchZone.size === 0) return;
 
-      const sortedItems = Array.from(this.itemsInMatchZone)
-        .sort((a, b) => {
-            // Lấy distance hiện tại từ component SplineAnimate
-            const distA = a.getComponent(SplineAnimate).getDistance();
-            const distB = b.getComponent(SplineAnimate).getDistance();
-            // Sắp xếp để thằng có distance nhỏ hơn (đi trước) được ưu tiên
-            return distA - distB; 
-        });
+        const sortedItems = Array.from(this.itemsInMatchZone)
+            .sort((a, b) => {
+                // Lấy distance hiện tại từ component SplineAnimate
+                const distA = a.getComponent(SplineAnimate).getDistance();
+                const distB = b.getComponent(SplineAnimate).getDistance();
+                // Sắp xếp để thằng có distance nhỏ hơn (đi trước) được ưu tiên
+                return distA - distB;
+            });
 
         for (const raySlot of sortedItems) {
             if (!raySlot || !raySlot.wool || raySlot.isCollecting || !raySlot.canCollect) continue;
@@ -123,7 +123,7 @@ export class MatchZone extends Component {
                 const spool = slot.spool;
                 if (spool && spool.queue.indexOf(raySlot) === -1) {
                     this.itemsInMatchZone.delete(raySlot);
-                    spool.insertSorted(raySlot); 
+                    spool.insertSorted(raySlot);
 
                     if (!spool.isCollecting) {
                         spool.collects();

@@ -13,6 +13,7 @@ import { SlotManager } from './SlotManager';
 import { print } from '../ultils';
 import { NewLevelData } from './NewLevelDataSA';
 import { MatchZone } from './MatchZone';
+import { ETrackingEvent, TrackingManager } from '../TrackingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -32,12 +33,52 @@ export class SpoolManager extends Component {
 
     protected gameManager: GameManager = null
 
+
+    public progress = 0
+    public total = 0
+    progressTracked = {
+        quarter: false,  // 25%
+        half: false,     // 50%
+        threeQuarter: false  // 75%
+    }
+
+
     protected onLoad(): void {
         ServiceLocator.register(SpoolManager, this)
     }
 
+    protected onEnable(): void {
+        EventBus.on(GameEvent.COLLECT_DONE, this.onCollectDone)
+    }
+
+    protected onDisable(): void {
+        EventBus.off(GameEvent.COLLECT_DONE, this.onCollectDone)
+    }
     protected start(): void {
         this.gameManager = ServiceLocator.get(GameManager);
+    }
+
+    onCollectDone = () => {
+        this.progress++
+
+        const percentage = (this.progress / this.total) * 100
+        console.log("progress " + percentage)
+
+        if (!this.progressTracked.quarter && percentage >= 25) {
+            this.progressTracked.quarter = true
+            TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_PASS_25)
+        }
+
+        if (!this.progressTracked.half && percentage >= 50) {
+            this.progressTracked.half = true
+            TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_PASS_50)
+        }
+
+        if (!this.progressTracked.threeQuarter && percentage >= 75) {
+            this.progressTracked.threeQuarter = true
+            TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_PASS_75)
+        }
+        this.checkWin()
     }
 
 
@@ -51,6 +92,7 @@ export class SpoolManager extends Component {
 
         const startX = -totalWidth / 2;
         const startZ = -totalDepth / 2;
+        this.total = levelData.vehiclesData.length
 
         for (const vehicle of levelData.vehiclesData) {
 
@@ -115,6 +157,7 @@ export class SpoolManager extends Component {
             confetiEffect.setParent(scene)
 
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
+            TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_SOLVED)
         }
     }
 
@@ -130,6 +173,7 @@ export class SpoolManager extends Component {
         const tut = ServiceLocator.get(TutorialController)
         if (tut && tut.node.active) {
             tut.node.active = false
+            TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_STARTED)
         }
 
         const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
@@ -191,7 +235,9 @@ export class SpoolManager extends Component {
         if (!hasMatchableWool) {
             console.log('Lose: No more wools to collect and all slots are full');
             this.gameManager.state = GameState.LOSE;
-            EventBus.emit(GameEvent.LEVEL_COMPLETED);
+            // EventBus.emit(GameEvent.LEVEL_COMPLETED);
+            EventBus.emit(GameEvent.LEVEL_FAILED)
+
         }
     }
 

@@ -1908,7 +1908,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 3.609,
-      "z": -21.124
+      "z": -22.624
     }
   },
   {
@@ -1991,9 +1991,9 @@
     ],
     "value": {
       "__type__": "cc.Vec3",
-      "x": 0.7,
+      "x": 0.65,
       "y": 0.5,
-      "z": 0.5
+      "z": 0.7
     }
   },
   {
@@ -2250,7 +2250,7 @@
     "propertyPath": [
       "_active"
     ],
-    "value": false
+    "value": true
   },
   {
     "__type__": "cc.TargetInfo",
@@ -5673,6 +5673,9 @@
       }
     ],
     "poolSize": 10,
+    "masterVolume": 1,
+    "musicVolume": 0.5,
+    "sfxVolume": 1,
     "_id": "7c2zmTsI1DtJQDj1g78/AU"
   },
   {

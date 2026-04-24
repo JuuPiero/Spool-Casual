@@ -2,6 +2,7 @@ import { _decorator, Button, Component, Label, Node, tween, Vec3 } from 'cc';
 import { ServiceLocator } from '../../ServiceLocator';
 import { ScreenBase } from '../../Navigation/ScreenBase';
 import { GameManager } from '../GameManager';
+import { ETrackingEvent, TrackingManager } from '../../TrackingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('EndGameScreen')
@@ -14,7 +15,7 @@ export class EndGameScreen extends ScreenBase {
     public logo: Node = null;
 
     protected start(): void {
-
+        TrackingManager.TrackEvent(ETrackingEvent.ENDCARD_SHOWN)
         
         tween(this.logo)
             .to(0.5, { scale: new Vec3(0.5, 0.5, 1.1) })
@@ -42,6 +43,7 @@ export class EndGameScreen extends ScreenBase {
     }
 
     install() { 
+        TrackingManager.TrackEvent(ETrackingEvent.CTA_CLICKED)
         ServiceLocator.get(GameManager).installGame()
     }
     

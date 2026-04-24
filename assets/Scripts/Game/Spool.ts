@@ -140,7 +140,7 @@ export class Spool extends Clickable {
         this.slot.setProcess(0);
         this.spoolManager.remove(this);
         this.slot.spool = null;
-        this.spoolManager.checkWin();
+        // this.spoolManager.checkWin();
 
         EventBus.emit(GameEvent.COLLECT_DONE)
     }
@@ -217,6 +217,9 @@ export class Spool extends Clickable {
     @property(RaySlot)
     public queue: RaySlot[] = [];
     private flipScaleDirection: boolean = false;
+
+    @property public collectDelay = 0.12
+
     public async collects() {
         if (this.isCollecting) return;
         this.isCollecting = true;
@@ -276,8 +279,9 @@ export class Spool extends Clickable {
                 })
                 .start();
 
-            // Đợi một chút để thấy hiệu ứng bay trước khi destroy
-            await this.delay(0.12);
+            // Đợi một chút để thấy hiệu ứng colect
+
+            await this.delay(this.collectDelay);
 
             if (item.wool) {
                 item.wool.node.active = false;
@@ -297,12 +301,13 @@ export class Spool extends Clickable {
         if (this.queue.length > 0) {
             const matchZone = ServiceLocator.get(MatchZone);
             this.queue.sort((a, b) => {
-        const distA = a.getComponent(SplineAnimate).getDistance();
-        const distB = b.getComponent(SplineAnimate).getDistance();
-        return distA - distB;
-    });
+                const distA = a.getComponent(SplineAnimate).getDistance();
+                const distB = b.getComponent(SplineAnimate).getDistance();
+                return distA - distB;
+            });
             // Sort queue để nhả theo thứ tự hợp lý
-            this.queue.sort((a, b) => b.index - a.index);
+            // this.queue.sort((a, b) => b.index - a.index);
+            
 
 
             while (this.queue.length > 0) {
@@ -399,10 +404,17 @@ export class Spool extends Clickable {
     }
 
     public insertSorted(raySlot: RaySlot) {
-        // Chèn vào sao cho mảng luôn giảm dần theo index
-        // Thằng index to nhất nằm ở [0]
         raySlot.isCollecting = true;
-        const index = this.queue.findIndex(q => raySlot.index > q.index);
+
+        // Lấy distance của thằng mới vào
+        const myDist = raySlot.getComponent(SplineAnimate).getDistance();
+
+        // Tìm vị trí chèn sao cho queue luôn tăng dần theo Distance
+        // (Thằng distance nhỏ nhất - đi trước - sẽ nằm ở [0])
+        const index = this.queue.findIndex(q => {
+            return myDist < q.getComponent(SplineAnimate).getDistance();
+        });
+
         if (index === -1) {
             this.queue.push(raySlot);
         } else {

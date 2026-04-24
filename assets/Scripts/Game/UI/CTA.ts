@@ -2,6 +2,7 @@ import { _decorator, Button, Component, Node, tween, Vec3 } from 'cc';
 import { ServiceLocator } from '../../ServiceLocator';
 import { GameManager } from '../GameManager';
 import super_html_playable from '../../super_html_playable';
+import { ETrackingEvent, TrackingManager } from '../../TrackingManager';
 const { ccclass, property } = _decorator;
 @ccclass('CTA')
 export class CTA extends Component {
@@ -36,6 +37,7 @@ export class CTA extends Component {
 
     install() {
         // ServiceLocator.get(GameManager).installGame()
+        TrackingManager.TrackEvent(ETrackingEvent.CTA_CLICKED)
         super_html_playable.download()
     }
 
