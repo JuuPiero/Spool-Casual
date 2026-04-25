@@ -1,7 +1,6 @@
 import { _decorator, Color, Component, EventKeyboard, Input, input, JsonAsset, KeyCode, Node, sys } from 'cc';
 import { GameConfig } from './GameConfigSA';
 import { ServiceLocator } from '../ServiceLocator';
-import { LevelData } from './LevelData';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import super_html_playable from '../super_html_playable';
@@ -14,6 +13,7 @@ import { SlotManager } from './SlotManager';
 import { SCREENS } from './UI/Screens';
 import { SoundManager } from '../SoundManager';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
+import { LevelDataSA } from './LevelDataSA';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -26,12 +26,11 @@ export class GameManager extends Component {
     @property(GameConfig)
     public gameConfig: GameConfig;
 
-    // @property(LevelData)
-    // public currentLevelData: LevelData
+    @property(LevelDataSA) public currentLevelData: LevelDataSA;
 
 
-    @property(LevelsConfig)
-    public levelsConfig: LevelsConfig = null
+    // @property(LevelsConfig)
+    // public levelsConfig: LevelsConfig = null
 
     @property(JsonAsset)
     public levelJson: JsonAsset = null
@@ -49,6 +48,16 @@ export class GameManager extends Component {
     @property(WoolManager) public woolManager: WoolManager = null
     @property(SlotManager) public slotManager: SlotManager = null
 
+
+    
+    // public get value() : string {
+    //     return 
+    // }
+    // public set value(v : string) {
+    //     // this. = v;
+    // }
+    
+    
 
     protected onEnable(): void {
         if (sys.os == sys.OS.WINDOWS) {

@@ -1,0 +1,17 @@
+{
+  "__type__": "6c57a9YCFRC7YThajS08tDA",
+  "_name": "LevelTron",
+  "_objFlags": 0,
+  "__editorExtras__": {},
+  "_native": "",
+  "maxSlots": 4,
+  "maxSubRay": 2,
+  "levelJson": {
+    "__uuid__": "2a2809fe-20dd-417c-b929-c80779004558",
+    "__expectedType__": "cc.JsonAsset"
+  },
+  "levelPrefab": {
+    "__uuid__": "322a5799-1610-4141-ae93-f0d4abaa510a",
+    "__expectedType__": "cc.Prefab"
+  }
+}
