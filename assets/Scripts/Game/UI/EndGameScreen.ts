@@ -14,8 +14,12 @@ export class EndGameScreen extends ScreenBase {
     @property({type: Node})
     public logo: Node = null;
 
-    protected start(): void {
+    public enter(param?: object): void {
+        super.enter(param);
         TrackingManager.TrackEvent(ETrackingEvent.ENDCARD_SHOWN)
+    }
+
+    protected start(): void {
         
         tween(this.logo)
             .to(0.5, { scale: new Vec3(0.5, 0.5, 1.1) })

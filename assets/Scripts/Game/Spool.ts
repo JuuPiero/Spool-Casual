@@ -218,7 +218,7 @@ export class Spool extends Clickable {
     public queue: RaySlot[] = [];
     private flipScaleDirection: boolean = false;
 
-    @property public collectDelay = 0.12
+    @property public collectDelay = 0.1
 
     public async collects() {
         if (this.isCollecting) return;
@@ -241,13 +241,17 @@ export class Spool extends Clickable {
                 break;
             }
 
+            // 2. TÍNH TOÁN TỐC ĐỘ THU DÂY LINH HOẠT
+            // Nếu speed = 5, delay ~ 0.12s. Nếu speed = 12, delay ~ 0.05s
+            const dynamicDelay = Math.max(0.04, 0.6 / woolManager.speed); 
+            const animDuration = dynamicDelay * 1.5; // Animation dài hơn delay một chút để gối đầu nhau
+
             this.count++;
             this.syncWoolsView();
             item.isCollecting = true;
 
             const start = item.wool.startPoint.worldPosition.clone();
             const end = item.wool.endPoint.worldPosition.clone();
-
             // --- LOGIC SO LE ---
             // Tính toán độ lệch (offset) sang hai bên
             this.flipScaleDirection = !this.flipScaleDirection;
@@ -256,32 +260,29 @@ export class Spool extends Clickable {
             // Điểm đích ảo để Wool bay tới (hơi lệch so với End thật của dây)
             const woolTargetPos = end.clone().add3f(sideOffset, 0, 0);
 
-            // 1. Animation cho Wool Visual (Bay so le và thu nhỏ)
-            tween(item.wool.visual)
-                .to(0.25, {
-                    worldPosition: woolTargetPos,
-                    scale: Vec3.ZERO,
-                    eulerAngles: new Vec3(0, this.flipScaleDirection ? 180 : -180, 0)
-                }, { easing: 'quadIn' })
-                .start();
+           // 3. CHẠY ANIMATION NHANH THEO TỐC ĐỘ GAME
+        tween(item.wool.visual)
+            .to(animDuration, {
+                worldPosition: woolTargetPos,
+                scale: Vec3.ZERO,
+                eulerAngles: new Vec3(0, this.flipScaleDirection ? 180 : -180, 0)
+            }, { easing: 'quadIn' })
+            .start();
 
-            // 2. Animation cho Rope (Dây cũng phải bám theo hướng so le)
-            let t = { value: 0 };
-            tween(t)
-                .to(0.25, { value: 1 }, {
-                    easing: "quadOut",
-                    onUpdate: () => {
-                        if (!item.wool) return;
-                        // Dây cũng lerp về điểm ảo woolTargetPos để khớp với Wool Visual
-                        Vec3.lerp(this.tempVec3, start, woolTargetPos, t.value);
-                        this.rope.endPoint.setWorldPosition(this.tempVec3);
-                    }
-                })
-                .start();
+        let t = { value: 0 };
+        tween(t)
+            .to(animDuration, { value: 1 }, {
+                easing: "quadOut",
+                onUpdate: () => {
+                    if (!item.wool) return;
+                    Vec3.lerp(this.tempVec3, start, woolTargetPos, t.value);
+                    this.rope.endPoint.setWorldPosition(this.tempVec3);
+                }
+            })
+            .start();
 
-            // Đợi một chút để thấy hiệu ứng colect
-
-            await this.delay(this.collectDelay);
+        // Đợi theo delay đã tính toán (nhanh hơn animation một chút để tạo độ gối đầu)
+        await this.delay(dynamicDelay);
 
             if (item.wool) {
                 item.wool.node.active = false;

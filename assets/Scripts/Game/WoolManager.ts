@@ -331,8 +331,8 @@ export class WoolManager extends Component {
         if (!this.isMoving) return;
         if (!this.splineInstantiate) return;
 
-        const currentSpeed = this.collectingCount > 0 ? this.speed * 0.6 : this.speed;
-
+        // const currentSpeed = this.collectingCount > 0 ? this.speed * 0.6 : this.speed;
+        const currentSpeed = this.speed;
         const items = this.splineInstantiate.getAllItems().map(item => item.getComponent(SplineAnimate));
         if (items.length === 0) return;
 

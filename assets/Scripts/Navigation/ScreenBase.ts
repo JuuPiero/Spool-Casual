@@ -14,8 +14,6 @@ export class ScreenBase extends Component implements IScreen {
     public exit(): void {
         this.node.active = false;
     }
-
-   
 }
 
 

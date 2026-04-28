@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, EventKeyboard, Input, input, JsonAsset, KeyCode, Node, sys } from 'cc';
+import { _decorator, CCBoolean, Color, Component, EventKeyboard, Input, input, JsonAsset, KeyCode, Node, sys } from 'cc';
 import { GameConfig } from './GameConfigSA';
 import { ServiceLocator } from '../ServiceLocator';
 import { EventBus } from '../EventBus';
@@ -23,6 +23,8 @@ export enum GameState {
 }
 @ccclass('GameManager')
 export class GameManager extends Component {
+
+   
     @property(GameConfig)
     public gameConfig: GameConfig;
 
@@ -34,7 +36,6 @@ export class GameManager extends Component {
 
     @property(JsonAsset)
     public levelJson: JsonAsset = null
-
 
     // @property(NewLevelData)
     public newLevelData: NewLevelData = null
@@ -48,17 +49,18 @@ export class GameManager extends Component {
     @property(WoolManager) public woolManager: WoolManager = null
     @property(SlotManager) public slotManager: SlotManager = null
 
+    
+    _button: boolean = false
+    @property({ type: CCBoolean })
+    public set button(v : boolean) {
+        this._button = v;
+        console.log("clicked");
+    }
+    public get button(): boolean {
+        return this._button;
+    }
 
     
-    // public get value() : string {
-    //     return 
-    // }
-    // public set value(v : string) {
-    //     // this. = v;
-    // }
-    
-    
-
     protected onEnable(): void {
         if (sys.os == sys.OS.WINDOWS) {
             input.on(Input.EventType.KEY_DOWN, this.onPressButton, this);
