@@ -164,6 +164,7 @@ export class SubRay extends Component {
                         // Ép chuẩn 100% vào tâm khi tới đích
                         wool.node.setPosition(Vec3.ZERO);
                         wool.node.setRotationFromEuler(Vec3.ZERO);
+                        
                     }
                 })
                 .start();

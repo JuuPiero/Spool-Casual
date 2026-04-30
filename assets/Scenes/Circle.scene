@@ -18,12 +18,15 @@
     "_children": [
       {
         "__id__": 2
+      },
+      {
+        "__id__": 266
       }
     ],
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 266
+      "__id__": 268
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -54,7 +57,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 267
+      "__id__": 269
     },
     "_id": "cca04fdd-4b9d-4670-8ba7-30a6e6bd9288"
   },
@@ -347,7 +350,7 @@
     },
     "_depth": 1,
     "_stencil": 0,
-    "_clearFlags": 14,
+    "_clearFlags": 6,
     "_rect": {
       "__type__": "cc.Rect",
       "x": 0,
@@ -8273,6 +8276,70 @@
     "_id": "eeXjtDWAlGg5XNvCSCIuit"
   },
   {
+    "__type__": "cc.Node",
+    "_name": "LevelSetup",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "_parent": {
+      "__id__": 1
+    },
+    "_children": [],
+    "_active": true,
+    "_components": [
+      {
+        "__id__": 267
+      }
+    ],
+    "_prefab": null,
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_mobility": 0,
+    "_layer": 1073741824,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": "3e6znMM1pOSZVwYXO1piFr"
+  },
+  {
+    "__type__": "20b63UludRDQo2do6MwyJRo",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 266
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "splineItemPrefab": {
+      "__uuid__": "7428aa80-6900-4244-8acc-d7deb17f0486",
+      "__expectedType__": "cc.Prefab"
+    },
+    "subRays": [],
+    "knotContainer": null,
+    "levelData": null,
+    "_id": "8axFj9qJxOLZTEaq/puHwN"
+  },
+  {
     "__type__": "cc.PrefabInfo",
     "root": null,
     "asset": null,
@@ -8288,28 +8355,28 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 268
-    },
-    "shadows": {
-      "__id__": 269
-    },
-    "_skybox": {
       "__id__": 270
     },
-    "fog": {
+    "shadows": {
       "__id__": 271
     },
-    "octree": {
+    "_skybox": {
       "__id__": 272
     },
-    "skin": {
+    "fog": {
       "__id__": 273
     },
-    "lightProbeInfo": {
+    "octree": {
       "__id__": 274
     },
-    "postSettings": {
+    "skin": {
       "__id__": 275
+    },
+    "lightProbeInfo": {
+      "__id__": 276
+    },
+    "postSettings": {
+      "__id__": 277
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

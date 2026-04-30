@@ -1,4 +1,4 @@
-import { _decorator, Component } from 'cc';
+import { _decorator, Color, Component } from 'cc';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
@@ -35,40 +35,14 @@ export class WoolManager extends Component {
     @property({ type: RaySlot })
     public slots: RaySlot[] = []
 
-    @property({
-
-        tooltip: 'Curve mau do kho (0: de, 1: kho), lay mau theo ti le tu dau den cuoi hang wool'
-    })
-    public difficultyCurveSamples: number[] = [0.1, 0.25, 0.5, 0.75, 0.9];
-
-    @property({ tooltip: 'Do dai cum mau o muc de (cum dai hon = de hon)' })
-    public easyRunLength: number = 6;
-
-    @property({ tooltip: 'Do dai cum mau o muc kho (cum ngan hon = kho hon)' })
-    public hardRunLength: number = 1;
-
-    @property({ tooltip: 'Do ngau nhien bo sung vao run length (0 = co dinh)' })
-    public runLengthJitter: number = 1;
-
-    @property({ tooltip: 'Xac suat tranh lap lai mau o muc de' })
-    public easyAvoidRepeatChance: number = 0.1;
-
-    @property({ tooltip: 'Xac suat tranh lap lai mau o muc kho' })
-    public hardAvoidRepeatChance: number = 0.9;
-
-    @property({ tooltip: 'Lay them do kho tu level difficultyType' })
-    public useLevelDifficultyType: boolean = true;
-
-    @property({ tooltip: 'He so cong them vao difficulty theo difficultyType cua level' })
-    public levelDifficultyScale: number = 0.15;
-
-
-
     protected onLoad(): void {
         ServiceLocator.register(WoolManager, this)
         if (!this.splineInstantiate) {
             this.splineInstantiate = this.node.getComponent(SplineInstantiate);
         }
+    }
+    protected start(): void {
+        this.subRays = this.getComponentsInChildren(SubRay)
     }
 
     protected onEnable(): void {
@@ -82,7 +56,6 @@ export class WoolManager extends Component {
     onCollectDone = () => {
         const speedMultiplier: number = 1.025;
         // Tăng tốc độ theo phần trăm mỗi khi hoàn thành 1 spool
-
         // Công thức: Tốc độ mới = Tốc độ cũ * 1.1 (hoặc tùy biến)
         const newSpeed = this.speed * speedMultiplier;
 
@@ -93,7 +66,6 @@ export class WoolManager extends Component {
         console.log(`Speed increased to: ${this.speed.toFixed(2)}`);
     }
 
-   
     private shuffleArray(array: any[]) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -101,224 +73,90 @@ export class WoolManager extends Component {
         }
     }
 
-    private clamp01(value: number): number {
-        return Math.min(1, Math.max(0, value));
-    }
-
-    private lerp(a: number, b: number, t: number): number {
-        return a + (b - a) * this.clamp01(t);
-    }
-
-    private evaluateDifficulty(normalizedPos: number): number {
-        const samples = this.difficultyCurveSamples;
-        if (!samples || samples.length === 0) {
-            return 0.5;
-        }
-
-        if (samples.length === 1) {
-            return this.clamp01(samples[0]);
-        }
-
-        const t = this.clamp01(normalizedPos);
-        const scaled = t * (samples.length - 1);
-        const left = Math.floor(scaled);
-        const right = Math.min(samples.length - 1, left + 1);
-        const localT = scaled - left;
-
-        const curveValue = this.lerp(samples[left], samples[right], localT);
-
-        if (!this.useLevelDifficultyType) {
-            return this.clamp01(curveValue);
-        }
-
-        const gameManager = ServiceLocator.get(GameManager);
-        const levelDifficulty = gameManager?.newLevelData?.difficultyType ?? 0;
-        return this.clamp01(curveValue + levelDifficulty * this.levelDifficultyScale);
-    }
-
-    private buildSpoolCounts(total: number, spoolManager: SpoolManager): Map<Spool, number> {
-        const countMap = new Map<Spool, number>();
-        const shuffledSpools = [...spoolManager.spools];
-        this.shuffleArray(shuffledSpools);
-
-        const base = Math.floor(total / shuffledSpools.length);
-        const extra = total % shuffledSpools.length;
-
-        for (let i = 0; i < shuffledSpools.length; i++) {
-            const spool = shuffledSpools[i];
-            const count = base + (i < extra ? 1 : 0);
-            spool.capacity = count;
-            countMap.set(spool, count);
-        }
-
-        return countMap;
-    }
-
-    private pickWeightedSpool(spoolCounts: Map<Spool, number>, previousSpool: Spool | null, difficulty: number): Spool | null {
-        const available = Array.from(spoolCounts.entries()).filter(([, count]) => count > 0);
-        if (available.length === 0) return null;
-        if (available.length === 1) return available[0][0];
-
-        const avoidRepeatChance = this.lerp(this.easyAvoidRepeatChance, this.hardAvoidRepeatChance, difficulty);
-        let candidates = available;
-
-        if (previousSpool && Math.random() < avoidRepeatChance) {
-            const nonRepeat = available.filter(([spool]) => spool !== previousSpool);
-            if (nonRepeat.length > 0) {
-                candidates = nonRepeat;
-            }
-        }
-
-        let totalWeight = 0;
-        for (const [, remaining] of candidates) {
-            totalWeight += remaining;
-        }
-
-        let roll = Math.random() * totalWeight;
-        for (const [spool, remaining] of candidates) {
-            roll -= remaining;
-            if (roll <= 0) {
-                return spool;
-            }
-        }
-
-        return candidates[candidates.length - 1][0];
-    }
-
-    private buildCurveDistribution(total: number, spoolCounts: Map<Spool, number>): Spool[] {
-        const sequence: Spool[] = [];
-        let previousSpool: Spool | null = null;
-
-        while (sequence.length < total) {
-            const normalizedPos = total <= 1 ? 1 : sequence.length / (total - 1);
-            const difficulty = this.evaluateDifficulty(normalizedPos);
-            const runCenter = this.lerp(this.easyRunLength, this.hardRunLength, difficulty);
-
-            const jitter = this.runLengthJitter > 0
-                ? Math.floor((Math.random() * (this.runLengthJitter * 2 + 1)) - this.runLengthJitter)
-                : 0;
-
-            const desiredRun = Math.max(1, Math.round(runCenter + jitter));
-            const spool = this.pickWeightedSpool(spoolCounts, previousSpool, difficulty);
-            if (!spool) break;
-
-            const remaining = spoolCounts.get(spool) ?? 0;
-            const runCount = Math.min(desiredRun, remaining, total - sequence.length);
-
-            for (let i = 0; i < runCount; i++) {
-                sequence.push(spool);
-            }
-
-            const left = remaining - runCount;
-            if (left > 0) {
-                spoolCounts.set(spool, left);
-            } else {
-                spoolCounts.delete(spool);
-            }
-
-            previousSpool = spool;
-        }
-
-        if (sequence.length < total) {
-            for (const [spool, remaining] of spoolCounts.entries()) {
-                for (let i = 0; i < remaining; i++) {
-                    sequence.push(spool);
-                }
-            }
-        }
-
-        return sequence;
-    }
-
-   
-
     public init(levelData: NewLevelData) {
+        // 1. Thu thập tất cả RaySlot từ spline chính và sub rays
+        this.slots = [];
         this.splineInstantiate.items.forEach(item => {
-            this.slots.push(item.getComponent(RaySlot))
+            this.slots.push(item.getComponent(RaySlot));
         });
 
         const allItems: any[] = [...this.splineInstantiate.items];
-
-        for (let i = 0; i < this.subRays.length; i++) {
-            const sub = this.subRays[i];
+        for (const sub of this.subRays) {
             if (!sub.splineInstantiate) continue;
-            const items = sub.splineInstantiate.items;
-            for (let j = 0; j < items.length; j++) {
-                allItems.push(items[j]);
-            }
-        }
-        for (let i = 0; i < allItems.length; i++) {
-            const raySlot = allItems[i].getComponent(RaySlot);
-            if (raySlot) {
-                raySlot.index = i;
-            }
+            allItems.push(...sub.splineInstantiate.items);
         }
 
         const total = allItems.length;
         const spoolManager = ServiceLocator.get(SpoolManager);
-        if (!spoolManager || spoolManager.spools.length === 0) {
-            return;
+        if (!spoolManager || spoolManager.spools.length === 0) return;
+
+        // 2. Chia capacity cho các spool (giữ nguyên logic chia đều của bạn)
+        const base = Math.floor(total / spoolManager.spools.length);
+        const extra = total % spoolManager.spools.length;
+
+        // Mảng chứa các "khối màu"
+        let colorBlocks: Color[] = [];
+
+        for (let i = 0; i < spoolManager.spools.length; i++) {
+            const spool = spoolManager.spools[i];
+            const cap = base + (i < extra ? 1 : 0);
+            spool.capacity = cap;
+
+            // Tính toán kích thước khối (nửa capacity)
+            // Ví dụ: cap = 10 -> khối size 5. cap = 11 -> khối size 5 và 6.
+            const halfSize = Math.floor(cap / 2);
+            const remainingSize = cap - halfSize;
+
+            // Tạo 2 khối màu liên tục cho Spool này
+            for (let j = 0; j < halfSize; j++) colorBlocks.push(spool.color);
+            // Đánh dấu để lát nữa xáo trộn nhưng vẫn giữ tính liên tục của khối? 
+            // Không, ý bạn là các wool TRONG khối liên tục, nhưng VỊ TRÍ khối thì ngẫu nhiên.
         }
 
-        const spoolCounts = this.buildSpoolCounts(total, spoolManager);
-        const colorSequence = this.buildCurveDistribution(total, spoolCounts);
+        // 3. Logic tạo chuỗi màu theo khối (Chunking)
+        const finalColorSequence: Color[] = this.generateChunkedSequence(spoolManager.spools, base, extra);
 
+        // 4. Gán màu và index
         for (let i = 0; i < allItems.length; i++) {
             const raySlot = allItems[i].getComponent(RaySlot);
-            const spool = colorSequence[i];
-            raySlot?.wool?.setColor(spool?.color);
-        }
-        if (this.splineInstantiate && allItems.length > 0) {
-            this.calculateRelativeDistances();
-            if (this.autoMove) {
-                this.startMoving();
+            if (raySlot) {
+                raySlot.index = i;
+                raySlot.wool?.setColor(finalColorSequence[i]);
             }
         }
 
-        // this.splineInstantiate.items.forEach(item => {
-        //     this.slots.push(item.getComponent(RaySlot))
-        // });
+        // 5. Di chuyển
+        if (this.splineInstantiate && allItems.length > 0) {
+            this.calculateRelativeDistances();
+            if (this.autoMove) this.startMoving();
+        }
+    }
+    private generateChunkedSequence(spools: Spool[], base: number, extra: number): Color[] {
+        type ColorChunk = { color: Color, size: number };
+        let chunks: ColorChunk[] = [];
 
-        // const allItems: any[] = [...this.splineInstantiate.items];
+        // Bước 1: Chia mỗi Spool thành 2 chunks (mỗi chunk ~50% capacity)
+        for (let i = 0; i < spools.length; i++) {
+            const cap = base + (i < extra ? 1 : 0);
+            const firstChunkSize = Math.floor(cap / 2);
+            const secondChunkSize = cap - firstChunkSize;
 
-        // for (let i = 0; i < this.subRays.length; i++) {
-        //     const sub = this.subRays[i];
-        //     if (!sub.splineInstantiate) continue;
-        //     const items = sub.splineInstantiate.items;
-        //     for (let j = 0; j < items.length; j++) {
-        //         allItems.push(items[j]);
-        //     }
-        // }
-        // for (let i = 0; i < allItems.length; i++) {
-        //     const raySlot = allItems[i].getComponent(RaySlot);
-        //     if (raySlot) {
-        //         raySlot.index = i;
-        //     }
-        // }
+            if (firstChunkSize > 0) chunks.push({ color: spools[i].color, size: firstChunkSize });
+            if (secondChunkSize > 0) chunks.push({ color: spools[i].color, size: secondChunkSize });
+        }
 
-        // const total = allItems.length;
+        // Bước 2: Xáo trộn các Chunks (Vị trí các khối màu sẽ ngẫu nhiên)
+        this.shuffleArray(chunks);
 
-        // const spoolManager = ServiceLocator.get(SpoolManager);
-        // const base = Math.floor(total / spoolManager.spools.length);
-        // const extra = total % spoolManager.spools.length;
+        // Bước 3: Trải phẳng các chunks thành mảng màu đơn lẻ
+        let sequence: Color[] = [];
+        for (const chunk of chunks) {
+            for (let i = 0; i < chunk.size; i++) {
+                sequence.push(chunk.color);
+            }
+        }
 
-        // let index = 0;
-        // for (let i = 0; i < spoolManager.spools.length; i++) {
-        //     const count = base + (i < extra ? 1 : 0);
-        //     spoolManager.spools[i].capacity = count;
-        //     for (let j = 0; j < count; j++) {
-        //         const raySlot = allItems[index].getComponent(RaySlot);
-        //         raySlot?.wool?.setColor(spoolManager.spools[i].color);
-        //         index++;
-        //     }
-        // }
-        // if (this.splineInstantiate && allItems.length > 0) {
-        //     this.calculateRelativeDistances();
-        //     if (this.autoMove) {
-        //         this.startMoving();
-        //     }
-        // }
-
+        return sequence;
     }
 
     private collectingCount: number = 0;
