@@ -335,7 +335,7 @@
     "_enabled": true,
     "__prefab": null,
     "_projection": 0,
-    "_priority": 0,
+    "_priority": 101,
     "_fov": 45,
     "_fovAxis": 0,
     "_orthoHeight": 10,
@@ -5673,20 +5673,6 @@
       }
     ],
     "slots": [],
-    "difficultyCurveSamples": [
-      0.1,
-      0.25,
-      0.5,
-      0.75,
-      0.9
-    ],
-    "easyRunLength": 6,
-    "hardRunLength": 1,
-    "runLengthJitter": 1,
-    "easyAvoidRepeatChance": 0.1,
-    "hardAvoidRepeatChance": 0.9,
-    "useLevelDifficultyType": true,
-    "levelDifficultyScale": 0.15,
     "_id": "669S6TogRJPJUJUv+rLzB2"
   },
   {
@@ -5890,7 +5876,7 @@
     "_enabled": true,
     "__prefab": null,
     "_projection": 0,
-    "_priority": 1073741824,
+    "_priority": 100,
     "_fov": 45,
     "_fovAxis": 0,
     "_orthoHeight": 640,
@@ -8334,6 +8320,7 @@
       "__uuid__": "7428aa80-6900-4244-8acc-d7deb17f0486",
       "__expectedType__": "cc.Prefab"
     },
+    "rayRoot": null,
     "subRays": [],
     "knotContainer": null,
     "levelData": null,
