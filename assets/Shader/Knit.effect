@@ -70,6 +70,12 @@ CCProgram knit-fs %{
   uniform Constant {
     vec4 color;
   };
+  
+  mediump vec3 SetSaturation(mediump vec3 In, mediump float Saturation)
+  {
+    mediump float luma = dot(In, vec3(0.2126729, 0.7151522, 0.0721750));
+    return luma + Saturation * (In - luma);
+  }
 
   vec4 frag () {
     // ---- Normal & View ----
@@ -100,6 +106,7 @@ CCProgram knit-fs %{
     float maskBlend = clamp(maskR + 0.4, 0.0, 1.0);
 
     vec3 finalColor = mix(shadowColor, litColor, maskBlend);
+    finalColor = SetSaturation(finalColor, 1.7);
 
     return CCFragOutput(vec4(finalColor, 1.0));
   }

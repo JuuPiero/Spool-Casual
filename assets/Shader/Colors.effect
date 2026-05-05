@@ -92,6 +92,12 @@ CCProgram colors-fs %{
     float matcapIntensity;
   };
 
+  mediump vec3 SetSaturation(mediump vec3 In, mediump float Saturation)
+  {
+    mediump float luma = dot(In, vec3(0.2126729, 0.7151522, 0.0721750));
+    return luma + Saturation * (In - luma);
+  }
+
   vec4 frag () {
     // ---- Normal & View (world space) ----
     vec3 N  = normalize(v_normal_ws);
@@ -151,6 +157,8 @@ CCProgram colors-fs %{
     //     finalColor   = litColor + addedDiffuse * maskFactor
     vec3 addedDiffuse = diffuseColor + 0.1;
     vec3 finalColor   = litColor + addedDiffuse * maskFactor;
+
+    finalColor = SetSaturation(finalColor, 2.1);
 
     return CCFragOutput(vec4(finalColor, 1.0));
   }

@@ -218,7 +218,7 @@ export class Spool extends Clickable {
     public queue: RaySlot[] = [];
     private flipScaleDirection: boolean = false;
 
-    @property public collectDelay = 0.1
+    @property public collectDelay = 0.05
 
     public async collects() {
         if (this.isCollecting) return;
@@ -301,13 +301,9 @@ export class Spool extends Clickable {
         // SỬA TẠI ĐÂY: Trả lại các item dư thừa cho MatchZone
         if (this.queue.length > 0) {
             const matchZone = ServiceLocator.get(MatchZone);
-            this.queue.sort((a, b) => {
-                const distA = a.getComponent(SplineAnimate).getDistance();
-                const distB = b.getComponent(SplineAnimate).getDistance();
-                return distA - distB;
-            });
+          
             // Sort queue để nhả theo thứ tự hợp lý
-            // this.queue.sort((a, b) => b.index - a.index);
+            this.queue.sort((a, b) => b.index - a.index);
             
 
 
@@ -404,24 +400,13 @@ export class Spool extends Clickable {
         });
     }
 
-    public insertSorted(raySlot: RaySlot) {
-        raySlot.isCollecting = true;
-
-        // Lấy distance của thằng mới vào
-        const myDist = raySlot.getComponent(SplineAnimate).getDistance();
-
-        // Tìm vị trí chèn sao cho queue luôn tăng dần theo Distance
-        // (Thằng distance nhỏ nhất - đi trước - sẽ nằm ở [0])
-        const index = this.queue.findIndex(q => {
-            return myDist < q.getComponent(SplineAnimate).getDistance();
-        });
-
-        if (index === -1) {
-            this.queue.push(raySlot);
-        } else {
-            this.queue.splice(index, 0, raySlot);
-        }
-    }
+public insertSorted(raySlot: RaySlot) {
+    raySlot.isCollecting = true;
+    // Chèn sao cho mảng queue luôn tăng dần theo index
+    const index = this.queue.findIndex(q => raySlot.index < q.index);
+    if (index === -1) this.queue.push(raySlot);
+    else this.queue.splice(index, 0, raySlot);
+}
 
     private isBlocked(): boolean {
         return this.row !== 0;

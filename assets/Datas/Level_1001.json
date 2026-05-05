@@ -1,0 +1,379 @@
+{
+  "colorHexCodes": [
+    {
+      "Item1": 0,
+      "Item2": "#E54040FF"
+    },
+    {
+      "Item1": 2,
+      "Item2": "#3BCF3AFF"
+    },
+    {
+      "Item1": 4,
+      "Item2": "#3FD9FDFF"
+    },
+    {
+      "Item1": 1,
+      "Item2": "#FFC723FF"
+    },
+    {
+      "Item1": 5,
+      "Item2": "#EC42D3FF"
+    },
+    {
+      "Item1": 6,
+      "Item2": "#8D4DFFFF"
+    }
+  ],
+  "levelIndex": 1001,
+  "gridWidth": 5,
+  "gridHeight": 5,
+  "passengerQueuesCount": 2,
+  "hasCurtainCovered": false,
+  "difficultyType": 0,
+  "gridSlotsData": [
+    {
+      "coordinateX": 0,
+      "coordinateY": 0,
+      "gridSlotType": 3
+    },
+    {
+      "coordinateX": 0,
+      "coordinateY": 1,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 0,
+      "coordinateY": 2,
+      "gridSlotType": 3
+    },
+    {
+      "coordinateX": 0,
+      "coordinateY": 3,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 0,
+      "coordinateY": 4,
+      "gridSlotType": 3
+    },
+    {
+      "coordinateX": 1,
+      "coordinateY": 0,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 1,
+      "coordinateY": 1,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 1,
+      "coordinateY": 2,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 1,
+      "coordinateY": 3,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 1,
+      "coordinateY": 4,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 2,
+      "coordinateY": 0,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 2,
+      "coordinateY": 1,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 2,
+      "coordinateY": 2,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 2,
+      "coordinateY": 3,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 2,
+      "coordinateY": 4,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 3,
+      "coordinateY": 0,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 3,
+      "coordinateY": 1,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 3,
+      "coordinateY": 2,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 3,
+      "coordinateY": 3,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 3,
+      "coordinateY": 4,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 4,
+      "coordinateY": 0,
+      "gridSlotType": 3
+    },
+    {
+      "coordinateX": 4,
+      "coordinateY": 1,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 4,
+      "coordinateY": 2,
+      "gridSlotType": 3
+    },
+    {
+      "coordinateX": 4,
+      "coordinateY": 3,
+      "gridSlotType": 1
+    },
+    {
+      "coordinateX": 4,
+      "coordinateY": 4,
+      "gridSlotType": 3
+    }
+  ],
+  "vehiclesData": [
+    {
+      "entityColorType": 0,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 1,
+      "coordinateY": 0
+    },
+    {
+      "entityColorType": 2,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 2,
+      "coordinateY": 4
+    },
+    {
+      "entityColorType": 4,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 3,
+      "coordinateY": 0
+    },
+    {
+      "entityColorType": 1,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 1,
+      "coordinateY": 1
+    },
+    {
+      "entityColorType": 5,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 2,
+      "coordinateY": 1
+    },
+    {
+      "entityColorType": 6,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 3,
+      "coordinateY": 1
+    },
+    {
+      "entityColorType": 0,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 1,
+      "coordinateY": 2
+    },
+    {
+      "entityColorType": 2,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 2,
+      "coordinateY": 2
+    },
+    {
+      "entityColorType": 4,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 3,
+      "coordinateY": 2
+    },
+    {
+      "entityColorType": 1,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 1,
+      "coordinateY": 3
+    },
+    {
+      "entityColorType": 5,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 2,
+      "coordinateY": 3
+    },
+    {
+      "entityColorType": 6,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 3,
+      "coordinateY": 3
+    },
+    {
+      "entityColorType": 0,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 1,
+      "coordinateY": 4
+    },
+    {
+      "entityColorType": 2,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 2,
+      "coordinateY": 0
+    },
+    {
+      "entityColorType": 4,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": 0,
+      "coordinateX": 3,
+      "coordinateY": 4
+    },
+    {
+      "entityColorType": 0,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": -1,
+      "coordinateX": 0,
+      "coordinateY": 1
+    },
+    {
+      "entityColorType": 0,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": -1,
+      "coordinateX": 0,
+      "coordinateY": 3
+    },
+    {
+      "entityColorType": 4,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": -1,
+      "coordinateX": 4,
+      "coordinateY": 3
+    },
+    {
+      "entityColorType": 4,
+      "isHidden": false,
+      "hasIce": false,
+      "iceCount": -1,
+      "coordinateX": 4,
+      "coordinateY": 1
+    }
+  ],
+  "garagesData": [],
+  "vehicleConnectionsData": [],
+  "lockAndKeysData": [],
+  "multipleLockAndKeysData": [],
+  "barriersData": [],
+  "cratesData": [],
+  "colorSwitchersData": [],
+  "wickersData": [],
+  "conveyorsData": [],
+  "doubledBottlesData": [],
+  "passengersQueuesData": [
+    {
+      "queueIndex": 0,
+      "colorTypesQueue": [
+        0,
+        0,
+        2,
+        0,
+        0,
+        1,
+        1,
+        5,
+        5,
+        6,
+        6,
+        4,
+        4,
+        0,
+        0,
+        2,
+        2,
+        4,
+        4
+      ],
+      "hiddenIndexes": [],
+      "passengersGaragesData": []
+    },
+    {
+      "queueIndex": 1,
+      "colorTypesQueue": [
+        2,
+        4,
+        4,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        2,
+        2,
+        4,
+        4,
+        6,
+        6,
+        4,
+        4,
+        5,
+        5
+      ],
+      "hiddenIndexes": [],
+      "passengersGaragesData": []
+    }
+  ]
+}

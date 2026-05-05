@@ -19,8 +19,6 @@ export class MatchZone extends Component {
 
     public itemsInMatchZone: Set<RaySlot> = new Set<RaySlot>
 
-    public onNewItemEnter: Function = null;
-
 
     protected start() {
         this.slotManager = ServiceLocator.get(SlotManager);
@@ -95,19 +93,22 @@ export class MatchZone extends Component {
         }
 
         this.itemsInMatchZone.add(raySlot);
+        this.checkExistingItems();
     }
     public checkExistingItems() {
         if (this.itemsInMatchZone.size === 0) return;
 
-        const sortedItems = Array.from(this.itemsInMatchZone)
-            .sort((a, b) => {
-                // Lấy distance hiện tại từ component SplineAnimate
-                const distA = a.getComponent(SplineAnimate).getDistance();
-                const distB = b.getComponent(SplineAnimate).getDistance();
-                // Sắp xếp để thằng có distance nhỏ hơn (đi trước) được ưu tiên
-                return distA - distB;
-            });
+        // const sortedItems = Array.from(this.itemsInMatchZone)
+        //     .sort((a, b) => {
+        //         // Lấy distance hiện tại từ component SplineAnimate
+        //         const distA = a.getComponent(SplineAnimate).getDistance();
+        //         const distB = b.getComponent(SplineAnimate).getDistance();
+        //         // Sắp xếp để thằng có distance nhỏ hơn (đi trước) được ưu tiên
+        //         return distA - distB;
+        //     });
 
+        const sortedItems = Array.from(this.itemsInMatchZone)
+        .sort((a, b) => b.index - a.index);
         for (const raySlot of sortedItems) {
             if (!raySlot || !raySlot.wool || raySlot.isCollecting || !raySlot.canCollect) continue;
 
