@@ -243,7 +243,7 @@ export class Spool extends Clickable {
 
             // 2. TÍNH TOÁN TỐC ĐỘ THU DÂY LINH HOẠT
             // Nếu speed = 5, delay ~ 0.12s. Nếu speed = 12, delay ~ 0.05s
-            const dynamicDelay = Math.max(0.04, 0.6 / woolManager.speed); 
+            const dynamicDelay = Math.max(0.04, 0.6 / woolManager.speed);
             const animDuration = dynamicDelay * 1.5; // Animation dài hơn delay một chút để gối đầu nhau
 
             this.count++;
@@ -260,29 +260,29 @@ export class Spool extends Clickable {
             // Điểm đích ảo để Wool bay tới (hơi lệch so với End thật của dây)
             const woolTargetPos = end.clone().add3f(sideOffset, 0, 0);
 
-           // 3. CHẠY ANIMATION NHANH THEO TỐC ĐỘ GAME
-        tween(item.wool.visual)
-            .to(animDuration, {
-                worldPosition: woolTargetPos,
-                scale: Vec3.ZERO,
-                eulerAngles: new Vec3(0, this.flipScaleDirection ? 180 : -180, 0)
-            }, { easing: 'quadIn' })
-            .start();
+            // 3. CHẠY ANIMATION NHANH THEO TỐC ĐỘ GAME
+            tween(item.wool.visual)
+                .to(animDuration, {
+                    worldPosition: woolTargetPos,
+                    scale: Vec3.ZERO,
+                    eulerAngles: new Vec3(0, this.flipScaleDirection ? 180 : -180, 0)
+                }, { easing: 'quadIn' })
+                .start();
 
-        let t = { value: 0 };
-        tween(t)
-            .to(animDuration, { value: 1 }, {
-                easing: "quadOut",
-                onUpdate: () => {
-                    if (!item.wool) return;
-                    Vec3.lerp(this.tempVec3, start, woolTargetPos, t.value);
-                    this.rope.endPoint.setWorldPosition(this.tempVec3);
-                }
-            })
-            .start();
+            let t = { value: 0 };
+            tween(t)
+                .to(animDuration, { value: 1 }, {
+                    easing: "quadOut",
+                    onUpdate: () => {
+                        if (!item.wool) return;
+                        Vec3.lerp(this.tempVec3, start, woolTargetPos, t.value);
+                        this.rope.endPoint.setWorldPosition(this.tempVec3);
+                    }
+                })
+                .start();
 
-        // Đợi theo delay đã tính toán (nhanh hơn animation một chút để tạo độ gối đầu)
-        await this.delay(dynamicDelay);
+            // Đợi theo delay đã tính toán (nhanh hơn animation một chút để tạo độ gối đầu)
+            await this.delay(dynamicDelay);
 
             if (item.wool) {
                 item.wool.node.active = false;
@@ -297,14 +297,16 @@ export class Spool extends Clickable {
         mat.setProperty('fill', 0);
         this.isCollecting = false;
         woolManager.setCollecting(false); // Thông báo kết thúc thu dây
-        ServiceLocator.get(SpoolManager).checkLose();
+        if (!this.isFull()) {
+            ServiceLocator.get(SpoolManager).checkLose();
+        }
         // SỬA TẠI ĐÂY: Trả lại các item dư thừa cho MatchZone
         if (this.queue.length > 0) {
             const matchZone = ServiceLocator.get(MatchZone);
-          
+
             // Sort queue để nhả theo thứ tự hợp lý
             this.queue.sort((a, b) => b.index - a.index);
-            
+
 
 
             while (this.queue.length > 0) {
@@ -400,13 +402,13 @@ export class Spool extends Clickable {
         });
     }
 
-public insertSorted(raySlot: RaySlot) {
-    raySlot.isCollecting = true;
-    // Chèn sao cho mảng queue luôn tăng dần theo index
-    const index = this.queue.findIndex(q => raySlot.index < q.index);
-    if (index === -1) this.queue.push(raySlot);
-    else this.queue.splice(index, 0, raySlot);
-}
+    public insertSorted(raySlot: RaySlot) {
+        raySlot.isCollecting = true;
+        // Chèn sao cho mảng queue luôn tăng dần theo index
+        const index = this.queue.findIndex(q => raySlot.index < q.index);
+        if (index === -1) this.queue.push(raySlot);
+        else this.queue.splice(index, 0, raySlot);
+    }
 
     private isBlocked(): boolean {
         return this.row !== 0;

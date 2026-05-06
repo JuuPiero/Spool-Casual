@@ -35,6 +35,8 @@ export class SpoolManager extends Component {
     public spools: Spool[] = []
 
     public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
+    private maxRow = 0
+    private maxCol = 0
 
 
     protected gameManager: GameManager = null
@@ -92,6 +94,8 @@ export class SpoolManager extends Component {
         const gameConfig = ServiceLocator.get(GameConfig);
         const columns = levelData.gridWidth;
         const rows = levelData.gridHeight;
+        this.maxRow = 0;
+        this.maxCol = 0;
 
         const totalWidth = (columns - 1) * this.spacing;
         const totalDepth = (rows - 1) * this.spacing;
@@ -104,6 +108,8 @@ export class SpoolManager extends Component {
 
             const col = vehicle.coordinateX;
             const row = vehicle.coordinateY;
+            this.maxRow = Math.max(this.maxRow, row);
+            this.maxCol = Math.max(this.maxCol, col);
 
             const node = instantiate(gameConfig.spoolPrefab);
             const spool = node.getComponent(Spool);
@@ -150,6 +156,58 @@ export class SpoolManager extends Component {
             this.spools.splice(index, 1)
         }
         this.spoolsMap.delete(`${spool.row}_${spool.col}`)
+        this.openReachableSpoolsFrom(spool.row, spool.col)
+    }
+
+    private openReachableSpoolsFrom(startRow: number, startCol: number) {
+        if (!this.isInsideSpoolGrid(startRow, startCol)) {
+            return;
+        }
+
+        const queue: Array<[number, number]> = [[startRow, startCol]];
+        const visited = new Set<string>([`${startRow}_${startCol}`]);
+
+        while (queue.length > 0) {
+            const [row, col] = queue.shift()!;
+
+            this.tryOpenSpool(row - 1, col);
+
+            for (const [nextRow, nextCol] of [[row, col - 1], [row, col + 1], [row + 1, col]] as Array<[number, number]>) {
+                if (!this.isInsideSpoolGrid(nextRow, nextCol)) {
+                    continue;
+                }
+                if (!this.isPathCellEmpty(nextRow, nextCol)) {
+                    continue;
+                }
+
+                const key = `${nextRow}_${nextCol}`;
+                if (visited.has(key)) {
+                    continue;
+                }
+
+                visited.add(key);
+                queue.push([nextRow, nextCol]);
+            }
+        }
+    }
+
+    private tryOpenSpool(row: number, col: number) {
+        const spool = this.getSpool(row, col);
+        if (!spool || spool.row >= this.maxRow || spool.isOpen || spool.isInSlot || spool.isFlying || !spool.node.active) {
+            return;
+        }
+
+        spool.isOpen = true;
+        spool.open();
+    }
+
+    private isPathCellEmpty(row: number, col: number) {
+        const spool = this.getSpool(row, col);
+        return !spool || spool.isInSlot || spool.isFlying || !spool.node.active;
+    }
+
+    private isInsideSpoolGrid(row: number, col: number) {
+        return row >= 0 && row <= this.maxRow && col >= 0 && col <= this.maxCol;
     }
 
     public checkWin() {
@@ -204,7 +262,6 @@ export class SpoolManager extends Component {
         spool.activateNextSpools();
         SoundManager.instance.playOneShot(SOUNDS.CLICK);
         spool.moveToSlot(slot, () => {
-            print("Move DONE")
 
             this.checkLose();
         });
