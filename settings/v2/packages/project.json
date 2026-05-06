@@ -19,6 +19,10 @@
     {
       "name": "VFX",
       "value": 1
+    },
+    {
+      "name": "Background",
+      "value": 2
     }
   ]
 }

@@ -207,6 +207,9 @@ export class Spool extends Clickable {
                     itemsInMatchZone.delete(raySlot);
                 }
 
+                // Mở ngay spool ở xa trong khi spool này collect, không cần chờ full
+                this.spoolManager.openReachableSpoolsFrom(this.row, this.col);
+
                 this.collects()
                 Spool.delay = false
                 onDone?.()

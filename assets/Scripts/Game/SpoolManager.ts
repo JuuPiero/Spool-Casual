@@ -159,7 +159,7 @@ export class SpoolManager extends Component {
         this.openReachableSpoolsFrom(spool.row, spool.col)
     }
 
-    private openReachableSpoolsFrom(startRow: number, startCol: number) {
+    public openReachableSpoolsFrom(startRow: number, startCol: number) {
         if (!this.isInsideSpoolGrid(startRow, startCol)) {
             return;
         }
@@ -222,6 +222,9 @@ export class SpoolManager extends Component {
 
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
             TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_SOLVED)
+             const woolManager = ServiceLocator.get(WoolManager);
+
+           
         }
     }
 
@@ -275,7 +278,20 @@ export class SpoolManager extends Component {
         // 1. Nếu vẫn còn slot trống thì chưa thể thua
         const availableSlot = slotManager.getAvailableSlot();
         if (availableSlot) return;
+          
+        const areSubRaysEmpty = woolManager.subRays.every(subRay => 
+            subRay.raySlots.every(slot => slot.wool === null)
+        );
 
+        // Kiểm tra xem Main Ray đã lấp đầy len tất cả các vị trí chưa
+        const isMainRayFull = woolManager.slots.every(slot => slot.wool !== null);
+
+        // LOGIC MỚI: 
+        // Nếu Sub Rays vẫn còn len VÀ Main Ray chưa bị lấp đầy hoàn toàn
+        // -> Có nghĩa là len từ Sub Ray vẫn có thể đi vào Main Ray -> Bỏ qua check lose.
+        if (!areSubRaysEmpty && !isMainRayFull) {
+            return;
+        }
 
         // 2. Kiểm tra xem có bất kỳ Spool nào trong Slot đang bận hút len không
         // Nếu có Spool đang collects(), ta phải đợi nó hút xong mới biết được có thua hay không

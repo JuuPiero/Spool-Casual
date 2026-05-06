@@ -5,6 +5,7 @@ import { SplineAnimate } from '../SplineAnimate';
 import { RaySlot } from './RaySlot';
 import { GameManager, GameState } from './GameManager';
 import { ServiceLocator } from '../ServiceLocator';
+import { SpoolManager } from './SpoolManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SubRay')
@@ -82,6 +83,8 @@ export class SubRay extends Component {
 
                 raySlotTarget.wool = wool;
                 slot.wool = null;
+
+                ServiceLocator.get(SpoolManager).checkLose();
 
                 this.shiftWools(i);
                 return;
