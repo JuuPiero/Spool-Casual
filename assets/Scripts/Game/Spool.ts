@@ -58,11 +58,13 @@ export class Spool extends Clickable {
     public rope: RopeBezierWave3D;
 
     public isOpen: boolean = false;
+    @property(Node) public shadow: Node = null
 
     protected start(): void {
         this.spoolManager = ServiceLocator.get(SpoolManager);
         this.rope = this.getComponentInChildren(RopeBezierWave3D)!;
         this.rope?.setColor(this.color);
+
 
         this.baseRotation = new Vec3(-90, 90, 90)
 
@@ -395,12 +397,15 @@ export class Spool extends Clickable {
 
             const mat = renderer.getMaterialInstance(0);
 
+            // mat.setProperty("_Color", this.color);
             mat.setProperty("color", this.color);
+
 
             if (active) {
                 mat.setProperty('lineWidth', 50);
             } else {
-                mat.setProperty('lineWidth', 0);
+                mat.setProperty('lineWidth', 20);
+                // mat.setProperty('lineWidth', 0);
             }
         });
     }
@@ -408,7 +413,7 @@ export class Spool extends Clickable {
     public insertSorted(raySlot: RaySlot) {
         raySlot.isCollecting = true;
         // Chèn sao cho mảng queue luôn tăng dần theo index
-        const index = this.queue.findIndex(q => raySlot.index < q.index);
+        const index = this.queue.findIndex(q => raySlot.index > q.index);
         if (index === -1) this.queue.push(raySlot);
         else this.queue.splice(index, 0, raySlot);
     }

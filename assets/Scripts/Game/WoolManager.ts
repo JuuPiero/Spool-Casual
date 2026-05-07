@@ -1,4 +1,4 @@
-import { _decorator, Color, Component } from 'cc';
+import { _decorator, Color, Component, math, RealCurve } from 'cc';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
@@ -66,89 +66,185 @@ export class WoolManager extends Component {
         console.log(`Speed increased to: ${this.speed.toFixed(2)}`);
     }
 
-    private shuffleArray(array: any[]) {
+    private shuffleArray<T>(array: T[]) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
     }
 
+    @property(RealCurve) public diffCurve: RealCurve = new RealCurve()
+
     public init(levelData: NewLevelData) {
-        // 1. Thu thập tất cả RaySlot từ spline chính và sub rays
+        // 1. Thu thập RaySlot main ray + sub rays
         this.slots = [];
-        this.splineInstantiate.items.forEach(item => {
+        const mainItems = this.splineInstantiate.items;
+        mainItems.forEach(item => {
             this.slots.push(item.getComponent(RaySlot));
         });
 
-        const allItems: any[] = [...this.splineInstantiate.items];
+        const allItems: any[] = [...mainItems];
+        const subItems: any[] = [];
         for (const sub of this.subRays) {
             if (!sub.splineInstantiate) continue;
-            allItems.push(...sub.splineInstantiate.items);
+            subItems.push(...sub.splineInstantiate.items);
         }
+        allItems.push(...subItems);
 
         const total = allItems.length;
         const spoolManager = ServiceLocator.get(SpoolManager);
         if (!spoolManager || spoolManager.spools.length === 0) return;
 
-        // 2. Chia capacity cho các spool (giữ nguyên logic chia đều của bạn)
+        // 2. Chia capacity cho các spool
         const base = Math.floor(total / spoolManager.spools.length);
         const extra = total % spoolManager.spools.length;
-
-        // Mảng chứa các "khối màu"
-        let colorBlocks: Color[] = [];
-
+        const remainingBySpool = new Map<Spool, number>();
+        let temp = true
         for (let i = 0; i < spoolManager.spools.length; i++) {
             const spool = spoolManager.spools[i];
             const cap = base + (i < extra ? 1 : 0);
+            if(temp) {
+                console.log(cap);
+                temp = false
+            }
             spool.capacity = cap;
-
-            // Tính toán kích thước khối (nửa capacity)
-            // Ví dụ: cap = 10 -> khối size 5. cap = 11 -> khối size 5 và 6.
-            const halfSize = Math.floor(cap / 2);
-            const remainingSize = cap - halfSize;
-
-            // Tạo 2 khối màu liên tục cho Spool này
-            for (let j = 0; j < halfSize; j++) colorBlocks.push(spool.color);
-            // Đánh dấu để lát nữa xáo trộn nhưng vẫn giữ tính liên tục của khối? 
-            // Không, ý bạn là các wool TRONG khối liên tục, nhưng VỊ TRÍ khối thì ngẫu nhiên.
+            remainingBySpool.set(spool, cap);
         }
 
-        // 3. Logic tạo chuỗi màu theo khối (Chunking)
-        const finalColorSequence: Color[] = this.generateChunkedSequence(spoolManager.spools, base, extra);
+        // 3. Main ray nhận màu theo diffCurve để điều khiển độ khó.
+        const mainColorSequence = this.generateMainRaySequenceByDifficulty(spoolManager.spools, mainItems.length, remainingBySpool);
 
-        // 4. Gán màu và index
-        for (let i = 0; i < allItems.length; i++) {
-            const raySlot = allItems[i].getComponent(RaySlot);
+        // 4. Phần len còn lại (sub rays) vẫn giữ logic chunk + shuffle.
+        const subColorSequence = this.generateChunkedSequenceFromRemaining(spoolManager.spools, remainingBySpool);
+
+        // 5. Gán màu/index cho main ray
+        for (let i = 0; i < mainItems.length; i++) {
+            const raySlot = mainItems[i].getComponent(RaySlot);
             if (raySlot) {
                 raySlot.index = i;
-                raySlot.wool?.setColor(finalColorSequence[i]);
+                raySlot.wool?.setColor(mainColorSequence[i]);
             }
         }
 
-        // 5. Di chuyển
+        // 6. Gán màu/index cho sub rays
+        for (let i = 0; i < subItems.length; i++) {
+            const raySlot = subItems[i].getComponent(RaySlot);
+            if (raySlot) {
+                raySlot.index = i + mainItems.length;
+                raySlot.wool?.setColor(subColorSequence[i]);
+            }
+        }
+
+        // 7. Di chuyển
         if (this.splineInstantiate && allItems.length > 0) {
             this.calculateRelativeDistances();
             if (this.autoMove) this.startMoving();
         }
     }
-    private generateChunkedSequence(spools: Spool[], base: number, extra: number): Color[] {
+
+    private generateMainRaySequenceByDifficulty(spools: Spool[], mainCount: number, remainingBySpool: Map<Spool, number>): Color[] {
+        type SpoolChunk = { spool: Spool, size: number, isDefaultOpen: boolean };
+
+        const sequence: Color[] = [];
+        if (mainCount <= 0) return sequence;
+
+        const chunks: SpoolChunk[] = [];
+
+        for (const spool of spools) {
+            const cap = remainingBySpool.get(spool) || 0;
+            if (cap <= 0) continue;
+
+            const firstChunkSize = Math.floor(cap / 2);
+            const secondChunkSize = cap - firstChunkSize;
+            const isDefaultOpen = spool.isOpen || spool.row === 0;
+
+            if (firstChunkSize > 0) {
+                chunks.push({ spool, size: firstChunkSize, isDefaultOpen });
+            }
+            if (secondChunkSize > 0) {
+                chunks.push({ spool, size: secondChunkSize, isDefaultOpen });
+            }
+        }
+
+        const pickWeightedChunk = (pool: SpoolChunk[]): SpoolChunk | null => {
+            if (pool.length === 0) return null;
+            let totalWeight = 0;
+            for (const chunk of pool) totalWeight += chunk.size;
+
+            let roll = Math.random() * totalWeight;
+            for (const chunk of pool) {
+                roll -= chunk.size;
+                if (roll <= 0) return chunk;
+            }
+
+            return pool[pool.length - 1];
+        };
+
+        for (let i = 0; i < mainCount; i++) {
+            const t = mainCount <= 1 ? 1 : i / (mainCount - 1);
+            const diffValue = this.getCurveValue01(t);
+
+            // Curve thấp => dễ (ưu tiên màu từ spool open mặc định), curve cao => khó.
+            const openChance = math.clamp01(0.85 - diffValue * 0.7);
+            const preferOpen = Math.random() < openChance;
+
+            const remainingSlots = mainCount - sequence.length;
+            if (remainingSlots <= 0) break;
+
+            const primaryFit = chunks.filter(chunk => chunk.size > 0 && chunk.isDefaultOpen === preferOpen && chunk.size <= remainingSlots);
+            const secondaryFit = chunks.filter(chunk => chunk.size > 0 && chunk.isDefaultOpen !== preferOpen && chunk.size <= remainingSlots);
+            const anyFit = chunks.filter(chunk => chunk.size > 0 && chunk.size <= remainingSlots);
+
+            const primaryAny = chunks.filter(chunk => chunk.size > 0 && chunk.isDefaultOpen === preferOpen);
+            const secondaryAny = chunks.filter(chunk => chunk.size > 0 && chunk.isDefaultOpen !== preferOpen);
+            const anyChunk = chunks.filter(chunk => chunk.size > 0);
+
+            const picked = pickWeightedChunk(primaryFit)
+                ?? pickWeightedChunk(secondaryFit)
+                ?? pickWeightedChunk(anyFit)
+                ?? pickWeightedChunk(primaryAny)
+                ?? pickWeightedChunk(secondaryAny)
+                ?? pickWeightedChunk(anyChunk);
+
+            if (!picked) break;
+
+            const useCount = Math.min(picked.size, remainingSlots);
+            for (let j = 0; j < useCount; j++) {
+                sequence.push(picked.spool.color);
+            }
+
+            picked.size -= useCount;
+            remainingBySpool.set(picked.spool, (remainingBySpool.get(picked.spool) || 0) - useCount);
+        }
+
+        return sequence;
+    }
+
+    private getCurveValue01(t: number): number {
+        const raw = this.diffCurve ? this.diffCurve.evaluate(math.clamp01(t)) : 0;
+        return math.clamp01(raw);
+    }
+
+    private generateChunkedSequenceFromRemaining(spools: Spool[], remainingBySpool: Map<Spool, number>): Color[] {
         type ColorChunk = { color: Color, size: number };
         let chunks: ColorChunk[] = [];
 
-        // Bước 1: Chia mỗi Spool thành 2 chunks (mỗi chunk ~50% capacity)
-        for (let i = 0; i < spools.length; i++) {
-            const cap = base + (i < extra ? 1 : 0);
+        // Bước 1: Chia phần còn lại của mỗi spool thành 2 chunks
+        for (const spool of spools) {
+            const cap = remainingBySpool.get(spool) || 0;
+            if (cap <= 0) continue;
+
             const firstChunkSize = Math.floor(cap / 2);
             const secondChunkSize = cap - firstChunkSize;
 
-            if (firstChunkSize > 0) chunks.push({ color: spools[i].color, size: firstChunkSize });
-            if (secondChunkSize > 0) chunks.push({ color: spools[i].color, size: secondChunkSize });
+            if (firstChunkSize > 0) chunks.push({ color: spool.color, size: firstChunkSize });
+            if (secondChunkSize > 0) chunks.push({ color: spool.color, size: secondChunkSize });
         }
 
-        // Bước 2: Xáo trộn các Chunks (Vị trí các khối màu sẽ ngẫu nhiên)
+        // Bước 2: Xáo trộn các chunks
         this.shuffleArray(chunks);
 
-        // Bước 3: Trải phẳng các chunks thành mảng màu đơn lẻ
+        // Bước 3: Trải phẳng chunks thành mảng màu đơn lẻ
         let sequence: Color[] = [];
         for (const chunk of chunks) {
             for (let i = 0; i < chunk.size; i++) {

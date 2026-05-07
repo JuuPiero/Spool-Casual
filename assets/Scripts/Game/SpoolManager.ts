@@ -250,6 +250,7 @@ export class SpoolManager extends Component {
             }
         }
 
+        spool.shadow.active = false
 
 
 

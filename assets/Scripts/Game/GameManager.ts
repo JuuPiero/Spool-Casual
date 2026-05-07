@@ -31,9 +31,6 @@ export class GameManager extends Component {
     @property(LevelDataSA) public currentLevelData: LevelDataSA;
 
 
-    // @property(LevelsConfig)
-    // public levelsConfig: LevelsConfig = null
-
     @property(JsonAsset)
     public levelJson: JsonAsset = null
 
