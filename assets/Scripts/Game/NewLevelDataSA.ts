@@ -1,5 +1,6 @@
 import { bh } from "db://scriptable-asset/scriptable_runtime"
 import { _decorator, CCInteger, CCString, Color, Component, Node } from 'cc';
+import { GridSlotData } from "./LevelDataSA";
 const { ccclass, property } = _decorator;
 
 
@@ -14,17 +15,17 @@ export class ColorHexCode {
 }
 
 // Class cho grid slot data
-@ccclass('GridSlotData')
-export class GridSlotData {
-    @property
-    public coordinateX: number = 0;
+// @ccclass('GridSlotData')
+// export class GridSlotData {
+//     @property
+//     public coordinateX: number = 0;
 
-    @property
-    public coordinateY: number = 0;
+//     @property
+//     public coordinateY: number = 0;
 
-    @property
-    public gridSlotType: number = 0;
-}
+//     @property
+//     public gridSlotType: number = 0;
+// }
 
 // Class cho vehicle data
 @ccclass('VehicleData')

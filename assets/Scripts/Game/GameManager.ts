@@ -24,17 +24,16 @@ export enum GameState {
 }
 @ccclass('GameManager')
 export class GameManager extends Component {
-
    
     @property(GameConfig) public gameConfig: GameConfig;
 
     @property(LevelDataSA) public currentLevelData: LevelDataSA;
 
 
-    @property(JsonAsset) public levelJson: JsonAsset = null
+    // @property(JsonAsset) public levelJson: JsonAsset = null
 
     // @property(NewLevelData)
-    public newLevelData: NewLevelData = null
+    // public newLevelData: NewLevelData = null
     public levelData: LevelData = null
 
 
@@ -89,14 +88,13 @@ export class GameManager extends Component {
     }
 
 
-    public loadLevel() {
+    // public loadLevel() {
         
 
-
-        const rawData = this.levelJson.json; 
-        const levelData = Object.assign(new NewLevelData(), rawData);
-        this.newLevelData = levelData
-    }
+    //     const rawData = this.levelJson.json; 
+    //     const levelData = Object.assign(new NewLevelData(), rawData);
+    //     this.newLevelData = levelData
+    // }
 
     protected onLoad(): void {
         if (this.gameConfig) {
@@ -104,7 +102,7 @@ export class GameManager extends Component {
             ServiceLocator.register(GameManager, this)
         }
         this.setupLinkStore()
-        this.loadLevel()
+        // this.loadLevel()
     
     }
     protected start(): void {
@@ -116,11 +114,13 @@ export class GameManager extends Component {
         this.colorConfig = Object.assign(new PlayableColorConfig, colorRaw);
         this.levelData = this.currentLevelData.getLevel();
 
+        ServiceLocator.register(PlayableColorConfig, this.colorConfig)
+
 
         TrackingManager.TrackEvent(ETrackingEvent.LOADING)
-        this.spoolManager.init(this.newLevelData, this.levelData, this.colorConfig)
-        this.woolManager.init(this.newLevelData, this.levelData, this.colorConfig)
-        this.slotManager.init(this.newLevelData)
+        this.spoolManager.init(this.levelData, this.colorConfig)
+        this.woolManager.init(this.levelData, this.colorConfig)
+        this.slotManager.init(this.levelData)
         SoundManager.instance.playMusic("BGM", true)
         TrackingManager.TrackEvent(ETrackingEvent.LOADED)
         TrackingManager.TrackEvent(ETrackingEvent.DISPLAYED)

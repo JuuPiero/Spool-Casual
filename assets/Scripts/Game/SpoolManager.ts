@@ -11,12 +11,13 @@ import { WoolManager } from './WoolManager';
 import { SOUNDS } from './Sounds';
 import { SlotManager } from './SlotManager';
 import { print } from '../ultils';
-import { NewLevelData } from './NewLevelDataSA';
+// import { GridSlotData, NewLevelData } from './NewLevelDataSA';
 import { MatchZone } from './MatchZone';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
 import { PlayableManager } from './PlayableManager';
-import { LevelData } from './LevelDataSA';
+import { LevelData, PipelineData } from './LevelDataSA';
 import { PlayableColorConfig } from '../Data/ColorConfig';
+import { Pipeline } from './GridItem/Pipeline';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -36,12 +37,20 @@ export class SpoolManager extends Component {
     @property({ type: Spool })
     public spools: Spool[] = []
 
+
+    @property({ type: Pipeline }) public pipelines: Pipeline[] = []
+
     public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
     private maxRow = 0
     private maxCol = 0
 
 
     protected gameManager: GameManager = null
+
+    public gameConfig: GameConfig = null
+
+
+
 
 
     public progress = 0
@@ -92,27 +101,28 @@ export class SpoolManager extends Component {
     }
 
 
-    public init(levelData: NewLevelData, newLevelData: LevelData = null, colorConfig: PlayableColorConfig) {
+    public init(newLevelData: LevelData = null, colorConfig: PlayableColorConfig) {
         const gameConfig = ServiceLocator.get(GameConfig);
-        const columns = levelData.gridWidth;
-        const rows = levelData.gridHeight;
-        this.maxRow = newLevelData.gridWidth;
-        this.maxCol = newLevelData.gridHeight;
+        this.gameConfig = gameConfig;
+        const columns = newLevelData.gridWidth;
+        const rows = newLevelData.gridHeight;
+        this.maxRow = 0;
+        this.maxCol = 0;
 
         const totalWidth = (columns - 1) * this.spacing;
         const totalDepth = (rows - 1) * this.spacing;
 
         const startX = -totalWidth / 2;
         const startZ = -totalDepth / 2;
-        this.total = levelData.vehiclesData.length
+        this.total = newLevelData.gridSlots.length
 
 
         for (const item of newLevelData.gridSlots) {
 
             const col = item.x;
             const row = item.y;
-            // this.maxRow = Math.max(this.maxRow, row);
-            // this.maxCol = Math.max(this.maxCol, col);
+            this.maxRow = Math.max(this.maxRow, row);
+            this.maxCol = Math.max(this.maxCol, col);
 
             const node = instantiate(gameConfig.spoolPrefab);
             const spool = node.getComponent(Spool);
@@ -135,7 +145,7 @@ export class SpoolManager extends Component {
             spool.color = colorConfig.getMainColor(item.colorId) || Color.WHITE;
 
             const x = startX + col * this.spacing;
-            const z = startZ + row * this.spacing;
+            const z = startZ + (rows - 1 - row) * this.spacing;
 
             node.setPosition(new Vec3(x, 0, z));
             spool.capacity = 20;
@@ -148,50 +158,44 @@ export class SpoolManager extends Component {
 
         }
 
-        // for (const vehicle of levelData.vehiclesData) {
+        const pipelineDatas = newLevelData.pipelines;
+        for (const pipelineData of pipelineDatas) {
+            const col = pipelineData.x;
+            const row = pipelineData.y;
 
-        //     const col = vehicle.coordinateX;
-        //     const row = vehicle.coordinateY;
-        //     // this.maxRow = Math.max(this.maxRow, row);
-        //     // this.maxCol = Math.max(this.maxCol, col);
+            const node = instantiate(gameConfig.pipelinePrefab);
+            const pipeline = node.getComponent(Pipeline);
 
-        //     const node = instantiate(gameConfig.spoolPrefab);
-        //     const spool = node.getComponent(Spool);
+            if (!pipeline) {
+                node.removeFromParent();
+                continue;
+            }
 
-        //     if (!spool) {
-        //         node.removeFromParent();
-        //         continue;
-        //     }
-        //     spool.row = row;
-        //     spool.col = col;
-        //     node.name = `Spool_(${row}, ${col})`;
-        //     if (this.spoolContainer) {
-        //         node.setParent(this.spoolContainer);
-        //     }
-        //     else {
-        //         node.setParent(this.node);
-        //     }
+            node.name = `Pipeline_(${row}, ${col})`;
+            if (this.spoolContainer) {
+                node.setParent(this.spoolContainer);
+            }
+            else {
+                node.setParent(this.node);
+            }
 
-        //     // Set color from colorMap
-        //     spool.color = levelData.getColor(vehicle.entityColorType) || Color.WHITE;
+            const x = startX + col * this.spacing;
+            const z = startZ + (rows - 1 - row) * this.spacing;
 
-        //     const x = startX + col * this.spacing;
-        //     const z = startZ + row * this.spacing;
-
-        //     node.setPosition(new Vec3(x, 0, z));
-
-        //     spool.clickFunc = () => {
-        //         this.onSpoolSelected(spool)
-        //     }
-
-        //     this.spools.push(spool);
-        //     this.spoolsMap.set(`${row}_${col}`, spool);
-
-        // }
+            node.setPosition(new Vec3(x, 0, z));
+            pipeline.init(pipelineData, this);
+        }
+       
     }
+   
+
 
     public getSpool(row: number, col: number): Spool | undefined {
         return this.spoolsMap.get(`${row}_${col}`)
+    }
+
+    public getMaxRow(): number {
+        return this.maxRow;
     }
 
     public remove(spool: Spool) {
@@ -214,9 +218,9 @@ export class SpoolManager extends Component {
         while (queue.length > 0) {
             const [row, col] = queue.shift()!;
 
-            this.tryOpenSpool(row - 1, col);
+            this.tryOpenSpool(row + 1, col);
 
-            for (const [nextRow, nextCol] of [[row, col - 1], [row, col + 1], [row + 1, col]] as Array<[number, number]>) {
+            for (const [nextRow, nextCol] of [[row, col - 1], [row, col + 1], [row - 1, col]] as Array<[number, number]>) {
                 if (!this.isInsideSpoolGrid(nextRow, nextCol)) {
                     continue;
                 }
@@ -237,7 +241,7 @@ export class SpoolManager extends Component {
 
     private tryOpenSpool(row: number, col: number) {
         const spool = this.getSpool(row, col);
-        if (!spool || spool.row >= this.maxRow || spool.isOpen || spool.isInSlot || spool.isFlying || !spool.node.active) {
+        if (!spool || spool.row > this.maxRow || spool.isOpen || spool.isInSlot || spool.isFlying || !spool.node.active) {
             return;
         }
 
@@ -293,9 +297,6 @@ export class SpoolManager extends Component {
             }
         }
 
-        spool.shadow.active = false
-
-
 
         const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
 
@@ -308,6 +309,7 @@ export class SpoolManager extends Component {
 
         spool.activateNextSpools();
         SoundManager.instance.playOneShot(SOUNDS.CLICK);
+        spool.shadow.active = false
         spool.moveToSlot(slot, () => {
 
             this.checkLose();

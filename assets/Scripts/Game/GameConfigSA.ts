@@ -12,6 +12,11 @@ export class GameConfig extends bh.ScriptableAsset {
     @property(Prefab)
     public spoolPrefab: Prefab
 
+
+    @property(Prefab)
+    public pipelinePrefab: Prefab
+
+
     @property(Prefab)
     public slotPrefab: Prefab
 

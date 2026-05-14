@@ -168,7 +168,7 @@ export class Spool extends Clickable {
             left.isOpen = true;
             left.open();
         }
-        const down = this.spoolManager.getSpool(this.row + 1, this.col);
+        const down = this.spoolManager.getSpool(this.row - 1, this.col);
         if (down && !down.isOpen) {
             down.isOpen = true;
             down.open();
@@ -419,6 +419,7 @@ export class Spool extends Clickable {
     }
 
     private isBlocked(): boolean {
-        return this.row !== 0;
+        if (!this.spoolManager) return true;
+        return this.row !== this.spoolManager.getMaxRow();
     }
 }

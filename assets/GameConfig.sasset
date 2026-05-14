@@ -8,6 +8,10 @@
     "__uuid__": "692f75fe-cc89-4908-81d5-a0e96470aa13",
     "__expectedType__": "cc.Prefab"
   },
+  "pipelinePrefab": {
+    "__uuid__": "f46210f6-d2b0-4fdc-8fec-b7946e9830ca",
+    "__expectedType__": "cc.Prefab"
+  },
   "slotPrefab": {
     "__uuid__": "63603220-915c-4304-b328-e77814e4ecb8",
     "__expectedType__": "cc.Prefab"

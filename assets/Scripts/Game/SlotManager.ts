@@ -3,6 +3,7 @@ import { ServiceLocator } from '../ServiceLocator';
 import { Slot } from './Slot';
 import { GameConfig } from './GameConfigSA';
 import { NewLevelData } from './NewLevelDataSA';
+import { LevelData } from './LevelDataSA';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotManager')
@@ -27,7 +28,7 @@ export class SlotManager extends Component {
     //     // this.spawnSlots();
     // }
 
-    public init(levelData: NewLevelData) {
+    public init(levelData: LevelData) {
         this.slots = [];
 
         const gameConfig = ServiceLocator.get(GameConfig)

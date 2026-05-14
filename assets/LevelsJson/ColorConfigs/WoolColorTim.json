@@ -1,0 +1,76 @@
+{
+    "colors": [
+        {
+            "mainColor": "#8d4dff",
+            "shadowColor": "A43E49FF"
+        },
+        {
+            "mainColor": "#ec42d3",
+            "shadowColor": "C3AA3EFF"
+        },
+        {
+            "mainColor": "#ff8dd4",
+            "shadowColor": "348452FF"
+        },
+        {
+            "mainColor": "#ffafa2",
+            "shadowColor": "285AB0FF"
+        },
+        {
+            "mainColor": "#ff7d1c",
+            "shadowColor": "4A9DB8FF"
+        },
+        {
+            "mainColor": "#e54040",
+            "shadowColor": "D94B96FF"
+        },
+        {
+            "mainColor": "#8D4DFFFF",
+            "shadowColor": "8361A1FF"
+        },
+        {
+            "mainColor": "#FF7D1CFF",
+            "shadowColor": "B65F0FFF"
+        },
+        {
+            "mainColor": "#FFAFA2FF",
+            "shadowColor": "B08F7EFF"
+        },
+        {
+            "mainColor": "#0C7D5AFF",
+            "shadowColor": "195B47FF"
+        },
+        {
+            "mainColor": "#FF8DD4FF",
+            "shadowColor": "D668D6FF"
+        },
+        {
+            "mainColor": "#B05C46FF",
+            "shadowColor": "87574AFF"
+        },
+        {
+            "mainColor": "#E9E9E9FF",
+            "shadowColor": "B9B9B9FF"
+        }
+    ],
+    "hiddenColor": {
+        "mainColor": "#606369FF",
+        "shadowColor": "37393FFF"
+    },
+    "knitColors": [
+        "E5404032",
+        "FFC72332",
+        "3BCF3A32",
+        "2D8DFFFF",
+        "41C7EC32",
+        "EB42D232",
+        "8C4CFD32",
+        "FD7C1C32",
+        "FFAFA232",
+        "0C7D5A32",
+        "F085C832",
+        "A8584332",
+        "E9E9E932"
+    ],
+    "knitColorHidden": "606369FF"
+}

@@ -3,14 +3,22 @@ const { ccclass, property } = _decorator;
 import { bh } from 'db://scriptable-asset/scriptable_runtime';
 
 
-
 @ccclass('GridSlotData')
 export class GridSlotData {
     @property(CCInteger) public x: number;
     @property(CCInteger) public y: number;
     @property(CCInteger) public colorId: number;
-    @property public isWall: boolean;
+    // @property public isWall: boolean;
+}
 
+
+@ccclass('PipelineData')
+export class PipelineData
+{
+    @property(CCInteger) public x: number;
+    @property(CCInteger) public y: number;
+    public rotate: number = 0;
+    public ids: number[] = []
 }
 
 
@@ -28,10 +36,13 @@ export class LevelData {
     @property(CCInteger) public maxSlot;
 
     @property(GridSlotData) public gridSlots: GridSlotData[] = []
+    @property(PipelineData) public pipelines: PipelineData[] = []
+
 
     @property(ConveyorData) public mainConveyor = new ConveyorData();
 
     @property(ConveyorData) public conveyors: ConveyorData[] = []
+
 }
 
 

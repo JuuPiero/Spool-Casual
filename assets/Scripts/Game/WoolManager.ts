@@ -77,7 +77,7 @@ export class WoolManager extends Component {
 
     @property(RealCurve) public diffCurve: RealCurve = new RealCurve()
 
-    public init(levelData: NewLevelData, newLevelData: LevelData, colorConfig: PlayableColorConfig) {
+    public init(newLevelData: LevelData, colorConfig: PlayableColorConfig) {
         this.slots = [];
         const mainItems = this.splineInstantiate.items;
         
@@ -88,7 +88,6 @@ export class WoolManager extends Component {
 
             const raySlot = this.splineInstantiate.items[i].getComponent(RaySlot);
             this.slots.push(raySlot);
-            // raySlot.wool.color = colorConfig.getMainColor(mainSplineItems[i]);
             raySlot.wool.setColor(colorConfig.getMainColor(mainSplineItems[i]));
         }
 
