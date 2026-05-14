@@ -15,6 +15,8 @@ import { NewLevelData } from './NewLevelDataSA';
 import { MatchZone } from './MatchZone';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
 import { PlayableManager } from './PlayableManager';
+import { LevelData } from './LevelDataSA';
+import { PlayableColorConfig } from '../Data/ColorConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpoolManager')
@@ -90,12 +92,12 @@ export class SpoolManager extends Component {
     }
 
 
-    public init(levelData: NewLevelData) {
+    public init(levelData: NewLevelData, newLevelData: LevelData = null, colorConfig: PlayableColorConfig) {
         const gameConfig = ServiceLocator.get(GameConfig);
         const columns = levelData.gridWidth;
         const rows = levelData.gridHeight;
-        this.maxRow = 0;
-        this.maxCol = 0;
+        this.maxRow = newLevelData.gridWidth;
+        this.maxCol = newLevelData.gridHeight;
 
         const totalWidth = (columns - 1) * this.spacing;
         const totalDepth = (rows - 1) * this.spacing;
@@ -104,12 +106,13 @@ export class SpoolManager extends Component {
         const startZ = -totalDepth / 2;
         this.total = levelData.vehiclesData.length
 
-        for (const vehicle of levelData.vehiclesData) {
 
-            const col = vehicle.coordinateX;
-            const row = vehicle.coordinateY;
-            this.maxRow = Math.max(this.maxRow, row);
-            this.maxCol = Math.max(this.maxCol, col);
+        for (const item of newLevelData.gridSlots) {
+
+            const col = item.x;
+            const row = item.y;
+            // this.maxRow = Math.max(this.maxRow, row);
+            // this.maxCol = Math.max(this.maxCol, col);
 
             const node = instantiate(gameConfig.spoolPrefab);
             const spool = node.getComponent(Spool);
@@ -129,13 +132,13 @@ export class SpoolManager extends Component {
             }
 
             // Set color from colorMap
-            spool.color = levelData.getColor(vehicle.entityColorType) || Color.WHITE;
+            spool.color = colorConfig.getMainColor(item.colorId) || Color.WHITE;
 
             const x = startX + col * this.spacing;
             const z = startZ + row * this.spacing;
 
             node.setPosition(new Vec3(x, 0, z));
-
+            spool.capacity = 20;
             spool.clickFunc = () => {
                 this.onSpoolSelected(spool)
             }
@@ -144,6 +147,47 @@ export class SpoolManager extends Component {
             this.spoolsMap.set(`${row}_${col}`, spool);
 
         }
+
+        // for (const vehicle of levelData.vehiclesData) {
+
+        //     const col = vehicle.coordinateX;
+        //     const row = vehicle.coordinateY;
+        //     // this.maxRow = Math.max(this.maxRow, row);
+        //     // this.maxCol = Math.max(this.maxCol, col);
+
+        //     const node = instantiate(gameConfig.spoolPrefab);
+        //     const spool = node.getComponent(Spool);
+
+        //     if (!spool) {
+        //         node.removeFromParent();
+        //         continue;
+        //     }
+        //     spool.row = row;
+        //     spool.col = col;
+        //     node.name = `Spool_(${row}, ${col})`;
+        //     if (this.spoolContainer) {
+        //         node.setParent(this.spoolContainer);
+        //     }
+        //     else {
+        //         node.setParent(this.node);
+        //     }
+
+        //     // Set color from colorMap
+        //     spool.color = levelData.getColor(vehicle.entityColorType) || Color.WHITE;
+
+        //     const x = startX + col * this.spacing;
+        //     const z = startZ + row * this.spacing;
+
+        //     node.setPosition(new Vec3(x, 0, z));
+
+        //     spool.clickFunc = () => {
+        //         this.onSpoolSelected(spool)
+        //     }
+
+        //     this.spools.push(spool);
+        //     this.spoolsMap.set(`${row}_${col}`, spool);
+
+        // }
     }
 
     public getSpool(row: number, col: number): Spool | undefined {
@@ -222,8 +266,7 @@ export class SpoolManager extends Component {
 
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
             TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_SOLVED)
-             const woolManager = ServiceLocator.get(WoolManager);
-
+            const woolManager = ServiceLocator.get(WoolManager);
            
         }
     }

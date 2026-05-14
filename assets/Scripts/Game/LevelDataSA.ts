@@ -3,25 +3,49 @@ const { ccclass, property } = _decorator;
 import { bh } from 'db://scriptable-asset/scriptable_runtime';
 
 
-@ccclass('SpoolData')
-export class SpoolData {
-    @property(CCInteger)
-    public colorIndex: number = 0
+
+@ccclass('GridSlotData')
+export class GridSlotData {
+    @property(CCInteger) public x: number;
+    @property(CCInteger) public y: number;
+    @property(CCInteger) public colorId: number;
+    @property public isWall: boolean;
+
 }
+
+
+@ccclass('ConveyorData')
+export class ConveyorData {
+    public colorIds: number[] = []
+}
+
+
+@ccclass('LevelData') // Level runtime
+export class LevelData {
+    
+    @property(CCInteger) public gridWidth;
+    @property(CCInteger) public gridHeight;
+    @property(CCInteger) public maxSlot;
+
+    @property(GridSlotData) public gridSlots: GridSlotData[] = []
+
+    @property(ConveyorData) public mainConveyor = new ConveyorData();
+
+    @property(ConveyorData) public conveyors: ConveyorData[] = []
+}
+
 
 
 @bh.createAssetMenu('LevelDataSA', 'Config/LevelDataSA')
 @bh.scriptable('LevelDataSA')
 export class LevelDataSA extends bh.ScriptableAsset {
 
-    @property(CCInteger)
-    public maxSlots: number = 2
-    @property(CCInteger)
-    public maxSubRay: number = 2
+    @property(JsonAsset) public jsonData: JsonAsset = null
 
-    @property(JsonAsset) public levelJson: JsonAsset = null
-    @property(Prefab) public levelPrefab: Prefab = null
+    @property(Prefab) public splines: Prefab = null
 
-    @property(Vec3) public knots: Vec3[] = []
-
+    public getLevel() {
+        const levelData: LevelData = Object.assign(new LevelData(), this.jsonData.json);
+        return levelData
+    }
 } 

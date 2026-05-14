@@ -29,6 +29,10 @@
     "__expectedType__": "cc.Prefab"
   },
   "storeUrl": "https://play.google.com/store/apps/details?id=ig.com.wool.loop.qdc",
+  "colorConfigJson": {
+    "__uuid__": "b14c47c1-d97b-440d-9ebe-e7e334bdcfea",
+    "__expectedType__": "cc.JsonAsset"
+  },
   "colors": [
     {
       "__type__": "cc.Color",
@@ -93,5 +97,6 @@
       "b": 2,
       "a": 255
     }
-  ]
+  ],
+  "collectTime": 0.1
 }

@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, math, RealCurve } from 'cc';
+import { _decorator, Color, Component, log, math, RealCurve } from 'cc';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
 import { SplineInstantiate } from '../SplineInstantiate';
@@ -10,6 +10,8 @@ import { Spool } from './Spool';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { NewLevelData } from './NewLevelDataSA';
+import { LevelData } from './LevelDataSA';
+import { PlayableColorConfig } from '../Data/ColorConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('WoolManager')
@@ -75,7 +77,50 @@ export class WoolManager extends Component {
 
     @property(RealCurve) public diffCurve: RealCurve = new RealCurve()
 
-    public init(levelData: NewLevelData) {
+    public init(levelData: NewLevelData, newLevelData: LevelData, colorConfig: PlayableColorConfig) {
+        this.slots = [];
+        const mainItems = this.splineInstantiate.items;
+        
+        const mainSplineItems = newLevelData.mainConveyor.colorIds
+
+
+        for (let i = 0; i < mainSplineItems.length; i++) {
+
+            const raySlot = this.splineInstantiate.items[i].getComponent(RaySlot);
+            this.slots.push(raySlot);
+            // raySlot.wool.color = colorConfig.getMainColor(mainSplineItems[i]);
+            raySlot.wool.setColor(colorConfig.getMainColor(mainSplineItems[i]));
+        }
+
+
+        const subRaysData = newLevelData.conveyors;
+
+        for (let i = 0; i < subRaysData.length; i++) {
+            const subRay = this.subRays[i];
+            const subRayData = subRaysData[i];
+            for (let j = 0; j < subRay.raySlots.length; j++) {
+                // console.log("SubRay " + i + " item " + j + " màu: " + colorConfig.getMainColor(subRayData.colorIds[j]));
+                const raySlot: RaySlot = subRay.raySlots[j];
+                raySlot.wool.setColor(colorConfig.getMainColor(subRayData.colorIds[j]));
+            }
+        }
+    
+
+        // mainItems.forEach(item => {
+        //     const raySlot = item.getComponent(RaySlot)
+        //     this.slots.push(raySlot);
+        //     // raySlot.wool.color = colorConfig.getMainColor()
+        // });
+
+        if (this.splineInstantiate) {
+            this.calculateRelativeDistances();
+            if (this.autoMove) this.startMoving();
+        }
+        
+
+    }
+
+    public init1(levelData: NewLevelData) {
         // 1. Thu thập RaySlot main ray + sub rays
         this.slots = [];
         const mainItems = this.splineInstantiate.items;

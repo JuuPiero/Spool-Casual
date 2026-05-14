@@ -13,7 +13,8 @@ import { SlotManager } from './SlotManager';
 import { SCREENS } from './UI/Screens';
 import { SoundManager } from '../SoundManager';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
-import { LevelDataSA } from './LevelDataSA';
+import { LevelData, LevelDataSA } from './LevelDataSA';
+import { PlayableColorConfig } from '../Data/ColorConfig';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -25,17 +26,19 @@ export enum GameState {
 export class GameManager extends Component {
 
    
-    @property(GameConfig)
-    public gameConfig: GameConfig;
+    @property(GameConfig) public gameConfig: GameConfig;
 
     @property(LevelDataSA) public currentLevelData: LevelDataSA;
 
 
-    @property(JsonAsset)
-    public levelJson: JsonAsset = null
+    @property(JsonAsset) public levelJson: JsonAsset = null
 
     // @property(NewLevelData)
     public newLevelData: NewLevelData = null
+    public levelData: LevelData = null
+
+
+    public colorConfig: PlayableColorConfig = null
 
 
     public state: GameState = GameState.PLAY
@@ -87,6 +90,9 @@ export class GameManager extends Component {
 
 
     public loadLevel() {
+        
+
+
         const rawData = this.levelJson.json; 
         const levelData = Object.assign(new NewLevelData(), rawData);
         this.newLevelData = levelData
@@ -106,9 +112,14 @@ export class GameManager extends Component {
     }
 
     onNewGame = () => {
+        const colorRaw = this.gameConfig.colorConfigJson.json;
+        this.colorConfig = Object.assign(new PlayableColorConfig, colorRaw);
+        this.levelData = this.currentLevelData.getLevel();
+
+
         TrackingManager.TrackEvent(ETrackingEvent.LOADING)
-        this.spoolManager.init(this.newLevelData)
-        this.woolManager.init(this.newLevelData)
+        this.spoolManager.init(this.newLevelData, this.levelData, this.colorConfig)
+        this.woolManager.init(this.newLevelData, this.levelData, this.colorConfig)
         this.slotManager.init(this.newLevelData)
         SoundManager.instance.playMusic("BGM", true)
         TrackingManager.TrackEvent(ETrackingEvent.LOADED)

@@ -1,4 +1,4 @@
-import { _decorator, CCString, Color, Prefab } from 'cc';
+import { _decorator, CCString, Color, JsonAsset, Prefab } from 'cc';
 const { ccclass, property } = _decorator;
 import { bh } from 'db://scriptable-asset/scriptable_runtime';
 
@@ -31,9 +31,18 @@ export class GameConfig extends bh.ScriptableAsset {
     @property(CCString)
     public storeUrl: string
 
+    @property(JsonAsset) public colorConfigJson: JsonAsset = null;
+    
+    
 
     @property({type: Color})
     public colors: Color[] = []
 
-    @property public collectTime = 0.1
+    @property public collectTime = 0.1;
+   
+    onLoaded(): void {
+        
+    }
+
+    
 } 
