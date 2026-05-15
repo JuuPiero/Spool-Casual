@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, MeshRenderer, Node, Tween, tween, Vec2, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
@@ -12,14 +12,19 @@ import { WoolManager } from './WoolManager';
 import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { SplineAnimate } from '../SplineAnimate';
+import { IGridItem } from './IGridItem';
 
 const { ccclass, property } = _decorator;
 
 
 @ccclass('Spool')
-export class Spool extends Clickable {
+export class Spool extends Clickable implements IGridItem {
+    @property(Vec2) position: Vec2;
+    public getPositon() {
+        return this.position;
+    }
 
-    public clickFunc: Function
+    public clickFunc: Function = null
 
     @property(CCInteger)
     public capacity: number = 0;
@@ -33,8 +38,8 @@ export class Spool extends Clickable {
     @property(Color)
     public color: Color;
 
-    public row: number = 0;
-    public col: number = 0;
+    // public row: number = 0;
+    // public col: number = 0;
 
     @property({ type: MeshRenderer })
     public renderers: MeshRenderer[] = [];
@@ -158,17 +163,19 @@ export class Spool extends Clickable {
     }
 
     public activateNextSpools() {
-        const right = this.spoolManager.getSpool(this.row, this.col + 1);
+        // position.x = col, position.y = row
+        // getSpool(row, col)
+        const right = this.spoolManager.getSpool(this.position.y, this.position.x + 1);
         if (right && !right.isOpen) {
             right.isOpen = true;
             right.open();
         }
-        const left = this.spoolManager.getSpool(this.row, this.col - 1);
+        const left = this.spoolManager.getSpool(this.position.y, this.position.x - 1);
         if (left && !left.isOpen) {
             left.isOpen = true;
             left.open();
         }
-        const down = this.spoolManager.getSpool(this.row - 1, this.col);
+        const down = this.spoolManager.getSpool(this.position.y - 1, this.position.x);
         if (down && !down.isOpen) {
             down.isOpen = true;
             down.open();
@@ -185,12 +192,14 @@ export class Spool extends Clickable {
         // targetPos.y = this.node.y;
         const localTarget = new Vec3();
         this.node.parent!.inverseTransformPoint(localTarget, targetPos);
+
         tween(this.node)
             .to(0.2, {
                 position: localTarget,
                 eulerAngles: new Vec3(-90, 90, 90),
             }, { easing: "quadOut" })
             .call(() => {
+
                 this.syncWoolsView()
                 this.isFlying = false
                 this.slot = slot
@@ -210,11 +219,14 @@ export class Spool extends Clickable {
                 }
 
                 // Mở ngay spool ở xa trong khi spool này collect, không cần chờ full
-                this.spoolManager.openReachableSpoolsFrom(this.row, this.col);
+                this.spoolManager.openReachableSpoolsFrom(this.position.x, this.position.y);
 
                 this.collects()
                 Spool.delay = false
                 onDone?.()
+                EventBus.emit('SPOOL_FINISHED', this);
+
+                // Emit event khi spool move to slot (thay vì gọi onExit callback)
             })
             .start();
     }
@@ -420,6 +432,8 @@ export class Spool extends Clickable {
 
     private isBlocked(): boolean {
         if (!this.spoolManager) return true;
-        return this.row !== this.spoolManager.getMaxRow();
+        // Chỉ unblock nếu ở hàng trên cùng (maxRow)
+        // Các hàng dưới sẽ bị chặn từ trên
+        return this.position.y < this.spoolManager.getMaxRow();
     }
 }

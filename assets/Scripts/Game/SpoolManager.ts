@@ -1,4 +1,4 @@
-import { _decorator, CCFloat, CCInteger, Color, Component, director, instantiate, macro, Node, Prefab, Vec3 } from 'cc';
+import { _decorator, CCFloat, CCInteger, Color, Component, director, instantiate, macro, Node, Prefab, Vec2, Vec3 } from 'cc';
 import { Spool } from './Spool';
 import { ServiceLocator } from '../ServiceLocator';
 import { GameConfig } from './GameConfigSA';
@@ -48,10 +48,6 @@ export class SpoolManager extends Component {
     protected gameManager: GameManager = null
 
     public gameConfig: GameConfig = null
-
-
-
-
 
     public progress = 0
     public total = 0
@@ -131,9 +127,10 @@ export class SpoolManager extends Component {
                 node.removeFromParent();
                 continue;
             }
-            spool.row = row;
-            spool.col = col;
-            node.name = `Spool_(${row}, ${col})`;
+            // spool.row = row;
+            // spool.col = col;
+            spool.position = new Vec2(col, row);
+            node.name = `Spool_(${col}, ${row})`;
             if (this.spoolContainer) {
                 node.setParent(this.spoolContainer);
             }
@@ -154,8 +151,7 @@ export class SpoolManager extends Component {
             }
 
             this.spools.push(spool);
-            this.spoolsMap.set(`${row}_${col}`, spool);
-
+            this.spoolsMap.set(`${col}_${row}`, spool);
         }
 
         const pipelineDatas = newLevelData.pipelines;
@@ -171,7 +167,7 @@ export class SpoolManager extends Component {
                 continue;
             }
 
-            node.name = `Pipeline_(${row}, ${col})`;
+            node.name = `Pipeline_(${col}, ${row})`;
             if (this.spoolContainer) {
                 node.setParent(this.spoolContainer);
             }
@@ -187,11 +183,9 @@ export class SpoolManager extends Component {
         }
        
     }
-   
-
 
     public getSpool(row: number, col: number): Spool | undefined {
-        return this.spoolsMap.get(`${row}_${col}`)
+        return this.spoolsMap.get(`${col}_${row}`)
     }
 
     public getMaxRow(): number {
@@ -203,45 +197,23 @@ export class SpoolManager extends Component {
         if (index >= 0) {
             this.spools.splice(index, 1)
         }
-        this.spoolsMap.delete(`${spool.row}_${spool.col}`)
-        this.openReachableSpoolsFrom(spool.row, spool.col)
+        this.spoolsMap.delete(`${spool.position.x}_${spool.position.y}`)
+        this.openReachableSpoolsFrom(spool.position.x, spool.position.y)
     }
 
-    public openReachableSpoolsFrom(startRow: number, startCol: number) {
-        if (!this.isInsideSpoolGrid(startRow, startCol)) {
-            return;
-        }
-
-        const queue: Array<[number, number]> = [[startRow, startCol]];
-        const visited = new Set<string>([`${startRow}_${startCol}`]);
-
-        while (queue.length > 0) {
-            const [row, col] = queue.shift()!;
-
-            this.tryOpenSpool(row + 1, col);
-
-            for (const [nextRow, nextCol] of [[row, col - 1], [row, col + 1], [row - 1, col]] as Array<[number, number]>) {
-                if (!this.isInsideSpoolGrid(nextRow, nextCol)) {
-                    continue;
-                }
-                if (!this.isPathCellEmpty(nextRow, nextCol)) {
-                    continue;
-                }
-
-                const key = `${nextRow}_${nextCol}`;
-                if (visited.has(key)) {
-                    continue;
-                }
-
-                visited.add(key);
-                queue.push([nextRow, nextCol]);
-            }
+    public openReachableSpoolsFrom(col: number, row: number) {
+        // Khi spool bị remove tại (col, row), kiểm tra spool phía dưới nó
+        // Nếu spool dưới không bị chặn nữa, hãy mở nó
+        const spoolBelow = this.getSpool(row + 1, col);
+        if (spoolBelow && !spoolBelow.isOpen) {
+            spoolBelow.isOpen = true;
+            spoolBelow.open();
         }
     }
 
     private tryOpenSpool(row: number, col: number) {
         const spool = this.getSpool(row, col);
-        if (!spool || spool.row > this.maxRow || spool.isOpen || spool.isInSlot || spool.isFlying || !spool.node.active) {
+        if (!spool || spool.isOpen || spool.isInSlot || spool.isFlying || !spool.node.active) {
             return;
         }
 
@@ -311,7 +283,6 @@ export class SpoolManager extends Component {
         SoundManager.instance.playOneShot(SOUNDS.CLICK);
         spool.shadow.active = false
         spool.moveToSlot(slot, () => {
-
             this.checkLose();
         });
     }

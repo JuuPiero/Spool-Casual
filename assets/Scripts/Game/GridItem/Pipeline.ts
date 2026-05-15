@@ -1,14 +1,19 @@
-import { _decorator, Component, Label, MeshRenderer, Node } from 'cc';
+import { _decorator, CCInteger, Color, Component, instantiate, Label, log, math, MeshRenderer, Node, Vec2, Vec3 } from 'cc';
 import { Spool } from '../Spool';
 import { PipelineData } from '../LevelDataSA';
 import { SpoolManager } from '../SpoolManager';
 import { PlayableColorConfig } from '../../Data/ColorConfig';
 import { ServiceLocator } from '../../ServiceLocator';
+import { IGridItem } from '../IGridItem';
+import { GameConfig } from '../GameConfigSA';
+import { EventBus } from '../../EventBus';
 const { ccclass, property } = _decorator;
 
 @ccclass('Pipeline')
-export class Pipeline extends Component {
-    public colorIds: number[] = [];
+export class Pipeline extends Component implements IGridItem {
+    @property(Vec2) position: Vec2;
+
+    @property(CCInteger) public colorIds: number[] = [];
     @property(Spool) public currentSpool: Spool = null;
 
     @property(Node) public visual: Node = null;
@@ -20,44 +25,103 @@ export class Pipeline extends Component {
 
 
     colorConfig: PlayableColorConfig = null
+    gameConfig: GameConfig = null;
 
-    public init(pipelineData: PipelineData, spoolManager: SpoolManager) {
+    public pipelineData: PipelineData = null;
 
-        const angle = this.normalizeAngle(pipelineData.rotate);
+    private targetPosition: Vec3 = new Vec3();
 
-        const dir = this.angleToDir(angle);
 
-        this.currentSpool = spoolManager.getSpool(
-            pipelineData.y + dir.y,
-            pipelineData.x + dir.x
-        );
+    private spoolManager: SpoolManager = null;
 
-        this.setColor(pipelineData.ids[0]);
-        const rotate = pipelineData.rotate;
-        const angleIndex = ((Math.round(rotate / 90) % 4) + 4) % 4;
-        // rotate visual
-        this.visual.setRotationFromEuler(0, pipelineData.rotate, 0);
-
+    public getPositon() {
+        return this.position;
     }
 
     protected start(): void {
-        
+        this.gameConfig = ServiceLocator.get(GameConfig);
+        this.spoolManager = ServiceLocator.get(SpoolManager);
+        EventBus.on('SPOOL_FINISHED', this.onSpoolFinished);
+
     }
 
+    protected onDestroy(): void {
+        // Unsubscribe event listener khi pipeline bị destroy
+        EventBus.off('SPOOL_FINISHED', this.onSpoolFinished);
+    }
+
+    public init(pipelineData: PipelineData, spoolManager: SpoolManager) {
+        this.pipelineData = pipelineData;
+        this.position = new Vec2(pipelineData.x, pipelineData.y);
+
+        this.colorIds = [...pipelineData.ids];
+
+        // const angle = this.normalizeAngle(pipelineData.rotate);
+        
+        switch (pipelineData.rotate) {
+            case 0:
+            case 360: 
+                this.currentSpool = spoolManager.getSpool(pipelineData.x, pipelineData.y + 1);
+                break;
+            case -90:
+                this.currentSpool = spoolManager.getSpool(pipelineData.x + 1, pipelineData.y );
+                break;
+            case -270:
+                this.currentSpool = spoolManager.getSpool(pipelineData.x - 1, pipelineData.y);
+                break;
+            default:
+                break;
+        }
+
+        if (this.currentSpool) {
+            this.targetPosition = this.currentSpool.node.getWorldPosition().clone();
+            // Thay vì gán onExit, listen đến event khi spool này finish
+        }
+
+        this.setColor(pipelineData.ids[0]);
+        const rotate = pipelineData.rotate;
+        // rotate visual
+        this.visual.setRotationFromEuler(0, pipelineData.rotate, 0);
+
+        this.updateUI();
+    }
+
+    public updateUI() {
+        this.label.string = this.colorIds.length.toString();
+    }
 
     public setColor(colorId: number) {
         const colorConfig = ServiceLocator.get(PlayableColorConfig)
-        
+
         const mat = this.visual.getComponentInChildren(MeshRenderer).getMaterialInstance(1);
 
         mat.setProperty("color", colorConfig.getMainColor(colorId));
     }
 
-    public Pop() {
+    pop = () => {
+        console.log("Pop");
+        
+        return;
         const colorId = this.colorIds.pop()
+        this.updateUI();
+        const node = instantiate(this.gameConfig.spoolPrefab);
+        node.setParent(this.spoolManager.node);
+        node.setWorldPosition(this.targetPosition);
+        const spool = node.getComponent(Spool);
+        spool.capacity = 20;
+        spool.color = this.colorConfig.getMainColor(colorId) || Color.WHITE;
+        spool.clickFunc = () => {
+            this.spoolManager.onSpoolSelected(spool)
+        }
+        this.spoolManager.spools.push(spool);
+        this.spoolManager.spoolsMap.set(`${this.currentSpool.position.x}_${this.currentSpool.position.y}`, spool);
+    }
 
-        // const postion = 
-
+    onSpoolFinished = (finishedSpool: Spool) => {
+        // Chỉ gọi pop khi spool finish là currentSpool của Pipeline này
+        if (finishedSpool === this.currentSpool) {
+            this.pop();
+        }
     }
 
     private normalizeAngle(angle: number): number {
@@ -71,10 +135,10 @@ export class Pipeline extends Component {
 
     private angleToDir(angle: number) {
 
-        // làm tròn về bội số 90 gần nhất
-        angle = Math.round(angle / 90) * 90 % 360;
+        angle = ((Math.round(angle / 90) * 90) % 360 + 360) % 360;
 
         switch (angle) {
+
             case 0:
                 return { x: 0, y: 1 };   // up
 
@@ -90,7 +154,4 @@ export class Pipeline extends Component {
 
         return { x: 0, y: 0 };
     }
-
 }
-
-
