@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Color, Component, instantiate, Label, log, math, MeshRenderer, Node, Vec2, Vec3 } from 'cc';
+import { _decorator, CCInteger, Color, Component, instantiate, Label, log, math, MeshRenderer, Node, tween, Vec2, Vec3 } from 'cc';
 import { Spool } from '../Spool';
 import { PipelineData } from '../LevelDataSA';
 import { SpoolManager } from '../SpoolManager';
@@ -41,30 +41,29 @@ export class Pipeline extends Component implements IGridItem {
     protected start(): void {
         this.gameConfig = ServiceLocator.get(GameConfig);
         this.spoolManager = ServiceLocator.get(SpoolManager);
-        EventBus.on('SPOOL_FINISHED', this.onSpoolFinished);
+        // EventBus.on('SPOOL_FINISHED', this.onSpoolFinished);
 
     }
 
     protected onDestroy(): void {
         // Unsubscribe event listener khi pipeline bị destroy
-        EventBus.off('SPOOL_FINISHED', this.onSpoolFinished);
+        // EventBus.off('SPOOL_FINISHED', this.onSpoolFinished);
     }
 
     public init(pipelineData: PipelineData, spoolManager: SpoolManager) {
         this.pipelineData = pipelineData;
         this.position = new Vec2(pipelineData.x, pipelineData.y);
+        this.colorConfig = ServiceLocator.get(PlayableColorConfig);
 
         this.colorIds = [...pipelineData.ids];
-
+        // const colorId = this.colorIds.pop()
         // const angle = this.normalizeAngle(pipelineData.rotate);
-        
         switch (pipelineData.rotate) {
             case 0:
-            case 360: 
                 this.currentSpool = spoolManager.getSpool(pipelineData.x, pipelineData.y + 1);
                 break;
             case -90:
-                this.currentSpool = spoolManager.getSpool(pipelineData.x + 1, pipelineData.y );
+                this.currentSpool = spoolManager.getSpool(pipelineData.x + 1, pipelineData.y);
                 break;
             case -270:
                 this.currentSpool = spoolManager.getSpool(pipelineData.x - 1, pipelineData.y);
@@ -74,11 +73,12 @@ export class Pipeline extends Component implements IGridItem {
         }
 
         if (this.currentSpool) {
-            this.targetPosition = this.currentSpool.node.getWorldPosition().clone();
+            this.targetPosition = this.currentSpool.node.getPosition();
             // Thay vì gán onExit, listen đến event khi spool này finish
+            this.currentSpool.onExitFunc = this.pop;
         }
 
-        this.setColor(pipelineData.ids[0]);
+        this.setColor(pipelineData.ids[this.colorIds.length - 1] || 0);
         const rotate = pipelineData.rotate;
         // rotate visual
         this.visual.setRotationFromEuler(0, pipelineData.rotate, 0);
@@ -91,31 +91,57 @@ export class Pipeline extends Component implements IGridItem {
     }
 
     public setColor(colorId: number) {
-        const colorConfig = ServiceLocator.get(PlayableColorConfig)
-
         const mat = this.visual.getComponentInChildren(MeshRenderer).getMaterialInstance(1);
-
-        mat.setProperty("color", colorConfig.getMainColor(colorId));
+        mat.setProperty("color", this.colorConfig.getMainColor(colorId));
     }
 
-    pop = () => {
-        console.log("Pop");
-        
-        return;
-        const colorId = this.colorIds.pop()
-        this.updateUI();
+   pop = () => {
+    const colorId = this.colorIds.pop()
+    this.updateUI();
+
+    if (this.colorIds.length) {
         const node = instantiate(this.gameConfig.spoolPrefab);
-        node.setParent(this.spoolManager.node);
-        node.setWorldPosition(this.targetPosition);
         const spool = node.getComponent(Spool);
-        spool.capacity = 20;
-        spool.color = this.colorConfig.getMainColor(colorId) || Color.WHITE;
-        spool.clickFunc = () => {
-            this.spoolManager.onSpoolSelected(spool)
+        node.setParent(this.spoolManager.node);
+        
+        // Set initial position and scale (bé)
+        // node.setPosition(this.currentSpool.node.position);
+        node.setWorldPosition(this.popPos.getWorldPosition());
+        node.setScale(0, 0, 0); // Bắt đầu từ kích thước 0
+        
+        // Tween scale từ 0 lên 1
+        tween(node)
+            .to(0.3, { 
+                position: this.targetPosition,
+                scale: new Vec3(1, 1, 1) 
+            }, { 
+                easing: 'backOut' 
+            })
+            .start();
+        
+        if (this.colorIds.length) {
+            this.setColor(this.colorIds[this.colorIds.length - 1]);
         }
-        this.spoolManager.spools.push(spool);
-        this.spoolManager.spoolsMap.set(`${this.currentSpool.position.x}_${this.currentSpool.position.y}`, spool);
+        
+        spool.init({ 
+            x: this.currentSpool.position.x, 
+            y: this.currentSpool.position.y, 
+            colorId: colorId 
+        }, this.spoolManager)
+
+        this.scheduleOnce(() => {
+            spool.isOpen = true;
+            spool.isInSlot = false;
+            spool.count = 0;
+            spool.open()
+            spool.clickFunc = () => {
+                this.spoolManager.onSpoolSelected(spool)
+            }
+            this.currentSpool = spool
+            this.currentSpool.onExitFunc = this.pop;
+        }, 0);
     }
+}
 
     onSpoolFinished = (finishedSpool: Spool) => {
         // Chỉ gọi pop khi spool finish là currentSpool của Pipeline này
@@ -124,34 +150,5 @@ export class Pipeline extends Component implements IGridItem {
         }
     }
 
-    private normalizeAngle(angle: number): number {
-        angle %= 360;
 
-        if (angle < 0)
-            angle += 360;
-
-        return angle;
-    }
-
-    private angleToDir(angle: number) {
-
-        angle = ((Math.round(angle / 90) * 90) % 360 + 360) % 360;
-
-        switch (angle) {
-
-            case 0:
-                return { x: 0, y: 1 };   // up
-
-            case 90:
-                return { x: 1, y: 0 };   // right
-
-            case 180:
-                return { x: 0, y: -1 };  // down
-
-            case 270:
-                return { x: -1, y: 0 };  // left
-        }
-
-        return { x: 0, y: 0 };
-    }
 }

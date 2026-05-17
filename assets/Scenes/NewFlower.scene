@@ -4412,6 +4412,10 @@
       {
         "__uuid__": "c42ffc2c-fb71-4320-accc-7344485ac1d3",
         "__expectedType__": "cc.AudioClip"
+      },
+      {
+        "__uuid__": "dc26779a-3eb4-46a5-80ab-350f0c5738a0",
+        "__expectedType__": "cc.AudioClip"
       }
     ],
     "poolSize": 10,

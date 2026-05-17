@@ -1,4 +1,4 @@
-import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, MeshRenderer, Node, Tween, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CCBoolean, CCInteger, Color, Component, instantiate, log, MeshRenderer, Node, Tween, tween, Vec2, Vec3 } from 'cc';
 import { Clickable } from '../Clickable';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
@@ -13,6 +13,8 @@ import { EventBus } from '../EventBus';
 import { GameEvent } from '../GameEvent';
 import { SplineAnimate } from '../SplineAnimate';
 import { IGridItem } from './IGridItem';
+import { GridSlotData } from './LevelDataSA';
+import { PlayableColorConfig } from '../Data/ColorConfig';
 
 const { ccclass, property } = _decorator;
 
@@ -25,6 +27,7 @@ export class Spool extends Clickable implements IGridItem {
     }
 
     public clickFunc: Function = null
+    public onExitFunc: Function = null
 
     @property(CCInteger)
     public capacity: number = 0;
@@ -64,24 +67,41 @@ export class Spool extends Clickable implements IGridItem {
 
     public isOpen: boolean = false;
     @property(Node) public shadow: Node = null
-
-    protected start(): void {
-        this.spoolManager = ServiceLocator.get(SpoolManager);
+    protected onLoad(): void {
         this.rope = this.getComponentInChildren(RopeBezierWave3D)!;
-        this.rope?.setColor(this.color);
-
-
+        this.spoolManager = ServiceLocator.get(SpoolManager);
         this.baseRotation = new Vec3(-90, 90, 90)
+    }
+    protected start(): void {
+          this.isOpen = !this.isBlocked();
+            if (this.isOpen) {
+                this.open();
+            } 
+            else {
+                this.close();
+            }
+    }
 
+    public init(data: GridSlotData, spoolManager: SpoolManager, onClick?: Function) {
+        this.spoolManager = spoolManager;
+        this.position = new Vec2(data.x, data.y);
+        this.spoolManager.spools.push(this);
+        this.spoolManager.spoolsMap.set(`${data.x}_${data.y}`, this);
+        this.spoolManager.validSpoolPositions.add(`${data.x}_${data.y}`);
+        this.capacity = 20;
+        this.count = 0;
+        this.node.name = `Spool_(${data.x}, ${data.y})`;
+        this.clickFunc = onClick;
+        this.setColor(data.colorId);
+      
+    }
+
+    public setColor(colorId: number) {
+        const colorConfig = ServiceLocator.get(PlayableColorConfig);
+        this.color = colorConfig.getMainColor(colorId) || Color.WHITE;
+        this.rope?.setColor(this.color);
         const mat = this.rope.getComponent(MeshRenderer).getMaterialInstance(0)
         mat.setProperty('fill', 0)
-
-        this.isOpen = !this.isBlocked();
-        if (this.isOpen) {
-            this.open();
-        } else {
-            this.close();
-        }
     }
 
     public isFull() {
@@ -159,23 +179,21 @@ export class Spool extends Clickable implements IGridItem {
 
     public onClick() {
         this.clickFunc?.()
-
     }
 
     public activateNextSpools() {
         // position.x = col, position.y = row
-        // getSpool(row, col)
-        const right = this.spoolManager.getSpool(this.position.y, this.position.x + 1);
+        const right = this.spoolManager.getSpool(this.position.x + 1, this.position.y);
         if (right && !right.isOpen) {
             right.isOpen = true;
             right.open();
         }
-        const left = this.spoolManager.getSpool(this.position.y, this.position.x - 1);
+        const left = this.spoolManager.getSpool(this.position.x - 1, this.position.y);
         if (left && !left.isOpen) {
             left.isOpen = true;
             left.open();
         }
-        const down = this.spoolManager.getSpool(this.position.y - 1, this.position.x);
+        const down = this.spoolManager.getSpool(this.position.x, this.position.y - 1);
         if (down && !down.isOpen) {
             down.isOpen = true;
             down.open();
@@ -218,14 +236,13 @@ export class Spool extends Clickable implements IGridItem {
                     itemsInMatchZone.delete(raySlot);
                 }
 
-                // Mở ngay spool ở xa trong khi spool này collect, không cần chờ full
-                this.spoolManager.openReachableSpoolsFrom(this.position.x, this.position.y);
-
+                // Do not recompute reachability while this spool is still present in the grid.
+                // Reachable open state should be updated only after the spool is removed.
                 this.collects()
                 Spool.delay = false
                 onDone?.()
-                EventBus.emit('SPOOL_FINISHED', this);
-
+                // EventBus.emit('SPOOL_FINISHED', this);
+                this.onExitFunc?.()
                 // Emit event khi spool move to slot (thay vì gọi onExit callback)
             })
             .start();
@@ -403,7 +420,7 @@ export class Spool extends Clickable implements IGridItem {
         this.inActiveView.active = true;
     }
 
-    private setRendererActive(active: boolean) {
+    public setRendererActive(active: boolean) {
         this.renderers.forEach(renderer => {
             renderer.node.active = active;
 
@@ -430,7 +447,7 @@ export class Spool extends Clickable implements IGridItem {
         else this.queue.splice(index, 0, raySlot);
     }
 
-    private isBlocked(): boolean {
+    public isBlocked(): boolean {
         if (!this.spoolManager) return true;
         // Chỉ unblock nếu ở hàng trên cùng (maxRow)
         // Các hàng dưới sẽ bị chặn từ trên

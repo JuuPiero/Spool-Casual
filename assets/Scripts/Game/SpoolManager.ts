@@ -15,7 +15,7 @@ import { print } from '../ultils';
 import { MatchZone } from './MatchZone';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
 import { PlayableManager } from './PlayableManager';
-import { LevelData, PipelineData } from './LevelDataSA';
+import { GridSlotData, LevelData, PipelineData } from './LevelDataSA';
 import { PlayableColorConfig } from '../Data/ColorConfig';
 import { Pipeline } from './GridItem/Pipeline';
 const { ccclass, property } = _decorator;
@@ -41,9 +41,9 @@ export class SpoolManager extends Component {
     @property({ type: Pipeline }) public pipelines: Pipeline[] = []
 
     public spoolsMap: Map<string, Spool> = new Map<string, Spool>()
+    public validSpoolPositions: Set<string> = new Set<string>()
     private maxRow = 0
     private maxCol = 0
-
 
     protected gameManager: GameManager = null
 
@@ -111,7 +111,7 @@ export class SpoolManager extends Component {
         const startX = -totalWidth / 2;
         const startZ = -totalDepth / 2;
         this.total = newLevelData.gridSlots.length
-
+        this.validSpoolPositions.clear();
 
         for (const item of newLevelData.gridSlots) {
 
@@ -119,39 +119,15 @@ export class SpoolManager extends Component {
             const row = item.y;
             this.maxRow = Math.max(this.maxRow, row);
             this.maxCol = Math.max(this.maxCol, col);
-
-            const node = instantiate(gameConfig.spoolPrefab);
-            const spool = node.getComponent(Spool);
-
-            if (!spool) {
-                node.removeFromParent();
-                continue;
-            }
-            // spool.row = row;
-            // spool.col = col;
-            spool.position = new Vec2(col, row);
-            node.name = `Spool_(${col}, ${row})`;
-            if (this.spoolContainer) {
-                node.setParent(this.spoolContainer);
-            }
-            else {
-                node.setParent(this.node);
-            }
-
-            // Set color from colorMap
-            spool.color = colorConfig.getMainColor(item.colorId) || Color.WHITE;
-
+            const spool = this.createSpool(item);
+            spool.node.setParent(this.node);
+            spool.init(item, this, () => {
+                this.onSpoolSelected(spool)
+            })
+            // spool.color = colorConfig.getMainColor(item.colorId) || Color.WHITE;
             const x = startX + col * this.spacing;
             const z = startZ + (rows - 1 - row) * this.spacing;
-
-            node.setPosition(new Vec3(x, 0, z));
-            spool.capacity = 20;
-            spool.clickFunc = () => {
-                this.onSpoolSelected(spool)
-            }
-
-            this.spools.push(spool);
-            this.spoolsMap.set(`${col}_${row}`, spool);
+            spool.node.setPosition(new Vec3(x, 0, z));
         }
 
         const pipelineDatas = newLevelData.pipelines;
@@ -168,24 +144,39 @@ export class SpoolManager extends Component {
             }
 
             node.name = `Pipeline_(${col}, ${row})`;
+            this.pipelines.push(pipeline);
             if (this.spoolContainer) {
                 node.setParent(this.spoolContainer);
             }
             else {
                 node.setParent(this.node);
             }
-
             const x = startX + col * this.spacing;
             const z = startZ + (rows - 1 - row) * this.spacing;
 
             node.setPosition(new Vec3(x, 0, z));
             pipeline.init(pipelineData, this);
         }
-       
     }
 
-    public getSpool(row: number, col: number): Spool | undefined {
+
+    public createSpool(data: GridSlotData): Spool {
+        const node = instantiate(this.gameConfig.spoolPrefab);
+        const spool = node.getComponent(Spool);
+        if (!spool) {
+            node.removeFromParent();
+            return;
+        }
+        // spool.init(data, this);
+        return spool
+    }
+
+    public getSpool(col: number, row: number): Spool | undefined {
         return this.spoolsMap.get(`${col}_${row}`)
+    }
+
+    public isValidPosition(col: number, row: number): boolean {
+        return this.validSpoolPositions.has(`${col}_${row}`)
     }
 
     public getMaxRow(): number {
@@ -198,37 +189,66 @@ export class SpoolManager extends Component {
             this.spools.splice(index, 1)
         }
         this.spoolsMap.delete(`${spool.position.x}_${spool.position.y}`)
-        this.openReachableSpoolsFrom(spool.position.x, spool.position.y)
+        this.updateOpenStates()
     }
 
-    public openReachableSpoolsFrom(col: number, row: number) {
-        // Khi spool bị remove tại (col, row), kiểm tra spool phía dưới nó
-        // Nếu spool dưới không bị chặn nữa, hãy mở nó
-        const spoolBelow = this.getSpool(row + 1, col);
-        if (spoolBelow && !spoolBelow.isOpen) {
-            spoolBelow.isOpen = true;
-            spoolBelow.open();
+    private updateOpenStates() {
+        // Keep top-row spools open by default.
+        for (const spool of this.spools) {
+            if (spool.position.y === this.maxRow && !spool.isOpen) {
+                spool.isOpen = true;
+                spool.open();
+            }
+        }
+
+        const emptyReachable = new Set<string>();
+        const queue: Array<{ x: number; y: number }> = [];
+
+        for (const key of this.validSpoolPositions) {
+            const [x, y] = key.split('_').map(Number);
+            if (y === this.maxRow && !this.spoolsMap.has(key)) {
+                emptyReachable.add(key);
+                queue.push({ x, y });
+            }
+        }
+
+        const dirs = [
+            { x: 1, y: 0 },
+            { x: -1, y: 0 },
+            { x: 0, y: 1 },
+            { x: 0, y: -1 },
+        ];
+
+        while (queue.length > 0) {
+            const current = queue.shift()!;
+            for (const dir of dirs) {
+                const nx = current.x + dir.x;
+                const ny = current.y + dir.y;
+                const key = `${nx}_${ny}`;
+
+                if (!this.isValidPosition(nx, ny)) continue;
+                if (this.spoolsMap.has(key)) continue;
+                if (emptyReachable.has(key)) continue;
+
+                emptyReachable.add(key);
+                queue.push({ x: nx, y: ny });
+            }
+        }
+
+        for (const emptyKey of emptyReachable) {
+            const [x, y] = emptyKey.split('_').map(Number);
+            for (const dir of dirs) {
+                const neighborKey = `${x + dir.x}_${y + dir.y}`;
+                const neighborSpool = this.spoolsMap.get(neighborKey);
+                if (!neighborSpool) continue;
+                if (!neighborSpool.isOpen) {
+                    neighborSpool.isOpen = true;
+                    neighborSpool.open();
+                }
+            }
         }
     }
 
-    private tryOpenSpool(row: number, col: number) {
-        const spool = this.getSpool(row, col);
-        if (!spool || spool.isOpen || spool.isInSlot || spool.isFlying || !spool.node.active) {
-            return;
-        }
-
-        spool.isOpen = true;
-        spool.open();
-    }
-
-    private isPathCellEmpty(row: number, col: number) {
-        const spool = this.getSpool(row, col);
-        return !spool || spool.isInSlot || spool.isFlying || !spool.node.active;
-    }
-
-    private isInsideSpoolGrid(row: number, col: number) {
-        return row >= 0 && row <= this.maxRow && col >= 0 && col <= this.maxCol;
-    }
 
     public checkWin() {
         if (this.gameManager.state !== GameState.PLAY) return
@@ -243,7 +263,7 @@ export class SpoolManager extends Component {
             EventBus.emit(GameEvent.LEVEL_COMPLETED)
             TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_SOLVED)
             const woolManager = ServiceLocator.get(WoolManager);
-           
+
         }
     }
 
@@ -253,6 +273,7 @@ export class SpoolManager extends Component {
         if (spool.isFlying || spool.isInSlot) return;
         if (!spool.isOpen) {
             SoundManager.instance.playOneShot(SOUNDS.FAILED);
+            console.log('here');
             return;
         }
 
@@ -268,7 +289,6 @@ export class SpoolManager extends Component {
                 this.tapCount = 0
             }
         }
-
 
         const slot = ServiceLocator.get(SlotManager).getAvailableSlot();
 
@@ -295,8 +315,8 @@ export class SpoolManager extends Component {
         // 1. Nếu vẫn còn slot trống thì chưa thể thua
         const availableSlot = slotManager.getAvailableSlot();
         if (availableSlot) return;
-          
-        const areSubRaysEmpty = woolManager.subRays.every(subRay => 
+
+        const areSubRaysEmpty = woolManager.subRays.every(subRay =>
             subRay.raySlots.every(slot => slot.wool === null)
         );
 

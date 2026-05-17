@@ -3,5 +3,6 @@ export const SOUNDS = {
     CLICK: "Click",
     FAILED: "Failed",
     SUCCESS: "Success",
-    BACKGROUND_MUSIC: "BGM"
+    BACKGROUND_MUSIC: "BGM",
+    Lose: "Lose"
 }

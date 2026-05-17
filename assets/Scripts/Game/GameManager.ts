@@ -15,6 +15,7 @@ import { SoundManager } from '../SoundManager';
 import { ETrackingEvent, TrackingManager } from '../TrackingManager';
 import { LevelData, LevelDataSA } from './LevelDataSA';
 import { PlayableColorConfig } from '../Data/ColorConfig';
+import { SOUNDS } from './Sounds';
 const { ccclass, property } = _decorator;
 
 export enum GameState {
@@ -118,19 +119,19 @@ export class GameManager extends Component {
 
 
         TrackingManager.TrackEvent(ETrackingEvent.LOADING)
-        this.spoolManager.init(this.levelData, this.colorConfig)
         this.woolManager.init(this.levelData, this.colorConfig)
+        this.spoolManager.init(this.levelData, this.colorConfig)
         this.slotManager.init(this.levelData)
         SoundManager.instance.playMusic("BGM", true)
         TrackingManager.TrackEvent(ETrackingEvent.LOADED)
         TrackingManager.TrackEvent(ETrackingEvent.DISPLAYED)
-
     }
     onLose = () => {
         ServiceLocator.get(NavigationContainer).stack.navigate(SCREENS.ENDCARD)
         super_html_playable.game_end()
         super_html_playable.download()
         SoundManager.instance.stopMusic()
+        SoundManager.instance.playOneShot(SOUNDS.Lose);
         TrackingManager.TrackEvent(ETrackingEvent.CHALLENGE_FAILED)
     }
 
