@@ -241,8 +241,16 @@ export class Spool extends Clickable implements IGridItem {
                 this.collects()
                 Spool.delay = false
                 onDone?.()
-                // EventBus.emit('SPOOL_FINISHED', this);
-                this.onExitFunc?.()
+                const exitDone = (replacementSpool?: Spool) => {
+                    if (!replacementSpool && this.isOpen) {
+                        this.activateNextSpools();
+                    }
+                };
+                if (this.onExitFunc) {
+                    this.onExitFunc(exitDone);
+                } else {
+                    exitDone();
+                }
                 // Emit event khi spool move to slot (thay vì gọi onExit callback)
             })
             .start();

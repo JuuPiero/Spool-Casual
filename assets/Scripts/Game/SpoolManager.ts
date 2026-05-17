@@ -188,7 +188,10 @@ export class SpoolManager extends Component {
         if (index >= 0) {
             this.spools.splice(index, 1)
         }
-        this.spoolsMap.delete(`${spool.position.x}_${spool.position.y}`)
+        const key = `${spool.position.x}_${spool.position.y}`
+        if (this.spoolsMap.get(key) === spool) {
+            this.spoolsMap.delete(key)
+        }
         this.updateOpenStates()
     }
 
@@ -299,7 +302,6 @@ export class SpoolManager extends Component {
         }
         Spool.delay = true
 
-        spool.activateNextSpools();
         SoundManager.instance.playOneShot(SOUNDS.CLICK);
         spool.shadow.active = false
         spool.moveToSlot(slot, () => {

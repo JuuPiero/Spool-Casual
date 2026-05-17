@@ -20,9 +20,7 @@ export class Pipeline extends Component implements IGridItem {
 
     @property(Node) public popPos: Node = null;
 
-
     @property(Label) public label: Label = null;
-
 
     colorConfig: PlayableColorConfig = null
     gameConfig: GameConfig = null;
@@ -75,10 +73,10 @@ export class Pipeline extends Component implements IGridItem {
         if (this.currentSpool) {
             this.targetPosition = this.currentSpool.node.getPosition();
             // Thay vì gán onExit, listen đến event khi spool này finish
-            this.currentSpool.onExitFunc = this.pop;
+            this.currentSpool.onExitFunc = this.shift;
         }
 
-        this.setColor(pipelineData.ids[this.colorIds.length - 1] || 0);
+        this.setColor(pipelineData.ids[0]);
         const rotate = pipelineData.rotate;
         // rotate visual
         this.visual.setRotationFromEuler(0, pipelineData.rotate, 0);
@@ -88,6 +86,12 @@ export class Pipeline extends Component implements IGridItem {
 
     public updateUI() {
         this.label.string = this.colorIds.length.toString();
+        if(this.colorIds.length > 0) {
+            this.label.node.active = true;
+        }
+        else {
+            this.label.node.active = false;
+        }
     }
 
     public setColor(colorId: number) {
@@ -95,58 +99,54 @@ export class Pipeline extends Component implements IGridItem {
         mat.setProperty("color", this.colorConfig.getMainColor(colorId));
     }
 
-   pop = () => {
-    const colorId = this.colorIds.pop()
-    this.updateUI();
-
-    if (this.colorIds.length) {
-        const node = instantiate(this.gameConfig.spoolPrefab);
-        const spool = node.getComponent(Spool);
-        node.setParent(this.spoolManager.node);
-        
-        // Set initial position and scale (bé)
-        // node.setPosition(this.currentSpool.node.position);
-        node.setWorldPosition(this.popPos.getWorldPosition());
-        node.setScale(0, 0, 0); // Bắt đầu từ kích thước 0
-        
-        // Tween scale từ 0 lên 1
-        tween(node)
-            .to(0.3, { 
-                position: this.targetPosition,
-                scale: new Vec3(1, 1, 1) 
-            }, { 
-                easing: 'backOut' 
-            })
-            .start();
-        
-        if (this.colorIds.length) {
-            this.setColor(this.colorIds[this.colorIds.length - 1]);
+    shift = (onShiftDone?: (replacementSpool?: Spool) => void) => {
+      
+        const colorId = this.colorIds.shift()
+        if (this.colorIds.length - 1 >= 0) {
+            this.setColor(this.colorIds[0]);
         }
-        
-        spool.init({ 
-            x: this.currentSpool.position.x, 
-            y: this.currentSpool.position.y, 
-            colorId: colorId 
-        }, this.spoolManager)
+        this.updateUI();
 
-        this.scheduleOnce(() => {
-            spool.isOpen = true;
-            spool.isInSlot = false;
-            spool.count = 0;
-            spool.open()
-            spool.clickFunc = () => {
-                this.spoolManager.onSpoolSelected(spool)
-            }
-            this.currentSpool = spool
-            this.currentSpool.onExitFunc = this.pop;
-        }, 0);
-    }
-}
+        if (colorId != undefined) {
 
-    onSpoolFinished = (finishedSpool: Spool) => {
-        // Chỉ gọi pop khi spool finish là currentSpool của Pipeline này
-        if (finishedSpool === this.currentSpool) {
-            this.pop();
+            const node = instantiate(this.gameConfig.spoolPrefab);
+            const spool = node.getComponent(Spool);
+            node.setParent(this.spoolManager.node);
+
+            // Set initial position and scale (bé)
+            // node.setPosition(this.currentSpool.node.position);
+            node.setWorldPosition(this.popPos.getWorldPosition());
+            node.setScale(0, 0, 0); // Bắt đầu từ kích thước 0
+
+            // Tween scale từ 0 lên 1
+            tween(node)
+                .to(0.3, {
+                    position: this.targetPosition,
+                    scale: new Vec3(1, 1, 1)
+                }, {
+                    easing: 'backOut'
+                })
+                .start();
+
+            spool.init({
+                x: this.currentSpool.position.x,
+                y: this.currentSpool.position.y,
+                colorId: colorId
+            }, this.spoolManager)
+
+            this.scheduleOnce(() => {
+                spool.isOpen = true;
+                spool.isInSlot = false;
+                spool.open();
+                spool.clickFunc = () => {
+                    this.spoolManager.onSpoolSelected(spool)
+                }
+                this.currentSpool = spool
+                this.currentSpool.onExitFunc = this.shift;
+                onShiftDone?.(spool);
+            }, 0);
+        } else {
+            onShiftDone?.();
         }
     }
 
