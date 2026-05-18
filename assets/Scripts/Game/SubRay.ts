@@ -6,6 +6,7 @@ import { RaySlot } from './RaySlot';
 import { GameManager, GameState } from './GameManager';
 import { ServiceLocator } from '../ServiceLocator';
 import { SpoolManager } from './SpoolManager';
+import { Barrier } from './Barrier';
 const { ccclass, property } = _decorator;
 
 @ccclass('SubRay')
@@ -25,6 +26,15 @@ export class SubRay extends Component {
         type: RaySlot
     })
     public raySlots: RaySlot[] = []
+
+    @property(Barrier) public barrier: Barrier = null
+
+    private _closeBarrierCb = () => { this.barrier?.close(); };
+
+    private _scheduleCloseBarrier() {
+        this.unschedule(this._closeBarrierCb);
+        this.scheduleOnce(this._closeBarrierCb, 0.4);
+    }
 
     protected onLoad(): void {
         this.rayTrigger?.on('onTriggerStay', this.onTriggerEnter, this);
@@ -46,18 +56,19 @@ export class SubRay extends Component {
 
 
     onTriggerEnter(event: ITriggerEvent) {
-        if( this.gameManager.state != GameState.PLAY) return
+        if (this.gameManager.state != GameState.PLAY) return
 
         const raySlotTarget = event.otherCollider.getComponent(RaySlot);
         if (!raySlotTarget) return;
         if (raySlotTarget.wool) return;
         if (!this.raySlots.length) return;
 
-
         for (let i = 0; i < this.raySlots.length; i++) {
             const slot = this.raySlots[i];
 
             if (slot.wool) {
+                this.barrier?.open();
+                this.unschedule(this._closeBarrierCb);
                 const wool = slot.wool;
 
                 // 1. Lưu lại toạ độ thế giới thực tế lúc vừa chạm mép Collider
@@ -66,18 +77,18 @@ export class SubRay extends Component {
 
                 // 2. Chuyển Parent sang tia chính
                 wool.node.setParent(raySlotTarget.node);
-                
+
                 // 3. Ép giữ nguyên World Transform để không bị giật trong frame đầu tiên
                 wool.node.setWorldPosition(worldPos);
                 wool.node.setWorldRotation(worldRot);
 
                 // 4. Dùng Tween "hút" nó khít vào tâm Slot trong 0.15 giây (rất mượt)
                 tween(wool.node)
-                    .to(0.15, { 
-                        position: Vec3.ZERO, 
+                    .to(0.15, {
+                        position: Vec3.ZERO,
                         eulerAngles: Vec3.ZERO // Trả local rotation về 0,0,0
-                    }, { 
-                        easing: "quadOut" 
+                    }, {
+                        easing: "quadOut"
                     })
                     .start();
 
@@ -87,11 +98,12 @@ export class SubRay extends Component {
                 ServiceLocator.get(SpoolManager).checkLose();
 
                 this.shiftWools(i);
+                this._scheduleCloseBarrier();
                 return;
             }
         }
     }
-   private shiftWools(startIndex: number) {
+    private shiftWools(startIndex: number) {
         const moveDuration = 0.4;
 
         for (let i = startIndex; i < this.raySlots.length - 1; i++) {
@@ -167,10 +179,14 @@ export class SubRay extends Component {
                         // Ép chuẩn 100% vào tâm khi tới đích
                         wool.node.setPosition(Vec3.ZERO);
                         wool.node.setRotationFromEuler(Vec3.ZERO);
-                        
+
                     }
                 })
                 .start();
         }
     }
+
+
+
+
 }

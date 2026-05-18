@@ -1,56 +1,56 @@
 {
     "colors": [
-        {
-            "mainColor": "#8d4dff",
-            "shadowColor": "A43E49FF"
+         {
+            "mainColor": "#97051f",
+            "shadowColor": "#B82E4A"
         },
         {
-            "mainColor": "#ec42d3",
-            "shadowColor": "C3AA3EFF"
+            "mainColor": "#83183c",
+            "shadowColor": "#B32E58"
         },
         {
-            "mainColor": "#ff8dd4",
-            "shadowColor": "348452FF"
+            "mainColor": "#88225c",
+            "shadowColor": "#AE2E70"
         },
         {
-            "mainColor": "#ffafa2",
-            "shadowColor": "285AB0FF"
+            "mainColor": "#5c234f",
+            "shadowColor": "#AA2E8A"
         },
         {
-            "mainColor": "#ff7d1c",
-            "shadowColor": "4A9DB8FF"
+            "mainColor": "#a952ac",
+            "shadowColor": "#A62EA6"
         },
         {
-            "mainColor": "#e54040",
-            "shadowColor": "D94B96FF"
+            "mainColor": "#9d63a0",
+            "shadowColor": "#7A1E80"
         },
         {
-            "mainColor": "#8D4DFFFF",
-            "shadowColor": "8361A1FF"
+            "mainColor": "#BE6ED8",
+            "shadowColor": "#7A24A6"
         },
         {
-            "mainColor": "#FF7D1CFF",
-            "shadowColor": "B65F0FFF"
+            "mainColor": "#C466E8",
+            "shadowColor": "#942ABA"
         },
         {
-            "mainColor": "#FFAFA2FF",
-            "shadowColor": "B08F7EFF"
+            "mainColor": "#D55CE6",
+            "shadowColor": "#AA22B8"
         },
         {
-            "mainColor": "#0C7D5AFF",
-            "shadowColor": "195B47FF"
+            "mainColor": "#E34FE6",
+            "shadowColor": "#B82AC0"
         },
         {
-            "mainColor": "#FF8DD4FF",
-            "shadowColor": "D668D6FF"
+            "mainColor": "#EB4DEA",
+            "shadowColor": "#B82EB8"
         },
         {
-            "mainColor": "#B05C46FF",
-            "shadowColor": "87574AFF"
+            "mainColor": "#D13DC6",
+            "shadowColor": "#9E2A96"
         },
         {
-            "mainColor": "#E9E9E9FF",
-            "shadowColor": "B9B9B9FF"
+            "mainColor": "#B42ABB",
+            "shadowColor": "#7A1E80"
         }
     ],
     "hiddenColor": {

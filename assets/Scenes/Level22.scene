@@ -192,6 +192,7 @@
     "maxTapToOpenStore": 5,
     "spoolContainer": null,
     "spools": [],
+    "pipelines": [],
     "_id": "2fliUO4vBMX6yofdpt+gWM"
   },
   {
@@ -225,9 +226,9 @@
     },
     "_lscale": {
       "__type__": "cc.Vec3",
-      "x": 1.3,
-      "y": 1.3,
-      "z": 1.3
+      "x": 1.1,
+      "y": 1.1,
+      "z": 1.1
     },
     "_mobility": 0,
     "_layer": 1073741824,
@@ -26969,9 +26970,9 @@
       "__uuid__": "2d733430-eb50-4442-9c42-f7c0868abe1d",
       "__expectedType__": "032387TqvFO/aiJxh6GMenp"
     },
-    "levelJson": {
-      "__uuid__": "28f7ce30-8726-4198-ac9f-18ba487e55e6",
-      "__expectedType__": "cc.JsonAsset"
+    "currentLevelData": {
+      "__uuid__": "1a0b4933-b4ce-4d9f-b888-b37a47376910",
+      "__expectedType__": "6c57a9YCFRC7YThajS08tDA"
     },
     "spoolManager": {
       "__id__": 4
