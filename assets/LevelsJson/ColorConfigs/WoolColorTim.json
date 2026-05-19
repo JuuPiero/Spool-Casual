@@ -1,23 +1,27 @@
 {
     "colors": [
-         {
+        {
             "mainColor": "#97051f",
             "shadowColor": "#B82E4A"
         },
         {
-            "mainColor": "#83183c",
+            "mainColor": "#34036b",
+            "shadowColor": "#7A1E80"
+        },
+        {
+            "mainColor": "#aa3198",
             "shadowColor": "#B32E58"
         },
         {
-            "mainColor": "#88225c",
+            "mainColor": "#5f32ac",
             "shadowColor": "#AE2E70"
         },
         {
-            "mainColor": "#5c234f",
+            "mainColor": "#ff8dd4",
             "shadowColor": "#AA2E8A"
         },
         {
-            "mainColor": "#a952ac",
+            "mainColor": "#bb354d",
             "shadowColor": "#A62EA6"
         },
         {
@@ -47,11 +51,8 @@
         {
             "mainColor": "#D13DC6",
             "shadowColor": "#9E2A96"
-        },
-        {
-            "mainColor": "#B42ABB",
-            "shadowColor": "#7A1E80"
         }
+        
     ],
     "hiddenColor": {
         "mainColor": "#606369FF",
